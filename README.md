@@ -1,7 +1,7 @@
 # FIRE-ERP
 
 -   [ ] Deployment
--   [ ] Theming
+-   [x] Theming
 -   [ ] Supabase setup
 -   [ ] Auth
 -   [ ] Dashboard
