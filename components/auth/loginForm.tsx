@@ -1,3 +1,5 @@
+"use client";
+import { useActionState, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,11 +12,49 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/supabase/auth/actions";
+import { LoaderCircle } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+    const initialState = {
+        error: "",
+    };
+    const { toast } = useToast();
+
+    const searchParams = useSearchParams();
+
+    const code = searchParams.get("code");
+    const errorCode = searchParams.get("error");
+
+    const [state, formAction, pending] = useActionState(login, initialState);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isMounted) return; // Prevent execution during server-side rendering
+
+        if (code) {
+            toast({
+                title: "Email Verified",
+                description: "Email Verification successful, continue to login",
+            });
+        }
+        if (errorCode) {
+            toast({
+                title: "An error occurred",
+                description: errorCode,
+            });
+        }
+    }, [code, errorCode, isMounted]);
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card>
@@ -25,7 +65,7 @@ export function LoginForm({
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form>
+                    <form action={formAction}>
                         <div className="grid gap-6">
                             <div className="flex flex-col gap-4">
                                 <Button variant="outline" className="w-full">
@@ -50,7 +90,7 @@ export function LoginForm({
                                 <div className="grid gap-2">
                                     <Label htmlFor="email">Email</Label>
                                     <Input
-                                        id="email"
+                                        name="email"
                                         type="email"
                                         placeholder="m@example.com"
                                         required
@@ -61,26 +101,37 @@ export function LoginForm({
                                         <Label htmlFor="password">
                                             Password
                                         </Label>
-                                        <a
-                                            href="#"
-                                            className="ml-auto text-sm underline-offset-4 hover:underline"
-                                        >
-                                            Forgot your password?
-                                        </a>
                                     </div>
                                     <Input
-                                        id="password"
+                                        name="password"
                                         type="password"
                                         required
                                     />
+                                    <Link
+                                        href="#"
+                                        className="ml-auto text-sm underline-offset-4 hover:underline"
+                                    >
+                                        Forgot your password?
+                                    </Link>
                                 </div>
                                 <Button
                                     type="submit"
                                     className="w-full"
-                                    formAction={login}
+                                    disabled={pending}
                                 >
+                                    {pending ? (
+                                        <LoaderCircle className="animate-spin" />
+                                    ) : (
+                                        ""
+                                    )}{" "}
                                     Login
                                 </Button>
+                                <p
+                                    className="text-red-500 dark:text-red-400 text-sm"
+                                    aria-live="polite"
+                                >
+                                    {state?.error}
+                                </p>
                             </div>
                             <div className="text-center text-sm">
                                 Don&apos;t have an account?{" "}
