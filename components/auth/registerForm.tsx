@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 
 const RegisterForm = ({
@@ -22,6 +22,7 @@ const RegisterForm = ({
 }: React.ComponentPropsWithoutRef<"div">) => {
     const { toast } = useToast();
     const [buttonState, setButtonState] = useState(false);
+    const formRef = useRef<HTMLFormElement>(null); // Create a ref for the form
 
     async function handleSignUp(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault(); // Prevent default form submission
@@ -45,6 +46,7 @@ const RegisterForm = ({
                 description:
                     "Please verify your email address and await approval from an administrator.",
             });
+            formRef.current?.reset(); // Reset the form fields on successful registration
         }
     }
 
@@ -56,7 +58,7 @@ const RegisterForm = ({
                     <CardDescription>Register to the platform</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSignUp}>
+                    <form ref={formRef} onSubmit={handleSignUp}>
                         <div className="grid gap-6">
                             <div className="grid gap-6">
                                 <div className="grid gap-2">

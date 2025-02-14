@@ -8,6 +8,10 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/supabase/server";
 
+import { db } from "@/db";
+import { Users } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
 export async function login(state: { error: string }, formData: FormData) {
     const supabase = await createClient();
 
@@ -28,7 +32,7 @@ export async function login(state: { error: string }, formData: FormData) {
 
     const { email, password } = loginValidation.data;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data: retData } = await supabase.auth.signInWithPassword({
         email,
         password,
     });
@@ -36,6 +40,8 @@ export async function login(state: { error: string }, formData: FormData) {
     if (error) {
         return { error: error.message }; // Return the error message instead of redirecting
     }
+
+    console.log(retData);
 
     revalidatePath("/", "layout");
     redirect("/");
@@ -68,10 +74,32 @@ export async function signup(formData: FormData) {
         };
     }
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error, data: retData } = await supabase.auth.signUp({
+        email,
+        password,
+    });
 
     if (error) {
         return { error: error.message };
+    }
+
+    // check if any admin exists in the user table
+
+    const response = await db.$count(Users, eq(Users.role, "admin"));
+    try {
+        await db.insert(Users).values({
+            userId: retData?.user?.id as string,
+            email: email,
+            name: "",
+            role: response ? "guest" : "admin",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            lastLogin: undefined,
+        });
+    } catch {
+        return {
+            error: "Unknown error occurred",
+        };
     }
 
     return { error: null };
