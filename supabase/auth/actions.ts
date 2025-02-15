@@ -11,6 +11,7 @@ import { createClient } from "@/supabase/server";
 import { db } from "@/db";
 import { Users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { HOST_URL } from "@/utils/contants";
 
 export async function login(state: { error: string }, formData: FormData) {
     const supabase = await createClient();
@@ -32,7 +33,7 @@ export async function login(state: { error: string }, formData: FormData) {
 
     const { email, password } = loginValidation.data;
 
-    const { error, data: retData } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
     });
@@ -40,8 +41,6 @@ export async function login(state: { error: string }, formData: FormData) {
     if (error) {
         return { error: error.message }; // Return the error message instead of redirecting
     }
-
-    console.log(retData);
 
     revalidatePath("/", "layout");
     redirect("/");
@@ -113,4 +112,24 @@ export async function signOut() {
         redirect("/login");
     }
     return error;
+}
+
+export async function GoogleLogin() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+            redirectTo: `${HOST_URL}/auth/callback`,
+        },
+    });
+
+    if (error) {
+        console.log("Error occurred", error);
+        // redirect("/login");
+    }
+
+    if (data.url) {
+        redirect(data.url); // use the redirect API for your server framework
+    }
 }
