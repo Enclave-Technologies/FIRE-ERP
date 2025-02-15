@@ -33,6 +33,7 @@ export function LoginForm({
 
     const [state, formAction, pending] = useActionState(login, initialState);
     const [isMounted, setIsMounted] = useState(false);
+    const [oauthState, setOauthState] = useState(false);
 
     useEffect(() => {
         setIsMounted(true);
@@ -70,8 +71,17 @@ export function LoginForm({
                             <Button
                                 variant="outline"
                                 className="w-full"
-                                onClick={() => GoogleLogin()}
+                                onClick={() => {
+                                    setOauthState(true);
+                                    GoogleLogin();
+                                }}
+                                disabled={oauthState}
                             >
+                                {oauthState ? (
+                                    <LoaderCircle className="animate-spin" />
+                                ) : (
+                                    ""
+                                )}{" "}
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"

@@ -10,7 +10,7 @@ import { createClient } from "@/supabase/server";
 
 import { db } from "@/db";
 import { Users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { HOST_URL } from "@/utils/contants";
 
 export async function login(state: { error: string }, formData: FormData) {
@@ -33,13 +33,22 @@ export async function login(state: { error: string }, formData: FormData) {
 
     const { email, password } = loginValidation.data;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data: user } = await supabase.auth.signInWithPassword({
         email,
         password,
     });
 
     if (error) {
         return { error: error.message }; // Return the error message instead of redirecting
+    }
+
+    try {
+        await db
+            .update(Users)
+            .set({ lastLogin: sql`NOW()` })
+            .where(eq(Users.userId, user.user.id));
+    } catch (error) {
+        console.error(error);
     }
 
     revalidatePath("/", "layout");
