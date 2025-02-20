@@ -71,6 +71,14 @@ const RegisterForm = ({
                                     />
                                 </div>
                                 <div className="grid gap-2">
+                                    <Label htmlFor="fullName">Full Name</Label>
+                                    <Input
+                                        name="fullName"
+                                        type="text"
+                                        required
+                                    />
+                                </div>
+                                <div className="grid gap-2">
                                     <div className="flex items-center">
                                         <Label htmlFor="password">
                                             Password

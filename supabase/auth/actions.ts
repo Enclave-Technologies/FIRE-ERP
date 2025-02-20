@@ -62,6 +62,7 @@ export async function signup(formData: FormData) {
         email: formData.get("email") as string,
         password: formData.get("password") as string,
         confirmPassword: formData.get("confirmPassword") as string,
+        full_name: formData.get("fullName") as string,
     };
 
     // Validate the signup data
@@ -74,7 +75,8 @@ export async function signup(formData: FormData) {
         };
     }
 
-    const { email, password, confirmPassword } = registrationValidation.data;
+    const { email, password, confirmPassword, full_name } =
+        registrationValidation.data;
 
     if (password !== confirmPassword) {
         return {
@@ -85,6 +87,11 @@ export async function signup(formData: FormData) {
     const { error, data: retData } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+            data: {
+                full_name,
+            },
+        },
     });
 
     if (error) {
@@ -98,7 +105,7 @@ export async function signup(formData: FormData) {
         await db.insert(Users).values({
             userId: retData?.user?.id as string,
             email: email,
-            name: "",
+            name: full_name,
             role: response ? "guest" : "admin",
             createdAt: new Date(),
             updatedAt: new Date(),

@@ -6,6 +6,7 @@ export const registrationValidator = z.object({
     confirmPassword: z
         .string()
         .min(6, "Confirm password must be at least 6 characters"),
+    full_name: z.string().min(2, "Name must be atleast 2 characters"),
 });
 
 export const LoginFormSchema = z.object({
