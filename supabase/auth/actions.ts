@@ -142,3 +142,13 @@ export async function GoogleLogin() {
         redirect(data.url); // use the redirect API for your server framework
     }
 }
+
+export async function LoggedInOrRedirectToLogin() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data?.user) {
+        redirect("/login");
+    }
+    return data;
+}

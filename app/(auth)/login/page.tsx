@@ -1,8 +1,17 @@
 import { GalleryVerticalEnd } from "lucide-react";
+import { redirect } from "next/navigation";
 
+import { createClient } from "@/supabase/server";
 import { LoginForm } from "@/components/auth/loginForm";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+    const supabase = await createClient();
+
+    const { data } = await supabase.auth.getUser();
+    if (data?.user) {
+        redirect("/");
+    }
+
     return (
         <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
             <div className="flex w-full max-w-sm flex-col gap-6">

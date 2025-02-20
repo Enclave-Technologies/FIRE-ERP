@@ -2,8 +2,11 @@
 
 -   [ ] Deployment
 -   [x] Theming
--   [ ] Supabase setup
--   [ ] Auth
+-   [x] Supabase setup
+-   [x] Auth
+-   [x] Redirections
 -   [ ] Dashboard
+-   [ ] Inventory
+-   [ ] Requirements
 -   [ ] User management
 -   [ ] Settings
