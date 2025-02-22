@@ -159,3 +159,7 @@ export async function LoggedInOrRedirectToLogin() {
     }
     return data;
 }
+
+export async function UserInfo(userId: string) {
+    return db.select().from(Users).where(eq(Users.userId, userId));
+}
