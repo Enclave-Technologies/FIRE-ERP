@@ -163,3 +163,8 @@ export async function LoggedInOrRedirectToLogin() {
 export async function UserInfo(userId: string) {
     return db.select().from(Users).where(eq(Users.userId, userId));
 }
+
+export async function IsGuest(userId: string) {
+    const user = await db.select().from(Users).where(eq(Users.userId, userId));
+    return user[0].role === "guest";
+}
