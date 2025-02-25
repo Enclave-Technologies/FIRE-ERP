@@ -11,10 +11,16 @@ export default async function Home() {
     }
     return (
         <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-            <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+            <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start max-w-[800px] w-full mx-auto">
                 <LogoutButton />
-                <p>Hello {data.user.user_metadata.full_name}</p>
-                <pre>{JSON.stringify(info, null, 2)}</pre>
+                <p className="text-center sm:text-left">
+                    Welcome, {data.user.user_metadata.full_name}!
+                </p>
+                <p className="text-center sm:text-left">
+                    Your account is currently pending approval. Please reach out
+                    to the site administrator for assistance. Once your account
+                    is approved, remember to refresh this page.
+                </p>
             </main>
         </div>
     );

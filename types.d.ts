@@ -28,3 +28,8 @@ type User = {
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
     data: User; // Ensure to replace "User" with the actual type for the user data
 };
+
+type SidebarItem = {
+    title: string;
+    url: string;
+};

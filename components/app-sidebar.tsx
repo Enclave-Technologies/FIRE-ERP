@@ -15,142 +15,73 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import LogoutButton from "./auth/logoutButton";
 
 // This is sample data.
 const navItems = {
     navMain: [
         {
-            title: "Getting Started",
-            url: "#",
+            title: "Dashboard",
+            url: "/dashboard",
+            items: [],
+        },
+        {
+            title: "Users",
+            url: "/users",
             items: [
                 {
-                    title: "Installation",
-                    url: "#",
+                    title: "Admins / Staff",
+                    url: "/users/admins-staff",
                 },
                 {
-                    title: "Project Structure",
-                    url: "#",
+                    title: "Clients",
+                    url: "/users/clients",
+                },
+                {
+                    title: "Brokers",
+                    url: "/users/brokers",
                 },
             ],
         },
         {
-            title: "Building Your Application",
-            url: "#",
+            title: "Matching",
+            url: "/matching",
             items: [
                 {
-                    title: "Routing",
-                    url: "#",
+                    title: "Requirements",
+                    url: "/matching/requirements",
                 },
                 {
-                    title: "Data Fetching",
-                    url: "#",
-                    isActive: true,
+                    title: "Inventory",
+                    url: "/matching/inventory",
                 },
                 {
-                    title: "Rendering",
-                    url: "#",
-                },
-                {
-                    title: "Caching",
-                    url: "#",
-                },
-                {
-                    title: "Styling",
-                    url: "#",
-                },
-                {
-                    title: "Optimizing",
-                    url: "#",
-                },
-                {
-                    title: "Configuring",
-                    url: "#",
-                },
-                {
-                    title: "Testing",
-                    url: "#",
-                },
-                {
-                    title: "Authentication",
-                    url: "#",
-                },
-                {
-                    title: "Deploying",
-                    url: "#",
-                },
-                {
-                    title: "Upgrading",
-                    url: "#",
-                },
-                {
-                    title: "Examples",
-                    url: "#",
+                    title: "Matching Overview",
+                    url: "/matching/overview",
                 },
             ],
         },
         {
-            title: "API Reference",
-            url: "#",
+            title: "Settings",
+            url: "/settings",
             items: [
                 {
-                    title: "Components",
-                    url: "#",
+                    title: "Profile",
+                    url: "/settings",
                 },
                 {
-                    title: "File Conventions",
-                    url: "#",
-                },
-                {
-                    title: "Functions",
-                    url: "#",
-                },
-                {
-                    title: "next.config.js Options",
-                    url: "#",
-                },
-                {
-                    title: "CLI",
-                    url: "#",
-                },
-                {
-                    title: "Edge Runtime",
-                    url: "#",
+                    title: "System",
+                    url: "/profile/system",
                 },
             ],
         },
         {
-            title: "Architecture",
-            url: "#",
+            title: "Communication",
+            url: "/notification",
             items: [
                 {
-                    title: "Accessibility",
-                    url: "#",
-                },
-                {
-                    title: "Fast Refresh",
-                    url: "#",
-                },
-                {
-                    title: "Next.js Compiler",
-                    url: "#",
-                },
-                {
-                    title: "Supported Browsers",
-                    url: "#",
-                },
-                {
-                    title: "Turbopack",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Community",
-            url: "#",
-            items: [
-                {
-                    title: "Contribution Guide",
-                    url: "#",
+                    title: "Notifications",
+                    url: "/notification",
                 },
             ],
         },
@@ -191,24 +122,27 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
                                 </SidebarMenuButton>
                                 {item.items?.length ? (
                                     <SidebarMenuSub>
-                                        {item.items.map((item) => (
-                                            <SidebarMenuSubItem
-                                                key={item.title}
-                                            >
-                                                <SidebarMenuSubButton
-                                                    asChild
-                                                    isActive={item.isActive}
+                                        {item.items?.map(
+                                            (item: SidebarItem) => (
+                                                <SidebarMenuSubItem
+                                                    key={item.title}
                                                 >
-                                                    <a href={item.url}>
-                                                        {item.title}
-                                                    </a>
-                                                </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                        ))}
+                                                    <SidebarMenuSubButton
+                                                        asChild
+                                                        // isActive={item.isActive}
+                                                    >
+                                                        <a href={item.url}>
+                                                            {item.title}
+                                                        </a>
+                                                    </SidebarMenuSubButton>
+                                                </SidebarMenuSubItem>
+                                            )
+                                        )}
                                     </SidebarMenuSub>
                                 ) : null}
                             </SidebarMenuItem>
                         ))}
+                        <LogoutButton />
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
