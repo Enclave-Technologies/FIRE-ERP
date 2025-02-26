@@ -1,3 +1,4 @@
+"use server";
 import { db } from "@/db";
 import { Users } from "@/db/schema";
 import { asc, desc, eq, like, or } from "drizzle-orm";
