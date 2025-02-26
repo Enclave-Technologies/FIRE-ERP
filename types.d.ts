@@ -33,3 +33,10 @@ type SidebarItem = {
     title: string;
     url: string;
 };
+
+type AccordionItem = {
+    title: string;
+    content: React.ReactNode;
+};
+
+type AccordionProps = { title: string; items: AccordionItem[] };

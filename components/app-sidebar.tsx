@@ -1,3 +1,7 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 import * as React from "react";
 // import { GalleryVerticalEnd } from "lucide-react";
 
@@ -89,6 +93,14 @@ const navItems = {
 };
 
 export function AppSidebar({ data, ...props }: AppSidebarProps) {
+    const [userMetadata, setUserMetadata] = React.useState(data?.user_metadata);
+    const pathname = usePathname();
+
+    React.useEffect(() => {
+        // Example fetching user metadata or setting it up
+        setUserMetadata(data?.user_metadata);
+    }, [data]);
+
     return (
         <Sidebar {...props}>
             <SidebarHeader>
@@ -101,7 +113,7 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
                                 </div> */}
                                 <div className="flex flex-col gap-0.5 leading-none">
                                     <span className="font-semibold">
-                                        {data?.user_metadata.full_name}
+                                        {userMetadata?.full_name}
                                     </span>
                                     {/* <span className="">v1.0.0</span> */}
                                 </div>
@@ -116,7 +128,14 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
                         {navItems.navMain.map((item) => (
                             <SidebarMenuItem key={item.title}>
                                 <SidebarMenuButton asChild>
-                                    <a href={item.url} className="font-medium">
+                                    <a
+                                        href={item.url}
+                                        className={` ${
+                                            pathname === item.url
+                                                ? "font-bold"
+                                                : "font-medium"
+                                        }`}
+                                    >
                                         {item.title}
                                     </a>
                                 </SidebarMenuButton>
@@ -129,7 +148,10 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
                                                 >
                                                     <SidebarMenuSubButton
                                                         asChild
-                                                        // isActive={item.isActive}
+                                                        isActive={
+                                                            pathname ===
+                                                            item.url
+                                                        }
                                                     >
                                                         <a href={item.url}>
                                                             {item.title}
