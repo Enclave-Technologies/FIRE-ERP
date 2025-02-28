@@ -1,7 +1,10 @@
 "use server";
 
 import "server-only";
-import { registrationValidator, LoginFormSchema } from "./schemas";
+import {
+    registrationValidator,
+    LoginFormSchema,
+} from "../supabase/auth/schemas";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
