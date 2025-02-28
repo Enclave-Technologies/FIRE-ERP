@@ -95,10 +95,35 @@ export default function AddInventory() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            // Required fields with default values
+            brokerId: "", // Will be validated as UUID
+            propertyType: "",
+            projectName: "",
+            location: "",
+            areaSQFT: 0,
+            sellingPriceMillionAED: 0,
+            unitStatus: "available" as const,
+            
+            // Optional fields with default values
             maidsRoom: 0,
             studyRoom: 0,
             carPark: 0,
             phppEligible: false,
+            sn: "",
+            description: "",
+            buildingName: "",
+            unitNumber: "",
+            buSQFT: undefined,
+            priceAED: undefined,
+            inrCr: undefined,
+            rentApprox: undefined,
+            roiGross: undefined,
+            markup: undefined,
+            brokerage: undefined,
+            remarks: "",
+            bayut: "",
+            phppDetails: "",
+            propertyFinder: "",
         },
     });
 
@@ -134,7 +159,7 @@ export default function AddInventory() {
                                             <FormLabel>Broker</FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
-                                                defaultValue={field.value}
+                                                value={field.value}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
@@ -251,7 +276,7 @@ export default function AddInventory() {
                                             <FormLabel>Unit Status</FormLabel>
                                             <Select
                                                 onValueChange={field.onChange}
-                                                defaultValue={field.value}
+                                                value={field.value}
                                             >
                                                 <FormControl>
                                                     <SelectTrigger>
