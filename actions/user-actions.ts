@@ -7,40 +7,46 @@ export async function getUsers(filter_params: {
     [key: string]: string | string[] | undefined;
 }) {
     // Log key-value pairs if filter_params exists
-    if (Object.keys(filter_params).length > 0) {
-        console.log("Filter parameters:");
-        for (const [key, value] of Object.entries(filter_params)) {
-            console.log(`${key}: ${JSON.stringify(value)}`);
-        }
-    }
+    // if (Object.keys(filter_params).length > 0) {
+    //     console.log("Filter parameters:");
+    //     for (const [key, value] of Object.entries(filter_params)) {
+    //         console.log(`${key}: ${JSON.stringify(value)}`);
+    //     }
+    // }
 
-    const { 
-        search, 
-        role, 
+    const {
+        search,
+        role,
         sort,
         filterColumn,
         filterValue,
         sortColumn,
-        sortDirection 
+        sortDirection,
     } = filter_params;
 
     // Start with a base query and enable dynamic mode
     let query = db.select().from(Users).$dynamic();
 
     // Handle new filter parameters format
-    if (filterColumn && filterValue && 
-        typeof filterColumn === "string" && 
-        typeof filterValue === "string" && 
-        filterColumn.trim() !== "" && 
-        filterValue.trim() !== "") {
-        
+    if (
+        filterColumn &&
+        filterValue &&
+        typeof filterColumn === "string" &&
+        typeof filterValue === "string" &&
+        filterColumn.trim() !== "" &&
+        filterValue.trim() !== ""
+    ) {
         // Convert column name to lowercase for case-insensitive comparison
         const column = filterColumn.toLowerCase();
-        
+
         switch (column) {
             case "role":
                 // Only add the condition if the role is valid in the database
-                if (["broker", "customer", "admin", "staff", "guest"].includes(filterValue)) {
+                if (
+                    ["broker", "customer", "admin", "staff", "guest"].includes(
+                        filterValue
+                    )
+                ) {
                     // Use type assertion to a valid role type
                     const validRole = filterValue as
                         | "broker"
@@ -106,34 +112,46 @@ export async function getUsers(filter_params: {
     }
 
     // Handle sorting with new parameters
-    if (sortColumn && sortDirection && 
-        typeof sortColumn === "string" && 
-        typeof sortDirection === "string" && 
-        sortColumn.trim() !== "") {
-        
+    if (
+        sortColumn &&
+        sortDirection &&
+        typeof sortColumn === "string" &&
+        typeof sortDirection === "string" &&
+        sortColumn.trim() !== ""
+    ) {
         const column = sortColumn.toLowerCase();
         const direction = sortDirection.toLowerCase();
-        
+
         switch (column) {
             case "name":
-                query = query.orderBy(direction === "desc" ? desc(Users.name) : asc(Users.name));
+                query = query.orderBy(
+                    direction === "desc" ? desc(Users.name) : asc(Users.name)
+                );
                 break;
             case "email":
-                query = query.orderBy(direction === "desc" ? desc(Users.email) : asc(Users.email));
+                query = query.orderBy(
+                    direction === "desc" ? desc(Users.email) : asc(Users.email)
+                );
                 break;
             case "role":
-                query = query.orderBy(direction === "desc" ? desc(Users.role) : asc(Users.role));
+                query = query.orderBy(
+                    direction === "desc" ? desc(Users.role) : asc(Users.role)
+                );
                 break;
             case "createdat":
             case "created_at":
             case "created":
-                query = query.orderBy(direction === "desc" ? desc(Users.createdAt) : asc(Users.createdAt));
+                query = query.orderBy(
+                    direction === "desc"
+                        ? desc(Users.createdAt)
+                        : asc(Users.createdAt)
+                );
                 break;
             default:
                 query = query.orderBy(asc(Users.name)); // Default to name ascending
                 break;
         }
-    } 
+    }
     // Handle legacy sorting
     else if (sort && typeof sort === "string" && sort.trim() !== "") {
         switch (sort) {
@@ -157,6 +175,8 @@ export async function getUsers(filter_params: {
         // Default sort if none specified
         query = query.orderBy(asc(Users.name));
     }
+
+    // console.log(query.toSQL());
 
     return await query;
 }

@@ -13,7 +13,7 @@ const AllUsers = async ({
     const user_list = await getUsers(all_params);
 
     return (
-        <div className="container mx-auto py-10">
+        <div className="container mx-auto py-4 px-4">
             <DataTable columns={columns} data={user_list} />
         </div>
     );

@@ -9,12 +9,7 @@ import {
 } from "motion/react";
 import { cn } from "@/lib/utils";
 import React, { createContext, useContext, useState, ReactNode } from "react";
-
-export type AccordionContextType = {
-    expandedValue: React.Key | null;
-    toggleItem: (value: React.Key) => void;
-    variants?: { expanded: Variant; collapsed: Variant };
-};
+import type { AccordionContextType } from "@/types";
 
 const AccordionContext = createContext<AccordionContextType | undefined>(
     undefined

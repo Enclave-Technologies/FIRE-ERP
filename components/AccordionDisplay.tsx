@@ -4,6 +4,7 @@ import {
     AccordionTrigger,
     AccordionContent,
 } from "@/components/ui/accordion";
+import type { AccordionProps } from "@/types";
 import { ChevronUp } from "lucide-react";
 
 export function AccordionIcons(props: AccordionProps) {

@@ -33,7 +33,7 @@ export function DataTable<TData, TValue>({
     });
 
     return (
-        <div className="rounded-md border">
+        <div className="rounded-md">
             <TableFunctions columns={columns} action="/users" />
             <Table>
                 <TableHeader>

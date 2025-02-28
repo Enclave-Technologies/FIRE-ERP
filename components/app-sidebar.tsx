@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import LogoutButton from "./auth/logoutButton";
+import type { AppSidebarProps, SidebarItem } from "@/types";
 
 // This is sample data.
 const navItems = {

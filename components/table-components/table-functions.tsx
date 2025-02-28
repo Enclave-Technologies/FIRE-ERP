@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import {
     Filter,
     Plus,
@@ -22,14 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Form from "next/form";
-
-type SortDirection = "asc" | "desc";
-
-type TableFunctionsProps<TData, TValue> = {
-    columns: ColumnDef<TData, TValue>[];
-    action: string; // Form action URL
-    onNewClick?: () => void; // Callback for New button
-};
+import type { SortDirection, TableFunctionsProps } from "@/types";
 
 const TableFunctions = <TData, TValue>({
     columns = [],
@@ -96,10 +88,12 @@ const TableFunctions = <TData, TValue>({
         setSelectedSortColumn(null);
         setSortDirection("asc");
         setSearchValue("");
-        
+
         // Submit the form after clearing
         setTimeout(() => {
-            const form = document.querySelector('form[action="' + action + '"]');
+            const form = document.querySelector(
+                'form[action="' + action + '"]'
+            );
             if (form) {
                 (form as HTMLFormElement).requestSubmit();
             }
