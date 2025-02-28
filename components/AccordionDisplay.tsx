@@ -16,7 +16,7 @@ export function AccordionIcons(props: AccordionProps) {
             {props.items.map((item) => (
                 <AccordionItem
                     key={item.title}
-                    value="getting-started"
+                    value={item.title} // or item.id if available
                     className="py-2"
                 >
                     <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50">
@@ -25,17 +25,7 @@ export function AccordionIcons(props: AccordionProps) {
                             <ChevronUp className="h-4 w-4 text-zinc-950 transition-transform duration-200 group-data-expanded:-rotate-180 dark:text-zinc-50" />
                         </div>
                     </AccordionTrigger>
-                    <AccordionContent>
-                        {/* <p className="text-zinc-500 dark:text-zinc-400">
-                        Discover the fundamental concepts of Motion-Primitives.
-                        This section guides you through the installation process
-                        and provides an overview of how to integrate these
-                        components into your projects. Learn about the core
-                        functionalities and how to set up your first animation
-                        effectively.
-                    </p> */}
-                        {item.content}
-                    </AccordionContent>
+                    <AccordionContent>{item.content}</AccordionContent>
                 </AccordionItem>
             ))}
         </Accordion>
