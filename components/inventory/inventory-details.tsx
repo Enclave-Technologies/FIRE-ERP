@@ -3,6 +3,7 @@
 import { SelectInventory, inventoryStatus } from "@/db/schema";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { EditInventory } from "@/components/inventory/edit-inventory";
 import { Spotlight } from "@/components/ui/spotlight";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,6 +61,7 @@ export default function InventoryDetails({
         (typeof inventoryStatus.enumValues)[number]
     >(inventory.unitStatus || "available");
     const [isUpdating, setIsUpdating] = useState(false);
+    const [showEditSheet, setShowEditSheet] = useState(false);
 
     const handleStatusChange = async (
         newStatus: (typeof inventoryStatus.enumValues)[number]
@@ -128,29 +130,42 @@ export default function InventoryDetails({
                                 {inventory.projectName || "Unnamed Project"}
                             </h1>
                             <div className="flex items-center gap-2 mb-2">
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     className="h-8 w-8"
                                     onClick={() => {
-                                        navigator.clipboard.writeText(inventory.inventoryId);
+                                        navigator.clipboard.writeText(
+                                            inventory.inventoryId
+                                        );
                                         toast({
                                             title: "ID Copied",
-                                            description: "Inventory ID copied to clipboard",
+                                            description:
+                                                "Inventory ID copied to clipboard",
                                         });
                                     }}
                                     title="Copy ID"
                                 >
                                     <Copy className="h-4 w-4" />
                                 </Button>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     className="h-8 w-8"
                                     title="Edit Inventory"
+                                    onClick={() => setShowEditSheet(true)}
                                 >
                                     <Edit className="h-4 w-4" />
                                 </Button>
+
+                                {/* Edit Inventory Sheet */}
+                                {showEditSheet && (
+                                    <EditInventory
+                                        inventory={inventory}
+                                        open={showEditSheet}
+                                        onOpenChange={setShowEditSheet}
+                                    />
+                                )}
                             </div>
                         </div>
                         <p className="text-lg text-zinc-600 dark:text-zinc-400">

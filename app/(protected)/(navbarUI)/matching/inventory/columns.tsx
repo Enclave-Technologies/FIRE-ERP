@@ -14,6 +14,7 @@ import {
 import { MoreHorizontal, Eye, Copy, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { EditInventory } from "@/components/inventory/edit-inventory";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -113,37 +114,63 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
 // Create a separate component for the actions cell to use hooks
 const ActionsCell = ({ inventory }: { inventory: SelectInventory }) => {
     const router = useRouter();
+    const { toast } = useToast();
+    const [showEditSheet, setShowEditSheet] = useState(false);
 
     const handleViewDetails = () => {
         router.push(`/matching/inventory/${inventory.inventoryId}`);
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem
-                    onClick={() =>
-                        navigator.clipboard.writeText(inventory.inventoryId)
-                    }
-                >
-                    <Copy className="mr-2 h-4 w-4" /> Copy ID
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleViewDetails}>
-                    <Eye className="mr-2 h-4 w-4" /> View Details
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                    <Edit className="mr-2 h-4 w-4" /> Edit
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <div>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem
+                        onClick={() => {
+                            navigator.clipboard.writeText(
+                                inventory.inventoryId
+                            );
+                            toast({
+                                title: "ID Copied",
+                                description: `ID for Property "${
+                                    inventory.projectName || "Unnamed Project"
+                                }" copied to clipboard`,
+                            });
+                        }}
+                    >
+                        <Copy className="mr-2 h-4 w-4" /> Copy ID
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleViewDetails}>
+                        <Eye className="mr-2 h-4 w-4" /> View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowEditSheet(true);
+                        }}
+                    >
+                        <Edit className="mr-2 h-4 w-4" /> Edit
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Edit Inventory Sheet - Moved outside of dropdown to prevent it from closing */}
+            {showEditSheet && (
+                <EditInventory
+                    inventory={inventory}
+                    open={showEditSheet}
+                    onOpenChange={setShowEditSheet}
+                />
+            )}
+        </div>
     );
 };
 

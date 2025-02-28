@@ -49,7 +49,10 @@ export async function getInventories(params?: {
                                 )
                             ) {
                                 query = query.where(
-                                    eq(Inventories.unitStatus, value as (typeof inventoryStatus.enumValues)[number])
+                                    eq(
+                                        Inventories.unitStatus,
+                                        value as (typeof inventoryStatus.enumValues)[number]
+                                    )
                                 );
                             }
                             break;
@@ -192,10 +195,33 @@ export async function getInventoryById(
             .from(Inventories)
             .where(eq(Inventories.inventoryId, inventoryId))
             .limit(1);
-        
+
         return inventory;
     } catch (error) {
         console.error("Error fetching inventory by ID:", error);
         throw new Error("Failed to fetch inventory");
+    }
+}
+
+export async function updateInventoryDetails(
+    inventoryId: string,
+    data: Partial<InsertInventory>
+): Promise<{ success: boolean; message?: string }> {
+    try {
+        await db
+            .update(Inventories)
+            .set(data)
+            .where(eq(Inventories.inventoryId, inventoryId));
+
+        revalidatePath("/matching/inventory");
+        revalidatePath(`/matching/inventory/${inventoryId}`);
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating inventory details:", error);
+        return {
+            success: false,
+            message: "Failed to update inventory details",
+        };
     }
 }

@@ -102,7 +102,7 @@ export function DataTable<TData, TValue>({
 
             {/* Add Inventory Sheet */}
             <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
-                <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+                <SheetContent className="w-full md:w-1/2 overflow-y-auto">
                     <SheetHeader>
                         <SheetTitle>Add New Inventory</SheetTitle>
                         <AddInventory />
