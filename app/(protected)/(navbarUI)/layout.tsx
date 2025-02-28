@@ -2,7 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import MainHeader from "@/components/main-header";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { LoggedInOrRedirectToLogin } from "@/supabase/auth/actions";
+import { LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
 
 export default async function AppLayout({
     children,

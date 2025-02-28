@@ -1,12 +1,12 @@
 import LogoutButton from "@/components/auth/logoutButton";
-import { LoggedInOrRedirectToLogin, UserInfo } from "@/supabase/auth/actions";
+import { LoggedInOrRedirectToLogin, UserInfo } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
     const data = await LoggedInOrRedirectToLogin();
     const info = await UserInfo(data?.user.id);
 
-    if (info[0].role === "admin") {
+    if (info[0].role === "admin" || info[0].role === "staff") {
         redirect("/dashboard");
     }
     return (

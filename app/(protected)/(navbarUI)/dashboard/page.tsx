@@ -1,4 +1,4 @@
-import { IsGuest, LoggedInOrRedirectToLogin } from "@/supabase/auth/actions";
+import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 
 export default async function Page() {

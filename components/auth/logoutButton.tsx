@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { signOut } from "@/supabase/auth/actions";
+import { signOut } from "@/actions/auth-actions";
 import { LoaderCircle } from "lucide-react";
 
 const LogoutButton = () => {
