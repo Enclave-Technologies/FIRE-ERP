@@ -1,3 +1,5 @@
+import { ColumnDef } from "@tanstack/react-table";
+
 type User = {
     id: string;
     aud: string;
@@ -40,3 +42,17 @@ type AccordionItem = {
 };
 
 type AccordionProps = { title: string; items: AccordionItem[] };
+
+type AccordionContextType = {
+    expandedValue: React.Key | null;
+    toggleItem: (value: React.Key) => void;
+    variants?: { expanded: Variant; collapsed: Variant };
+};
+
+type SortDirection = "asc" | "desc";
+
+type TableFunctionsProps<TData, TValue> = {
+    columns: ColumnDef<TData, TValue>[];
+    action: string; // Form action URL
+    onNewClick?: () => void; // Callback for New button
+};
