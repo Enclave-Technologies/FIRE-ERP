@@ -5,7 +5,7 @@ import InventoryDetails from "@/components/inventory/inventory-details";
 export default async function InventoryPage({
     params,
 }: {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
     const inventory = await getInventoryById((await params).id);
 

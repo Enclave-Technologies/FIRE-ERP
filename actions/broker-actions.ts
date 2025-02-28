@@ -5,13 +5,15 @@ import { db } from "@/db";
 import { eq } from "drizzle-orm";
 
 export async function getBrokers(): Promise<SelectUser[]> {
-    // Implement your logic to fetch brokers from the database
-    // This is just a placeholder implementation
+    try {
+        const brokers = await db
+            .select()
+            .from(Users)
+            .where(eq(Users.role, "broker"));
 
-    const brokers = await db
-        .select()
-        .from(Users)
-        .where(eq(Users.role, "broker"));
-
-    return brokers;
+        return brokers;
+    } catch (error) {
+        console.error("Failed to fetch brokers:", error);
+        throw new Error("Failed to fetch brokers from the database");
+    }
 }

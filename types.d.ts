@@ -62,3 +62,45 @@ type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
 };
+
+type ErrorState = {
+    hasError: boolean;
+    message: string;
+    title?: string;
+    variant?: "error" | "warning" | "info";
+};
+
+type UseErrorReturn = {
+    error: ErrorState;
+    setError: (error: Partial<ErrorState>) => void;
+    clearError: () => void;
+    ErrorComponent: React.FC<{
+        actionText?: string;
+        actionHref?: string;
+        className?: string;
+    }>;
+};
+
+type ErrorBoundaryProps = {
+    children: ReactNode;
+    fallback?: ReactNode;
+    onError?: (error: Error, errorInfo: ErrorInfo) => void;
+};
+
+type ErrorBoundaryState = {
+    hasError: boolean;
+    error: Error | null;
+};
+
+type AuthErrorProps = {
+    errorMessage: string;
+};
+
+type ErrorDisplayProps = {
+    title?: string;
+    message: string;
+    actionText?: string;
+    actionHref?: string;
+    variant?: "error" | "warning" | "info";
+    className?: string;
+};
