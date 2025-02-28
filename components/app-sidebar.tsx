@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { getUserRole } from "@/actions/user-actions";
 
 import * as React from "react";
 // import { GalleryVerticalEnd } from "lucide-react";
@@ -31,22 +32,9 @@ const navItems = {
             items: [],
         },
         {
-            title: "Users",
+            title: "User Management",
             url: "/users",
-            items: [
-                {
-                    title: "Admins / Staff",
-                    url: "/users/admins-staff",
-                },
-                {
-                    title: "Clients",
-                    url: "/users/clients",
-                },
-                {
-                    title: "Brokers",
-                    url: "/users/brokers",
-                },
-            ],
+            items: [],
         },
         {
             title: "Matching",
@@ -59,10 +47,6 @@ const navItems = {
                 {
                     title: "Inventory",
                     url: "/matching/inventory",
-                },
-                {
-                    title: "Matching Overview",
-                    url: "/matching/overview",
                 },
             ],
         },
@@ -95,12 +79,22 @@ const navItems = {
 
 export function AppSidebar({ data, ...props }: AppSidebarProps) {
     const [userMetadata, setUserMetadata] = React.useState(data?.user_metadata);
+    const [userRole, setUserRole] = React.useState<string | null>(null);
     const pathname = usePathname();
 
     React.useEffect(() => {
-        // Example fetching user metadata or setting it up
         setUserMetadata(data?.user_metadata);
+        if (data?.id) {
+            getUserRole(data.id).then((role) => setUserRole(role));
+        }
     }, [data]);
+
+    const filteredNavItems = navItems.navMain.filter((item: SidebarItem) => {
+        if (item.title === "User Management") {
+            return userRole === "admin";
+        }
+        return true;
+    });
 
     return (
         <Sidebar {...props}>
@@ -112,7 +106,7 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
                                 {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                                     <GalleryVerticalEnd className="size-4" />
                                 </div> */}
-                                <div className="flex flex-col gap-0.5 leading-none">
+                                <div className="flex flex-col gap=0.5 leading-none">
                                     <span className="font-semibold">
                                         {userMetadata?.full_name}
                                     </span>
@@ -126,10 +120,10 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarMenu>
-                        {navItems.navMain.map((item) => (
+                        {filteredNavItems.map((item: SidebarItem) => (
                             <SidebarMenuItem key={item.title}>
                                 <SidebarMenuButton asChild>
-                                    <a
+                                    <Link
                                         href={item.url}
                                         className={` ${
                                             pathname === item.url
@@ -138,7 +132,7 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
                                         }`}
                                     >
                                         {item.title}
-                                    </a>
+                                    </Link>
                                 </SidebarMenuButton>
                                 {item.items?.length ? (
                                     <SidebarMenuSub>
@@ -154,9 +148,9 @@ export function AppSidebar({ data, ...props }: AppSidebarProps) {
                                                             item.url
                                                         }
                                                     >
-                                                        <a href={item.url}>
+                                                        <Link href={item.url}>
                                                             {item.title}
-                                                        </a>
+                                                        </Link>
                                                     </SidebarMenuSubButton>
                                                 </SidebarMenuSubItem>
                                             )

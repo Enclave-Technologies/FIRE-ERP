@@ -6,7 +6,7 @@ export default async function Home() {
     const data = await LoggedInOrRedirectToLogin();
     const info = await UserInfo(data?.user.id);
 
-    if (info[0].role === "admin") {
+    if (info[0].role === "admin" || info[0].role === "staff") {
         redirect("/dashboard");
     }
     return (

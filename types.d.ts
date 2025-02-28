@@ -34,6 +34,7 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 type SidebarItem = {
     title: string;
     url: string;
+    items?: SidebarItem[];
 };
 
 type AccordionItem = {

@@ -3,6 +3,21 @@ import { db } from "@/db";
 import { Users, rolesEnum } from "@/db/schema";
 import { asc, desc, eq, like, or } from "drizzle-orm";
 
+export async function getUserRole(userId: string) {
+    try {
+        const user = await db
+            .select({ role: Users.role })
+            .from(Users)
+            .where(eq(Users.userId, userId))
+            .limit(1);
+            
+        return user[0]?.role || null;
+    } catch (error) {
+        console.error("Error fetching user role:", error);
+        return null;
+    }
+}
+
 export async function updateUserRole(
     userId: string,
     newRole: (typeof rolesEnum.enumValues)[number]
