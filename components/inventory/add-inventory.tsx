@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitErrorHandler } from "react-hook-form";
 import * as z from "zod";
 import { format } from "date-fns";
 
@@ -41,16 +41,25 @@ import { CalendarIcon, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SelectUser } from "@/db/schema";
 import { getBrokers } from "@/actions/broker-actions";
+import { createInventory } from "@/actions/inventory-actions";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
     // Required fields
-    brokerId: z.string().uuid(),
-    propertyType: z.string().min(1),
-    projectName: z.string().min(1),
-    location: z.string().min(1),
-    areaSQFT: z.number().positive(),
-    sellingPriceMillionAED: z.number().positive(),
-    unitStatus: z.enum(["available", "sold", "reserved"]),
+    brokerId: z.string().uuid({ message: "Please select a broker" }),
+    propertyType: z.string().min(1, { message: "Property type is required" }),
+    projectName: z.string().min(1, { message: "Project name is required" }),
+    location: z.string().min(1, { message: "Location is required" }),
+    areaSQFT: z
+        .number()
+        .positive({ message: "Area must be a positive number" }),
+    sellingPriceMillionAED: z
+        .number()
+        .positive({ message: "Selling price must be a positive number" }),
+    unitStatus: z.enum(["available", "sold", "reserved", "rented"], {
+        errorMap: () => ({ message: "Please select a unit status" }),
+    }),
 
     // Optional fields
     sn: z.string().optional(),
@@ -103,7 +112,7 @@ export default function AddInventory() {
             areaSQFT: 0,
             sellingPriceMillionAED: 0,
             unitStatus: "available" as const,
-            
+
             // Optional fields with default values
             maidsRoom: 0,
             studyRoom: 0,
@@ -127,30 +136,215 @@ export default function AddInventory() {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
-        // Here you would typically send the data to your backend
+    const { toast } = useToast();
+    const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Function to handle validation errors
+    const onError: SubmitErrorHandler<z.infer<typeof formSchema>> = () => {
+        // Show a general validation error message
+        toast({
+            title: "Validation Error",
+            description: "Please fill in all required fields correctly",
+            variant: "destructive",
+        });
+
+        // Open the Essential Information accordion by default
+        // This helps users see the validation errors
+        document
+            .querySelector('[data-value="essential-info"]')
+            ?.setAttribute("data-state", "open");
+
+        setIsSubmitting(false);
+    };
+
+    // Handle form submission
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsSubmitting(true);
+
+        try {
+            // Create a new object with the correct types for the API
+            const formattedValues = {
+                brokerId: values.brokerId,
+                propertyType: values.propertyType,
+                projectName: values.projectName,
+                location: values.location,
+                areaSQFT: values.areaSQFT.toString(),
+                sellingPriceMillionAED:
+                    values.sellingPriceMillionAED.toString(),
+                unitStatus: values.unitStatus,
+
+                // Optional fields
+                sn: values.sn || null,
+                description: values.description || null,
+                buildingName: values.buildingName || null,
+                unitNumber: values.unitNumber || null,
+                maidsRoom:
+                    values.maidsRoom !== undefined
+                        ? Number(values.maidsRoom)
+                        : null,
+                studyRoom:
+                    values.studyRoom !== undefined
+                        ? Number(values.studyRoom)
+                        : null,
+                carPark:
+                    values.carPark !== undefined
+                        ? Number(values.carPark)
+                        : null,
+                buSQFT:
+                    values.buSQFT !== undefined
+                        ? values.buSQFT.toString()
+                        : null,
+                completionDate: values.completionDate || null,
+                priceAED:
+                    values.priceAED !== undefined
+                        ? values.priceAED.toString()
+                        : null,
+                inrCr:
+                    values.inrCr !== undefined ? values.inrCr.toString() : null,
+                rentApprox:
+                    values.rentApprox !== undefined
+                        ? values.rentApprox.toString()
+                        : null,
+                roiGross:
+                    values.roiGross !== undefined
+                        ? values.roiGross.toString()
+                        : null,
+                markup:
+                    values.markup !== undefined
+                        ? values.markup.toString()
+                        : null,
+                brokerage:
+                    values.brokerage !== undefined
+                        ? values.brokerage.toString()
+                        : null,
+                remarks: values.remarks || null,
+                bayut: values.bayut || null,
+                phppEligible: values.phppEligible || false,
+                phppDetails: values.phppDetails || null,
+                propertyFinder: values.propertyFinder || null,
+            };
+
+            await createInventory(formattedValues);
+
+            toast({
+                title: "Success",
+                description: "Inventory item has been successfully created",
+                variant: "default",
+            });
+
+            // Reset form and close sheet
+            form.reset();
+            router.refresh(); // Refresh the page to show the new inventory
+        } catch (error) {
+            console.error("Error creating inventory:", error);
+
+            toast({
+                title: "Error",
+                description: "Failed to create inventory. Please try again.",
+                variant: "destructive",
+            });
+
+            // Show validation errors
+            const errorFields = Object.keys(form.formState.errors);
+            if (errorFields.length > 0) {
+                // Map fields to their section names
+                const sectionMap = {
+                    "essential-info": [
+                        "brokerId",
+                        "propertyType",
+                        "projectName",
+                        "location",
+                        "areaSQFT",
+                        "sellingPriceMillionAED",
+                        "unitStatus",
+                    ],
+                    "property-details": [
+                        "sn",
+                        "description",
+                        "buildingName",
+                        "unitNumber",
+                        "maidsRoom",
+                        "studyRoom",
+                        "carPark",
+                        "buSQFT",
+                    ],
+                    "financial-info": [
+                        "priceAED",
+                        "inrCr",
+                        "rentApprox",
+                        "roiGross",
+                        "markup",
+                        "brokerage",
+                    ],
+                    "additional-info": [
+                        "completionDate",
+                        "remarks",
+                        "bayut",
+                        "phppEligible",
+                        "phppDetails",
+                        "propertyFinder",
+                    ],
+                };
+
+                // Find sections with errors
+                const sectionsWithErrors = Object.entries(sectionMap)
+                    .filter(([, fields]) =>
+                        errorFields.some((field) => fields.includes(field))
+                    )
+                    .map(([section]) => {
+                        // Convert section ID to readable name
+                        switch (section) {
+                            case "essential-info":
+                                return "Essential Information";
+                            case "property-details":
+                                return "Property Details";
+                            case "financial-info":
+                                return "Financial Information";
+                            case "additional-info":
+                                return "Additional Information";
+                            default:
+                                return section;
+                        }
+                    });
+
+                if (sectionsWithErrors.length > 0) {
+                    // Create a message listing all sections with errors
+                    const errorMessage = `Please check the following sections: ${sectionsWithErrors.join(
+                        ", "
+                    )}`;
+
+                    toast({
+                        title: "Validation Error",
+                        description: errorMessage,
+                        variant: "destructive",
+                    });
+                }
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
         <Form {...form}>
             <form
-                onSubmit={form.handleSubmit(onSubmit)}
+                onSubmit={form.handleSubmit(onSubmit, onError)}
                 className="space-y-8 w-full"
             >
                 <Accordion
-                    className="flex w-full flex-col divide-y divide-zinc-200 dark:divide-zinc-700"
+                    className="flex w-full flex-col divide-y divide-zinc-200 dark:divide-zinc-700 gap-4"
                     transition={{ duration: 0.2, ease: "easeInOut" }}
                 >
                     <AccordionItem value="essential-info">
-                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50">
+                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50 px-3 py-2">
                             <div className="flex items-center justify-between">
                                 <div>Essential Information</div>
                                 <ChevronUp className="h-4 w-4 text-zinc-950 transition-transform duration-200 group-data-expanded:-rotate-180 dark:text-zinc-50" />
                             </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                            <div className="space-y-4">
+                            <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
                                     name="brokerId"
@@ -293,6 +487,9 @@ export default function AddInventory() {
                                                     <SelectItem value="reserved">
                                                         Reserved
                                                     </SelectItem>
+                                                    <SelectItem value="rented">
+                                                        Rented
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -304,14 +501,14 @@ export default function AddInventory() {
                     </AccordionItem>
 
                     <AccordionItem value="property-details">
-                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50">
+                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50 px-3 py-2">
                             <div className="flex items-center justify-between">
                                 <div>Property Details</div>
                                 <ChevronUp className="h-4 w-4 text-zinc-950 transition-transform duration-200 group-data-expanded:-rotate-180 dark:text-zinc-50" />
                             </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                            <div className="space-y-4">
+                            <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
                                     name="sn"
@@ -463,14 +660,14 @@ export default function AddInventory() {
                     </AccordionItem>
 
                     <AccordionItem value="financial-info">
-                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50">
+                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50 px-3 py-2">
                             <div className="flex items-center justify-between">
                                 <div>Financial Information</div>
                                 <ChevronUp className="h-4 w-4 text-zinc-950 transition-transform duration-200 group-data-expanded:-rotate-180 dark:text-zinc-50" />
                             </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                            <div className="space-y-4">
+                            <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
                                     name="priceAED"
@@ -616,14 +813,14 @@ export default function AddInventory() {
                     </AccordionItem>
 
                     <AccordionItem value="additional-info">
-                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50">
+                        <AccordionTrigger className="w-full text-left text-zinc-950 dark:text-zinc-50 px-3 py-2">
                             <div className="flex items-center justify-between">
                                 <div>Additional Information</div>
                                 <ChevronUp className="h-4 w-4 text-zinc-950 transition-transform duration-200 group-data-expanded:-rotate-180 dark:text-zinc-50" />
                             </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                            <div className="space-y-4">
+                            <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
                                     name="completionDate"
@@ -766,8 +963,12 @@ export default function AddInventory() {
                     </AccordionItem>
                 </Accordion>
 
-                <Button type="submit" className="w-full">
-                    Submit
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
             </form>
         </Form>
