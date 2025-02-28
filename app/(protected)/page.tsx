@@ -1,5 +1,5 @@
 import LogoutButton from "@/components/auth/logoutButton";
-import { LoggedInOrRedirectToLogin, UserInfo } from "@/supabase/auth/actions";
+import { LoggedInOrRedirectToLogin, UserInfo } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 
 export default async function Home() {

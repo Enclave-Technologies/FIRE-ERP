@@ -56,3 +56,8 @@ type TableFunctionsProps<TData, TValue> = {
     action: string; // Form action URL
     onNewClick?: () => void; // Callback for New button
 };
+
+type DataTableProps<TData, TValue> = {
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+};

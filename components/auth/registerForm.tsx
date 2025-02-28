@@ -1,5 +1,5 @@
 "use client";
-import { signup } from "@/supabase/auth/actions";
+import { signup } from "@/actions/auth-actions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {

@@ -1,7 +1,27 @@
 "use server";
 import { db } from "@/db";
-import { Users } from "@/db/schema";
+import { Users, rolesEnum } from "@/db/schema";
 import { asc, desc, eq, like, or } from "drizzle-orm";
+
+export async function updateUserRole(
+    userId: string,
+    newRole: (typeof rolesEnum.enumValues)[number]
+) {
+    try {
+        await db
+            .update(Users)
+            .set({
+                role: newRole,
+                updatedAt: new Date(),
+            })
+            .where(eq(Users.userId, userId));
+
+        return { success: true, message: `User role updated to ${newRole}` };
+    } catch (error) {
+        console.error("Error updating user role:", error);
+        return { success: false, message: "Failed to update user role" };
+    }
+}
 
 export async function getUsers(filter_params: {
     [key: string]: string | string[] | undefined;
