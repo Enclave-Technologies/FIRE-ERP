@@ -6,7 +6,7 @@
 -   [x] Auth
 -   [x] Redirections
 -   [ ] Dashboard
--   [ ] Inventory
+-   [x] Inventory
 -   [ ] Requirements
--   [ ] User management
+-   [x] User management
 -   [ ] Settings
