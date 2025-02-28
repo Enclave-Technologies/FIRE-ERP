@@ -182,3 +182,20 @@ export async function updateInventoryStatus(
         return { success: false, message: "Failed to update status" };
     }
 }
+
+export async function getInventoryById(
+    inventoryId: string
+): Promise<SelectInventory | undefined> {
+    try {
+        const [inventory] = await db
+            .select()
+            .from(Inventories)
+            .where(eq(Inventories.inventoryId, inventoryId))
+            .limit(1);
+        
+        return inventory;
+    } catch (error) {
+        console.error("Error fetching inventory by ID:", error);
+        throw new Error("Failed to fetch inventory");
+    }
+}
