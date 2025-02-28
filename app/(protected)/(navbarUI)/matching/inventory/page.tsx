@@ -1,46 +1,34 @@
-import AddInventory from "@/components/inventory/add-inventory";
-import InventoryList from "@/components/inventory/inventory-list";
+import React from "react";
 import { getInventories } from "@/actions/inventory-actions";
-import { Button } from "@/components/ui/button";
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
-import { Plus } from "lucide-react";
+import { DataTable } from "./data-table";
+import { columns } from "./columns";
+import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
+import { redirect } from "next/navigation";
 
-export default async function Inventory() {
-    const inventories = await getInventories();
+const Inventory = async ({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) => {
+    const data = await LoggedInOrRedirectToLogin();
+    if (await IsGuest(data.user.id)) {
+        redirect("/");
+    }
+    // Pass searchParams to getInventories for filtering and sorting
+    const inventories = await getInventories(await searchParams);
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold tracking-tight">
-                    Inventory Management
-                </h1>
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Inventory
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-                        <SheetHeader>
-                            <SheetTitle>Add New Inventory</SheetTitle>
-                            <AddInventory />
-                        </SheetHeader>
-                    </SheetContent>
-                </Sheet>
-            </div>
-
+        <div className="container mx-auto py-4 px-2 sm:px-4">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-4 sm:mb-6">
+                Inventory Management
+            </h1>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div className="p-6">
-                    <InventoryList inventories={inventories} />
+                <div className="p-2 sm:p-6">
+                    <DataTable columns={columns} data={inventories} />
                 </div>
             </div>
         </div>
     );
-}
+};
+
+export default Inventory;
