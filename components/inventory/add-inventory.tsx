@@ -865,11 +865,10 @@ export default function AddInventory() {
                                                             field.onChange
                                                         }
                                                         disabled={(date) =>
-                                                            date > new Date() ||
                                                             date <
-                                                                new Date(
-                                                                    "1900-01-01"
-                                                                )
+                                                            new Date(
+                                                                "1900-01-01"
+                                                            )
                                                         }
                                                         initialFocus
                                                     />
