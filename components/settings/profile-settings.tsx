@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { updateUserProfile, updateUserPassword } from "@/actions/user-actions";
+import {
+    updateUserProfile,
+    updateUserPassword,
+    updateNotificationPreferences,
+} from "@/actions/user-actions";
 import {
     Card,
     CardContent,
@@ -27,7 +31,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SelectUser } from "@/db/schema";
+import type { ProfileSettingsProps } from "@/types";
 
 // Define form schemas
 const profileFormSchema = z.object({
@@ -65,12 +69,11 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 type NotificationFormValues = z.infer<typeof notificationFormSchema>;
 
-interface ProfileSettingsProps {
-    userId: string;
-    userInfo: SelectUser;
-}
-
-export function ProfileSettings({ userId, userInfo }: ProfileSettingsProps) {
+export function ProfileSettings({
+    userId,
+    userInfo,
+    userNotifPref,
+}: ProfileSettingsProps) {
     const { toast } = useToast();
     const [isUpdating, setIsUpdating] = useState(false);
 
@@ -103,6 +106,16 @@ export function ProfileSettings({ userId, userInfo }: ProfileSettingsProps) {
             pendingRequirementNotif: true,
         },
     });
+
+    // Reset notification preferences when userNotifPref changes
+    useEffect(() => {
+        notificationForm.reset({
+            newInventoryNotif: userNotifPref.newInventoryNotif ?? false,
+            newRequirementNotif: userNotifPref.newRequirementNotif ?? false,
+            pendingRequirementNotif:
+                userNotifPref.pendingRequirementNotif ?? false,
+        });
+    }, [userNotifPref]);
 
     async function onProfileSubmit(data: ProfileFormValues) {
         setIsUpdating(true);
@@ -177,14 +190,29 @@ export function ProfileSettings({ userId, userInfo }: ProfileSettingsProps) {
         }
     }
 
-    async function onNotificationSubmit() {
+    async function onNotificationSubmit(data: NotificationFormValues) {
         setIsUpdating(true);
         try {
-            // TODO: Implement notification preferences update
-            toast({
-                title: "Success",
-                description: "Your notification preferences have been updated.",
+            const result = await updateNotificationPreferences(userId, {
+                newInventoryNotif: data.newInventoryNotif,
+                newRequirementNotif: data.newRequirementNotif,
+                pendingRequirementNotif: data.pendingRequirementNotif,
             });
+
+            if (result.success) {
+                toast({
+                    title: "Success",
+                    description:
+                        "Your notification preferences have been updated.",
+                });
+            } else {
+                toast({
+                    title: "Error",
+                    description:
+                        result.message || "Failed to update preferences",
+                    variant: "destructive",
+                });
+            }
         } catch {
             toast({
                 title: "Error",
@@ -270,7 +298,8 @@ export function ProfileSettings({ userId, userInfo }: ProfileSettingsProps) {
                                                 />
                                             </FormControl>
                                             <FormDescription>
-                                                Required to update your profile information.
+                                                Required to update your profile
+                                                information.
                                             </FormDescription>
                                             <FormMessage />
                                         </FormItem>

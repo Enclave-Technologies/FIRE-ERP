@@ -1,7 +1,7 @@
 "use server";
 import { supabase } from "@/app/supabaseClient";
 import { db } from "@/db";
-import { Users, rolesEnum } from "@/db/schema";
+import { NotificationPreferences, Users, rolesEnum } from "@/db/schema";
 import { asc, desc, eq, like, or } from "drizzle-orm";
 
 export async function getUserRole(userId: string) {
@@ -224,18 +224,37 @@ export async function updateUserProfile(
     currentPassword: string
 ) {
     try {
-        // First verify the current password
-        const { data: authData, error: authError } =
-            await supabase.auth.signInWithPassword({
-                email: email, // Using the current email from the form
-                password: currentPassword,
-            });
+        // Get user's auth provider
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser();
 
-        if (authError || !authData.user) {
-            return {
-                success: false,
-                message: "Current password is incorrect",
-            };
+        if (userError) throw userError;
+
+        // Check if user is using Google OAuth
+        if (user?.app_metadata?.provider === "google") {
+            // For Google OAuth users, only allow name changes
+            if (email !== user.email) {
+                return {
+                    success: false,
+                    message: "Cannot change email for Google OAuth accounts",
+                };
+            }
+        } else {
+            // For email/password users, verify current password
+            const { data: authData, error: authError } =
+                await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: currentPassword,
+                });
+
+            if (authError || !authData.user) {
+                return {
+                    success: false,
+                    message: "Current password is incorrect",
+                };
+            }
         }
 
         // If password is correct, update the user information
@@ -275,6 +294,22 @@ export async function updateUserProfile(
 
 export async function updateUserEmail(userId: string, newEmail: string) {
     try {
+        // Get user's auth provider
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) throw userError;
+
+        // Check if user is using Google OAuth
+        if (user?.app_metadata?.provider === "google") {
+            return {
+                success: false,
+                message: "Cannot change email for Google OAuth accounts",
+            };
+        }
+
         // Update email in the database using Drizzle ORM
         await db
             .update(Users)
@@ -341,5 +376,80 @@ export async function updateUserPassword(
     } catch (error) {
         console.error("Error updating password:", error);
         return { success: false, message: "Failed to update password" };
+    }
+}
+
+export async function getNotificationPreferences(userId: string) {
+    try {
+        const NotificationPref = await db
+            .select()
+            .from(NotificationPreferences)
+            .where(eq(NotificationPreferences.userId, userId))
+            .limit(1);
+
+        return {
+            success: true,
+            data: NotificationPref[0] || {
+                newInventoryNotif: false,
+                newRequirementNotif: false,
+                pendingRequirementNotif: false,
+            },
+        };
+    } catch (error) {
+        console.error("Error loading notification preferences:", error);
+        return {
+            success: false,
+            message: "Failed to load notification preferences",
+            data: {
+                newInventoryNotif: false,
+                newRequirementNotif: false,
+                pendingRequirementNotif: false,
+            },
+        };
+    }
+}
+
+export async function updateNotificationPreferences(
+    userId: string,
+    preferences: {
+        newInventoryNotif: boolean;
+        newRequirementNotif: boolean;
+        pendingRequirementNotif: boolean;
+    }
+) {
+    try {
+        // Check if the notification preferences exist for the user
+        const existingPreferences = await db
+            .select()
+            .from(NotificationPreferences)
+            .where(eq(NotificationPreferences.userId, userId))
+            .limit(1);
+
+        if (existingPreferences.length === 0) {
+            // If no preferences exist, insert a new record
+            await db.insert(NotificationPreferences).values({
+                userId,
+                newInventoryNotif: preferences.newInventoryNotif,
+                newRequirementNotif: preferences.newRequirementNotif,
+                pendingRequirementNotif: preferences.pendingRequirementNotif,
+            });
+        } else {
+            // If preferences exist, update the existing record
+            await db
+                .update(NotificationPreferences)
+                .set({
+                    newInventoryNotif: preferences.newInventoryNotif,
+                    newRequirementNotif: preferences.newRequirementNotif,
+                    pendingRequirementNotif: preferences.pendingRequirementNotif,
+                })
+                .where(eq(NotificationPreferences.userId, userId));
+        }
+        return { success: true, message: "Notification preferences updated" };
+    } catch (error) {
+        console.error("Error updating notification preferences:", error);
+        return {
+            success: false,
+            message: "Failed to update notification preferences",
+        };
     }
 }

@@ -104,3 +104,9 @@ type ErrorDisplayProps = {
     variant?: "error" | "warning" | "info";
     className?: string;
 };
+
+type ProfileSettingsProps = {
+    userId: string;
+    userInfo: SelectUser;
+    userNotifPref: SelectNotificationPreferences;
+};

@@ -5,6 +5,7 @@ import {
 } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import { ProfileSettings } from "@/components/settings/profile-settings";
+import { getNotificationPreferences } from "@/actions/user-actions"; // Import the function
 
 export default async function Page() {
     const data = await LoggedInOrRedirectToLogin();
@@ -14,6 +15,9 @@ export default async function Page() {
 
     // Get user information
     const userInfo = await UserInfo(data.user.id);
+    
+    // Fetch notification preferences
+    const { success, data: notificationPreferences } = await getNotificationPreferences(data.user.id);
 
     return (
         <div className="container mx-auto py-6 px-2 sm:px-4">
@@ -26,7 +30,11 @@ export default async function Page() {
                 </p>
             </div>
 
-            <ProfileSettings userId={data.user.id} userInfo={userInfo[0]} />
+            <ProfileSettings 
+                userId={data.user.id} 
+                userInfo={userInfo[0]} 
+                userNotifPref={success ? notificationPreferences : {}} // Pass notification preferences
+            />
         </div>
     );
 }
