@@ -39,7 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CalendarIcon, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { SelectUser } from "@/db/schema";
+import type { SelectUser } from "@/db/schema";
 import { getBrokers } from "@/actions/broker-actions";
 import { createInventory } from "@/actions/inventory-actions";
 import { useToast } from "@/hooks/use-toast";

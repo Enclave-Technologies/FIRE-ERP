@@ -1,12 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import {
-    Inventories,
-    InsertInventory,
-    SelectInventory,
-    inventoryStatus,
-} from "@/db/schema";
+import { Inventories, inventoryStatus } from "@/db/schema";
+import type { InsertInventory, SelectInventory } from "@/db/schema";
 import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
