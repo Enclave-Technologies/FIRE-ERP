@@ -126,7 +126,19 @@ const TableFunctions = <TData, TValue>({
                     name="sortDirection"
                     value={sortDirection}
                 />
-                {/* <input type="hidden" name="search" value={searchValue} /> */}
+                <input type="hidden" name="search" value={searchValue} />
+                
+                {/* Preserve pagination parameters */}
+                <input
+                    type="hidden"
+                    name="page"
+                    value="1" // Reset to page 1 when filters change
+                />
+                <input
+                    type="hidden"
+                    name="pageSize"
+                    value={new URLSearchParams(window.location.search).get("pageSize") || "10"}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Left side - Filter display area with fixed height */}

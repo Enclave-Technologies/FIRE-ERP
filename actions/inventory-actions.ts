@@ -7,12 +7,12 @@ import {
     SelectInventory,
     inventoryStatus,
 } from "@/db/schema";
-import { asc, desc, eq, ilike, or } from "drizzle-orm";
+import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getInventories(params?: {
     [key: string]: string | string[] | undefined;
-}): Promise<SelectInventory[]> {
+}): Promise<{ data: SelectInventory[]; total: number }> {
     try {
         let query = db.select().from(Inventories).$dynamic();
 
@@ -144,8 +144,27 @@ export async function getInventories(params?: {
             query = query.orderBy(desc(Inventories.dateAdded));
         }
 
+        // Apply pagination if provided
+        let limit = 10; // Default page size
+        let offset = 0;
+
+        if (params?.page && params?.pageSize) {
+            const page = parseInt(params.page.toString()) || 1;
+            limit = parseInt(params.pageSize.toString()) || 10;
+            offset = (page - 1) * limit;
+        }
+
+        // Get total count for pagination
+        const countResult = await db
+            .select({ count: count() })
+            .from(Inventories);
+        const total = countResult[0].count;
+
+        // Apply limit and offset to the query
+        query = query.limit(limit).offset(offset);
+
         const inventories = await query;
-        return inventories;
+        return { data: inventories, total };
     } catch (error) {
         console.error("Error fetching inventories:", error);
         throw new Error("Failed to fetch inventories");

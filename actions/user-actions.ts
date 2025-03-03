@@ -1,7 +1,7 @@
 "use server";
 import { db } from "@/db";
 import { Users, rolesEnum } from "@/db/schema";
-import { asc, desc, eq, like, or } from "drizzle-orm";
+import { asc, count, desc, eq, like, or } from "drizzle-orm";
 
 export async function getUserRole(userId: string) {
     try {
@@ -40,7 +40,7 @@ export async function updateUserRole(
 
 export async function getUsers(filter_params: {
     [key: string]: string | string[] | undefined;
-}) {
+}): Promise<{ data: typeof Users.$inferSelect[]; total: number }> {
     // Log key-value pairs if filter_params exists
     // if (Object.keys(filter_params).length > 0) {
     //     console.log("Filter parameters:");
@@ -211,7 +211,27 @@ export async function getUsers(filter_params: {
         query = query.orderBy(asc(Users.name));
     }
 
-    // console.log(query.toSQL());
+    // Apply pagination if provided
+    let limit = 10; // Default page size
+    let offset = 0;
 
-    return await query;
+    if (filter_params.page && filter_params.pageSize) {
+        const page = parseInt(filter_params.page.toString()) || 1;
+        limit = parseInt(filter_params.pageSize.toString()) || 10;
+        offset = (page - 1) * limit;
+    }
+
+    // Get total count for pagination
+    const countResult = await db
+        .select({ count: count() })
+        .from(Users);
+    const total = countResult[0].count;
+
+    // Apply limit and offset to the query
+    query = query.limit(limit).offset(offset);
+
+    // Execute the query
+    const users = await query;
+    
+    return { data: users, total };
 }

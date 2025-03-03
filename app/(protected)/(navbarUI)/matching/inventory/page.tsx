@@ -14,8 +14,11 @@ const Inventory = async ({
     if (await IsGuest(data.user.id)) {
         redirect("/");
     }
-    // Pass searchParams to getInventories for filtering and sorting
-    const inventories = await getInventories(await searchParams);
+    // Get the search params
+    const resolvedParams = await searchParams;
+
+    // Pass searchParams to getInventories for filtering, sorting, and pagination
+    const { data: inventories, total } = await getInventories(resolvedParams);
 
     return (
         <div className="container mx-auto py-4 px-2 sm:px-4">
@@ -24,7 +27,17 @@ const Inventory = async ({
             </h1>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <div className="p-2 sm:p-6">
-                    <DataTable columns={columns} data={inventories} />
+                    <DataTable
+                        columns={columns}
+                        data={inventories}
+                        totalItems={total}
+                        currentPage={parseInt(
+                            resolvedParams.page?.toString() || "1"
+                        )}
+                        pageSize={parseInt(
+                            resolvedParams.pageSize?.toString() || "10"
+                        )}
+                    />
                 </div>
             </div>
         </div>

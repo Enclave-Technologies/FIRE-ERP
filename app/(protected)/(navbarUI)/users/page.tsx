@@ -14,9 +14,10 @@ const AllUsers = async ({
     if (await IsGuest(data.user.id)) {
         redirect("/");
     }
-    const all_params = await searchParams;
+    const resolvedParams = await searchParams;
 
-    const user_list = await getUsers(all_params);
+    // Pass searchParams to getUsers for filtering, sorting, and pagination
+    const { data: user_list, total } = await getUsers(resolvedParams);
 
     return (
         <div className="container mx-auto py-4 px-2 sm:px-4">
@@ -25,7 +26,13 @@ const AllUsers = async ({
             </h1>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <div className="p-2 sm:p-6">
-                    <DataTable columns={columns} data={user_list} />
+                    <DataTable 
+                        columns={columns} 
+                        data={user_list} 
+                        totalItems={total}
+                        currentPage={parseInt(resolvedParams.page?.toString() || "1")}
+                        pageSize={parseInt(resolvedParams.pageSize?.toString() || "10")}
+                    />
                 </div>
             </div>
         </div>

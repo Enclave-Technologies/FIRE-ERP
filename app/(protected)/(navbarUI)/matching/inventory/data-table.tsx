@@ -24,12 +24,21 @@ import {
 } from "@/components/ui/sheet";
 import { useState } from "react";
 import AddInventory from "@/components/inventory/add-inventory";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    totalItems = 0,
+    currentPage = 1,
+    pageSize = 10,
 }: DataTableProps<TData, TValue>) {
     const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     const table = useReactTable({
         data,
@@ -39,6 +48,17 @@ export function DataTable<TData, TValue>({
 
     const handleNewClick = () => {
         setIsAddSheetOpen(true);
+    };
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // Handle pagination
+    const handlePageChange = (newPage: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("page", newPage.toString());
+        params.set("pageSize", pageSize.toString());
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     return (
@@ -99,6 +119,39 @@ export function DataTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between space-x-2 py-4">
+                    <div className="text-sm text-muted-foreground">
+                        Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                        {Math.min(currentPage * pageSize, totalItems)} of {totalItems} entries
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage <= 1}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            <span className="sr-only">Previous Page</span>
+                        </Button>
+                        <div className="text-sm">
+                            Page {currentPage} of {totalPages}
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage >= totalPages}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                            <span className="sr-only">Next Page</span>
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Add Inventory Sheet */}
             <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
