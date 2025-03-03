@@ -1,4 +1,5 @@
 "use server";
+import { supabase } from "@/app/supabaseClient";
 import { db } from "@/db";
 import { Users, rolesEnum } from "@/db/schema";
 import { asc, desc, eq, like, or } from "drizzle-orm";
@@ -10,7 +11,7 @@ export async function getUserRole(userId: string) {
             .from(Users)
             .where(eq(Users.userId, userId))
             .limit(1);
-            
+
         return user[0]?.role || null;
     } catch (error) {
         console.error("Error fetching user role:", error);
@@ -214,4 +215,131 @@ export async function getUsers(filter_params: {
     // console.log(query.toSQL());
 
     return await query;
+}
+
+export async function updateUserProfile(
+    userId: string,
+    name: string,
+    email: string,
+    currentPassword: string
+) {
+    try {
+        // First verify the current password
+        const { data: authData, error: authError } =
+            await supabase.auth.signInWithPassword({
+                email: email, // Using the current email from the form
+                password: currentPassword,
+            });
+
+        if (authError || !authData.user) {
+            return {
+                success: false,
+                message: "Current password is incorrect",
+            };
+        }
+
+        // If password is correct, update the user information
+        const result = await db
+            .update(Users)
+            .set({
+                name: name,
+                email: email,
+                updatedAt: new Date(),
+            })
+            .where(eq(Users.userId, userId));
+
+        // Check if the update was successful
+        if (!result) {
+            throw new Error("Failed to update user profile");
+        }
+
+        // Update email and user data in Supabase Auth
+        const { error: emailError } = await supabase.auth.updateUser({
+            email: email,
+        });
+
+        if (emailError) throw emailError;
+
+        const { error: nameError } = await supabase.auth.updateUser({
+            data: { full_name: name },
+        });
+
+        if (nameError) throw nameError;
+
+        return { success: true, message: "Profile updated successfully" };
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        return { success: false, message: "Failed to update profile" };
+    }
+}
+
+export async function updateUserEmail(userId: string, newEmail: string) {
+    try {
+        // Update email in the database using Drizzle ORM
+        await db
+            .update(Users)
+            .set({
+                email: newEmail,
+                updatedAt: new Date(),
+            })
+            .where(eq(Users.userId, userId));
+
+        // Also update email in Supabase Auth
+        const { error } = await supabase.auth.updateUser({
+            email: newEmail,
+        });
+
+        if (error) throw error;
+        return { success: true, message: "Email updated successfully" };
+    } catch (error) {
+        console.error("Error updating email:", error);
+        return { success: false, message: "Failed to update email" };
+    }
+}
+
+export async function updateUserPassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+) {
+    try {
+        // First get the user's email to verify the current password
+        const user = await db
+            .select({ email: Users.email })
+            .from(Users)
+            .where(eq(Users.userId, userId))
+            .limit(1);
+
+        if (!user[0] || !user[0].email) {
+            return {
+                success: false,
+                message: "User not found",
+            };
+        }
+
+        // Verify the current password
+        const { data: authData, error: authError } =
+            await supabase.auth.signInWithPassword({
+                email: user[0].email,
+                password: currentPassword,
+            });
+
+        if (authError || !authData.user) {
+            return {
+                success: false,
+                message: "Current password is incorrect",
+            };
+        }
+
+        // If current password is correct, update the password
+        const { error } = await supabase.auth.updateUser({
+            password: newPassword,
+        });
+
+        if (error) throw error;
+        return { success: true, message: "Password updated successfully" };
+    } catch (error) {
+        console.error("Error updating password:", error);
+        return { success: false, message: "Failed to update password" };
+    }
 }
