@@ -20,6 +20,7 @@ const Inventory = async ({
     // Pass searchParams to getInventories for filtering, sorting, and pagination
     const { data: inventories, total } = await getInventories(resolvedParams);
 
+
     return (
         <div className="container mx-auto py-4 px-2 sm:px-4">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-4 sm:mb-6">

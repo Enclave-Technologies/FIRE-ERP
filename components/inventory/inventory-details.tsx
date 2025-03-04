@@ -295,6 +295,7 @@ export default function InventoryDetails({
                                                       }
                                                   )}`
                                                 : "N/A"}
+
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">

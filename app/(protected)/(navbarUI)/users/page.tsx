@@ -33,6 +33,7 @@ const AllUsers = async ({
                         currentPage={parseInt(resolvedParams.page?.toString() || "1")}
                         pageSize={parseInt(resolvedParams.pageSize?.toString() || "10")}
                     />
+
                 </div>
             </div>
         </div>

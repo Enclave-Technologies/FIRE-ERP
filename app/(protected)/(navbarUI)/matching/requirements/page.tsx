@@ -45,3 +45,4 @@ const Requirements = async ({
 };
 
 export default Requirements;
+

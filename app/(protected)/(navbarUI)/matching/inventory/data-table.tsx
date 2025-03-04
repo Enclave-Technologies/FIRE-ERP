@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
+
 export function DataTable<TData, TValue>({
     columns,
     data,
@@ -152,6 +153,7 @@ export function DataTable<TData, TValue>({
                     </div>
                 </div>
             )}
+
 
             {/* Add Inventory Sheet */}
             <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
