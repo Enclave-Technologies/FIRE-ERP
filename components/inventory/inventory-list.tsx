@@ -38,7 +38,7 @@ export default function InventoryList({ inventories }: InventoryListProps) {
                         </CardTitle>
                         <Badge
                             className={`${getStatusColor(
-                                inventory.unitStatus
+                                inventory.unitStatus ?? "null"
                             )}`}
                         >
                             {inventory.unitStatus}
