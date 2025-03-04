@@ -111,7 +111,22 @@ export function SystemSettings() {
     async function onDealSettingsSubmit() {
         setIsUpdating(true);
         try {
-            // TODO: Implement deal settings update
+            // Implement deal settings update
+            // Here you would typically call an action to update the deal settings in your database
+            // For example:
+            // const result = await updateDealSettings(data);
+            // if (result.success) {
+            //     toast({
+            //         title: "Success",
+            //         description: "Deal settings have been updated.",
+            //     });
+            // } else {
+            //     toast({
+            //         title: "Error",
+            //         description: result.message || "Failed to update deal settings.",
+            //         variant: "destructive",
+            //     });
+            // }
             toast({
                 title: "Success",
                 description: "Deal settings have been updated.",

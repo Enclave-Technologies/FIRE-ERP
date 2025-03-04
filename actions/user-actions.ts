@@ -238,7 +238,7 @@ export async function updateUserProfile(
             if (email !== user.email) {
                 return {
                     success: false,
-                    message: "Cannot change email for Google OAuth accounts",
+                    message: "Cannot change email for Google OAuth accounts. Only name changes are allowed.",
                 };
             }
         } else {
@@ -311,13 +311,17 @@ export async function updateUserEmail(userId: string, newEmail: string) {
         }
 
         // Update email in the database using Drizzle ORM
-        await db
+        const result = await db
             .update(Users)
             .set({
                 email: newEmail,
                 updatedAt: new Date(),
             })
             .where(eq(Users.userId, userId));
+
+        if (!result) {
+            throw new Error("Failed to update email in the database");
+        }
 
         // Also update email in Supabase Auth
         const { error } = await supabase.auth.updateUser({
@@ -440,7 +444,8 @@ export async function updateNotificationPreferences(
                 .set({
                     newInventoryNotif: preferences.newInventoryNotif,
                     newRequirementNotif: preferences.newRequirementNotif,
-                    pendingRequirementNotif: preferences.pendingRequirementNotif,
+                    pendingRequirementNotif:
+                        preferences.pendingRequirementNotif,
                 })
                 .where(eq(NotificationPreferences.userId, userId));
         }
