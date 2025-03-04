@@ -296,6 +296,7 @@ export default function InventoryDetails({
                                                   )}`
                                                 : "N/A"}
 
+
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
@@ -335,6 +336,7 @@ export default function InventoryDetails({
                                             Rent (Approx)
                                         </span>
                                         <span className="font-medium">
+
                                             {inventory.rentApprox
                                                 ? `AED ${Number(inventory.rentApprox).toLocaleString(
                                                       "en-US",
@@ -344,6 +346,7 @@ export default function InventoryDetails({
                                                       }
                                                   )}`
                                                 : "N/A"}
+
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2">

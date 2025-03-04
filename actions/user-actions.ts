@@ -594,4 +594,5 @@ export async function updateNotificationPreferences(
             message: "Failed to update notification preferences",
         };
     }
+
 }

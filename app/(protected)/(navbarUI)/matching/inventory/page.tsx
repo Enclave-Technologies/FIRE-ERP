@@ -39,6 +39,7 @@ const Inventory = async ({
                             resolvedParams.pageSize?.toString() || "10"
                         )}
                     />
+
                 </div>
             </div>
         </div>

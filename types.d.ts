@@ -108,7 +108,6 @@ type ErrorDisplayProps = {
     className?: string;
 };
 
-
 type ProfileSettingsProps = {
     userId: string;
     userInfo: SelectUser;

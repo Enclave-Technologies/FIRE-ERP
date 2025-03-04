@@ -50,7 +50,6 @@ export function DataTable<TData, TValue>({
     const handleNewClick = () => {
         setIsAddSheetOpen(true);
     };
-
     // Calculate total pages
     const totalPages = Math.ceil(totalItems / pageSize);
 

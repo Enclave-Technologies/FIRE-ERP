@@ -1,4 +1,3 @@
-
 import {
     IsGuest,
     LoggedInOrRedirectToLogin,
@@ -14,7 +13,6 @@ export default async function Page() {
     if (await IsGuest(data.user.id)) {
         redirect("/");
     }
-
 
     // Get user information
     const userInfo = await UserInfo(data.user.id);
