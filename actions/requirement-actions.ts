@@ -44,7 +44,14 @@ export async function getRequirements(params?: {
     [key: string]: string | string[] | undefined;
 }): Promise<{ data: SelectRequirement[]; total: number }> {
     try {
+        // Start with a dynamic query
         let query = db.select().from(Requirements).$dynamic();
+
+        // Create a clone of the query for counting before pagination
+        let countQuery = db
+            .select({ count: count() })
+            .from(Requirements)
+            .$dynamic();
 
         // Apply filters if provided
         if (params) {
@@ -60,9 +67,15 @@ export async function getRequirements(params?: {
                             query = query.where(
                                 ilike(Requirements.demand, `%${value}%`)
                             );
+                            countQuery.where(
+                                ilike(Requirements.demand, `%${value}%`)
+                            );
                             break;
                         case "Property Type":
                             query = query.where(
+                                ilike(Requirements.preferredType, `%${value}%`)
+                            );
+                            countQuery.where(
                                 ilike(Requirements.preferredType, `%${value}%`)
                             );
                             break;
@@ -73,28 +86,53 @@ export async function getRequirements(params?: {
                                     `%${value}%`
                                 )
                             );
+                            countQuery.where(
+                                ilike(
+                                    Requirements.preferredLocation,
+                                    `%${value}%`
+                                )
+                            );
                             break;
                         case "Budget":
                             query = query.where(
                                 ilike(Requirements.budget, `%${value}%`)
                             );
+                            countQuery.where(
+                                ilike(Requirements.budget, `%${value}%`)
+                            );
                             break;
                         case "Area (SQFT)":
                             // For numeric columns, we need a different approach
-                            // This is a simplified example - you might need more complex logic
                             if (!isNaN(parseFloat(value))) {
                                 const numValue = parseFloat(value);
+                                const lowerBound = (numValue * 0.9).toString();
+                                const upperBound = (numValue * 1.1).toString();
+
                                 query = query
                                     .where(
                                         gte(
                                             Requirements.preferredSquareFootage,
-                                            (numValue * 0.9).toString()
+                                            lowerBound
                                         )
                                     )
                                     .where(
                                         lte(
                                             Requirements.preferredSquareFootage,
-                                            (numValue * 1.1).toString()
+                                            upperBound
+                                        )
+                                    );
+
+                                countQuery = countQuery
+                                    .where(
+                                        gte(
+                                            Requirements.preferredSquareFootage,
+                                            lowerBound
+                                        )
+                                    )
+                                    .where(
+                                        lte(
+                                            Requirements.preferredSquareFootage,
+                                            upperBound
                                         )
                                     );
                             }
@@ -103,17 +141,34 @@ export async function getRequirements(params?: {
                             // For numeric columns, we need a different approach
                             if (!isNaN(parseFloat(value))) {
                                 const numValue = parseFloat(value);
+                                const lowerBound = (numValue * 0.9).toString();
+                                const upperBound = (numValue * 1.1).toString();
+
                                 query = query
                                     .where(
                                         gte(
                                             Requirements.preferredROI,
-                                            (numValue * 0.9).toString()
+                                            lowerBound
                                         )
                                     )
                                     .where(
                                         lte(
                                             Requirements.preferredROI,
-                                            (numValue * 1.1).toString()
+                                            upperBound
+                                        )
+                                    );
+
+                                countQuery = countQuery
+                                    .where(
+                                        gte(
+                                            Requirements.preferredROI,
+                                            lowerBound
+                                        )
+                                    )
+                                    .where(
+                                        lte(
+                                            Requirements.preferredROI,
+                                            upperBound
                                         )
                                     );
                             }
@@ -128,26 +183,27 @@ export async function getRequirements(params?: {
                                     "NONE",
                                 ].includes(value)
                             ) {
+                                const typedValue = value as
+                                    | "RTM"
+                                    | "OFFPLAN"
+                                    | "RTM-OFFPLAN"
+                                    | "NONE";
+
                                 query = query.where(
-                                    eq(
-                                        Requirements.rtmOffplan,
-                                        value as
-                                            | "RTM"
-                                            | "OFFPLAN"
-                                            | "RTM-OFFPLAN"
-                                            | "NONE"
-                                    )
+                                    eq(Requirements.rtmOffplan, typedValue)
+                                );
+                                countQuery.where(
+                                    eq(Requirements.rtmOffplan, typedValue)
                                 );
                             }
                             break;
                         case "PHPP":
                             // Handle boolean comparison
+                            const boolValue = value.toLowerCase() === "true";
                             query = query.where(
-                                eq(
-                                    Requirements.phpp,
-                                    value.toLowerCase() === "true"
-                                )
+                                eq(Requirements.phpp, boolValue)
                             );
+                            countQuery.where(eq(Requirements.phpp, boolValue));
                             break;
                         case "Category":
                             // Cast the value to the appropriate enum type
@@ -158,14 +214,16 @@ export async function getRequirements(params?: {
                                     "LUXURY CONCIERGE",
                                 ].includes(value)
                             ) {
+                                const typedValue = value as
+                                    | "RISE"
+                                    | "NESTSEEKERS"
+                                    | "LUXURY CONCIERGE";
+
                                 query = query.where(
-                                    eq(
-                                        Requirements.category,
-                                        value as
-                                            | "RISE"
-                                            | "NESTSEEKERS"
-                                            | "LUXURY CONCIERGE"
-                                    )
+                                    eq(Requirements.category, typedValue)
+                                );
+                                countQuery.where(
+                                    eq(Requirements.category, typedValue)
                                 );
                             }
                             break;
@@ -180,20 +238,21 @@ export async function getRequirements(params?: {
                                     "rejected",
                                 ].includes(value)
                             ) {
+                                const typedValue = value as
+                                    | "open"
+                                    | "assigned"
+                                    | "negotiation"
+                                    | "closed"
+                                    | "rejected";
+
                                 query = query.where(
-                                    eq(
-                                        Requirements.status,
-                                        value as
-                                            | "open"
-                                            | "assigned"
-                                            | "negotiation"
-                                            | "closed"
-                                            | "rejected"
-                                    )
+                                    eq(Requirements.status, typedValue)
+                                );
+                                countQuery.where(
+                                    eq(Requirements.status, typedValue)
                                 );
                             }
                             break;
-                        // Add more cases as needed
                     }
                 }
             }
@@ -202,22 +261,19 @@ export async function getRequirements(params?: {
             if (params.search) {
                 const searchValue = params.search.toString();
                 if (searchValue) {
-                    query = query.where(
-                        or(
-                            ilike(
-                                Requirements.preferredType,
-                                `%${searchValue}%`
-                            ),
-                            ilike(Requirements.description, `%${searchValue}%`),
-                            ilike(Requirements.demand, `%${searchValue}%`),
-                            ilike(
-                                Requirements.preferredLocation,
-                                `%${searchValue}%`
-                            ),
-                            ilike(Requirements.budget, `%${searchValue}%`)
-                            // Add more columns as needed
-                        )
+                    const searchCondition = or(
+                        ilike(Requirements.preferredType, `%${searchValue}%`),
+                        ilike(Requirements.description, `%${searchValue}%`),
+                        ilike(Requirements.demand, `%${searchValue}%`),
+                        ilike(
+                            Requirements.preferredLocation,
+                            `%${searchValue}%`
+                        ),
+                        ilike(Requirements.budget, `%${searchValue}%`)
                     );
+
+                    query = query.where(searchCondition);
+                    countQuery.where(searchCondition);
                 }
             }
 
@@ -241,18 +297,33 @@ export async function getRequirements(params?: {
                                 : desc(Requirements.status)
                         );
                         break;
-                    // Add more cases as needed
+                    case "Date Created":
+                        query = query.orderBy(
+                            sortDirection === "asc"
+                                ? asc(Requirements.dateCreated)
+                                : desc(Requirements.dateCreated)
+                        );
+                        break;
+                    case "Budget":
+                        query = query.orderBy(
+                            sortDirection === "asc"
+                                ? asc(Requirements.budget)
+                                : desc(Requirements.budget)
+                        );
+                        break;
                     default:
                         query = query.orderBy(desc(Requirements.dateCreated));
                 }
             } else {
+                // Default sort by date created (newest first)
                 query = query.orderBy(desc(Requirements.dateCreated));
             }
         } else {
+            // Default sort by date created (newest first)
             query = query.orderBy(desc(Requirements.dateCreated));
         }
 
-        // Apply pagination if provided
+        // Apply pagination
         let limit = 10; // Default page size
         let offset = 0;
 
@@ -262,16 +333,16 @@ export async function getRequirements(params?: {
             offset = (page - 1) * limit;
         }
 
-        // Get total count for pagination
-        const countResult = await db
-            .select({ count: count() })
-            .from(Requirements);
-        const total = countResult[0].count;
+        // Execute the count query to get total count for pagination
+        const countResult = await countQuery;
+        const total = countResult[0]?.count || 0;
 
-        // Apply limit and offset to the query
+        // Apply limit and offset to the main query
         query = query.limit(limit).offset(offset);
 
+        // Execute the main query
         const requirements = await query;
+
         return { data: requirements, total };
     } catch (error) {
         console.error("Error fetching requirements:", error);
@@ -283,6 +354,10 @@ export async function getRequirementById(
     requirementId: string
 ): Promise<SelectRequirement | undefined> {
     try {
+        if (!requirementId) {
+            throw new Error("Requirement ID is required");
+        }
+
         const [requirement] = await db
             .select()
             .from(Requirements)
@@ -301,6 +376,10 @@ export async function updateRequirement(
     data: Partial<Omit<InsertRequirement, "userId" | "dateCreated">>
 ): Promise<{ success: boolean; message?: string }> {
     try {
+        if (!requirementId) {
+            return { success: false, message: "Requirement ID is required" };
+        }
+
         await db
             .update(Requirements)
             .set(data)
@@ -312,7 +391,10 @@ export async function updateRequirement(
         return { success: true };
     } catch (error) {
         console.error("Error updating requirement:", error);
-        throw new Error("Failed to update requirement");
+        return {
+            success: false,
+            message: "Failed to update requirement",
+        };
     }
 }
 
@@ -320,6 +402,10 @@ export async function deleteRequirement(
     requirementId: string
 ): Promise<{ success: boolean; message?: string }> {
     try {
+        if (!requirementId) {
+            return { success: false, message: "Requirement ID is required" };
+        }
+
         await db
             .delete(Requirements)
             .where(eq(Requirements.requirementId, requirementId));
@@ -329,6 +415,9 @@ export async function deleteRequirement(
         return { success: true };
     } catch (error) {
         console.error("Error deleting requirement:", error);
-        throw new Error("Failed to delete requirement");
+        return {
+            success: false,
+            message: "Failed to delete requirement",
+        };
     }
 }

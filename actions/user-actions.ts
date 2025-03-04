@@ -42,201 +42,216 @@ export async function updateUserRole(
 
 export async function getUsers(filter_params: {
     [key: string]: string | string[] | undefined;
-}): Promise<{ data: typeof Users.$inferSelect[]; total: number }> {
-    // Log key-value pairs if filter_params exists
-    // if (Object.keys(filter_params).length > 0) {
-    //     console.log("Filter parameters:");
-    //     for (const [key, value] of Object.entries(filter_params)) {
-    //         console.log(`${key}: ${JSON.stringify(value)}`);
-    //     }
-    // }
+}): Promise<{ data: (typeof Users.$inferSelect)[]; total: number }> {
+    try {
+        // Start with a base query and enable dynamic mode
+        let query = db.select().from(Users).$dynamic();
 
-    const {
-        search,
-        role,
-        sort,
-        filterColumn,
-        filterValue,
-        sortColumn,
-        sortDirection,
-    } = filter_params;
+        // Create a clone of the query for counting before pagination
+        const countQuery = db.select({ count: count() }).from(Users).$dynamic();
 
-    // Start with a base query and enable dynamic mode
-    let query = db.select().from(Users).$dynamic();
+        const {
+            search,
+            role,
+            sort,
+            filterColumn,
+            filterValue,
+            sortColumn,
+            sortDirection,
+            page,
+            pageSize,
+        } = filter_params;
 
-    // Handle new filter parameters format
-    if (
-        filterColumn &&
-        filterValue &&
-        typeof filterColumn === "string" &&
-        typeof filterValue === "string" &&
-        filterColumn.trim() !== "" &&
-        filterValue.trim() !== ""
-    ) {
-        // Convert column name to lowercase for case-insensitive comparison
-        const column = filterColumn.toLowerCase();
+        // Handle new filter parameters format
+        if (
+            filterColumn &&
+            filterValue &&
+            typeof filterColumn === "string" &&
+            typeof filterValue === "string" &&
+            filterColumn.trim() !== "" &&
+            filterValue.trim() !== ""
+        ) {
+            // Convert column name to lowercase for case-insensitive comparison
+            const column = filterColumn.toLowerCase();
 
-        switch (column) {
-            case "role":
-                // Only add the condition if the role is valid in the database
-                if (
-                    ["broker", "customer", "admin", "staff", "guest"].includes(
-                        filterValue
-                    )
-                ) {
-                    // Use type assertion to a valid role type
-                    const validRole = filterValue as
-                        | "broker"
-                        | "customer"
-                        | "admin"
-                        | "staff"
-                        | "guest";
-                    query = query.where(eq(Users.role, validRole));
-                }
-                break;
-            case "name":
-                query = query.where(like(Users.name, `%${filterValue}%`));
-                break;
-            case "email":
-                query = query.where(like(Users.email, `%${filterValue}%`));
-                break;
-            // Add more columns as needed
+            switch (column) {
+                case "role":
+                    // Only add the condition if the role is valid in the database
+                    if (
+                        [
+                            "broker",
+                            "customer",
+                            "admin",
+                            "staff",
+                            "guest",
+                        ].includes(filterValue)
+                    ) {
+                        // Use type assertion to a valid role type
+                        const validRole = filterValue as
+                            | "broker"
+                            | "customer"
+                            | "admin"
+                            | "staff"
+                            | "guest";
+                        query = query.where(eq(Users.role, validRole));
+                        countQuery.where(eq(Users.role, validRole));
+                    }
+                    break;
+                case "name":
+                    query = query.where(like(Users.name, `%${filterValue}%`));
+                    countQuery.where(like(Users.name, `%${filterValue}%`));
+                    break;
+                case "email":
+                    query = query.where(like(Users.email, `%${filterValue}%`));
+                    countQuery.where(like(Users.email, `%${filterValue}%`));
+                    break;
+                // Add more columns as needed
+            }
         }
-    }
 
-    // Handle search
-    if (search && typeof search === "string" && search.trim() !== "") {
-        // Search in both name and email fields
-        query = query.where(
-            or(
+        // Handle search
+        if (search && typeof search === "string" && search.trim() !== "") {
+            // Search in both name and email fields
+            const searchCondition = or(
                 like(Users.name, `%${search}%`),
                 like(Users.email, `%${search}%`)
-            )
-        );
-    }
-
-    // Handle role filter
-    if (
-        role &&
-        typeof role === "string" &&
-        role.trim() !== "" &&
-        role !== "all"
-    ) {
-        // Map UI roles to database roles if needed
-        let dbRole = role;
-
-        // If you need to map UI roles to different DB roles, do it here
-        // For example, if your UI uses "user" but DB uses "customer":
-        if (role === "user") {
-            dbRole = "customer";
-        } else if (role === "manager") {
-            dbRole = "staff";
+            );
+            query = query.where(searchCondition);
+            countQuery.where(searchCondition);
         }
 
-        // Only add the condition if the role is valid in the database
+        // Handle role filter
         if (
-            ["broker", "customer", "admin", "staff", "guest"].includes(dbRole)
+            role &&
+            typeof role === "string" &&
+            role.trim() !== "" &&
+            role !== "all"
         ) {
-            // Use type assertion to a valid role type
-            const validRole = dbRole as
-                | "broker"
-                | "customer"
-                | "admin"
-                | "staff"
-                | "guest";
-            query = query.where(eq(Users.role, validRole));
+            // Map UI roles to database roles if needed
+            let dbRole = role;
+
+            // If you need to map UI roles to different DB roles, do it here
+            // For example, if your UI uses "user" but DB uses "customer":
+            if (role === "user") {
+                dbRole = "customer";
+            } else if (role === "manager") {
+                dbRole = "staff";
+            }
+
+            // Only add the condition if the role is valid in the database
+            if (
+                ["broker", "customer", "admin", "staff", "guest"].includes(
+                    dbRole
+                )
+            ) {
+                // Use type assertion to a valid role type
+                const validRole = dbRole as
+                    | "broker"
+                    | "customer"
+                    | "admin"
+                    | "staff"
+                    | "guest";
+                query = query.where(eq(Users.role, validRole));
+                countQuery.where(eq(Users.role, validRole));
+            }
         }
-    }
 
-    // Handle sorting with new parameters
-    if (
-        sortColumn &&
-        sortDirection &&
-        typeof sortColumn === "string" &&
-        typeof sortDirection === "string" &&
-        sortColumn.trim() !== ""
-    ) {
-        const column = sortColumn.toLowerCase();
-        const direction = sortDirection.toLowerCase();
+        // Handle sorting with new parameters
+        if (
+            sortColumn &&
+            sortDirection &&
+            typeof sortColumn === "string" &&
+            typeof sortDirection === "string" &&
+            sortColumn.trim() !== ""
+        ) {
+            const column = sortColumn.toLowerCase();
+            const direction = sortDirection.toLowerCase();
 
-        switch (column) {
-            case "name":
-                query = query.orderBy(
-                    direction === "desc" ? desc(Users.name) : asc(Users.name)
-                );
-                break;
-            case "email":
-                query = query.orderBy(
-                    direction === "desc" ? desc(Users.email) : asc(Users.email)
-                );
-                break;
-            case "role":
-                query = query.orderBy(
-                    direction === "desc" ? desc(Users.role) : asc(Users.role)
-                );
-                break;
-            case "createdat":
-            case "created_at":
-            case "created":
-                query = query.orderBy(
-                    direction === "desc"
-                        ? desc(Users.createdAt)
-                        : asc(Users.createdAt)
-                );
-                break;
-            default:
-                query = query.orderBy(asc(Users.name)); // Default to name ascending
-                break;
+            switch (column) {
+                case "name":
+                    query = query.orderBy(
+                        direction === "desc"
+                            ? desc(Users.name)
+                            : asc(Users.name)
+                    );
+                    break;
+                case "email":
+                    query = query.orderBy(
+                        direction === "desc"
+                            ? desc(Users.email)
+                            : asc(Users.email)
+                    );
+                    break;
+                case "role":
+                    query = query.orderBy(
+                        direction === "desc"
+                            ? desc(Users.role)
+                            : asc(Users.role)
+                    );
+                    break;
+                case "createdat":
+                case "created_at":
+                case "created":
+                    query = query.orderBy(
+                        direction === "desc"
+                            ? desc(Users.createdAt)
+                            : asc(Users.createdAt)
+                    );
+                    break;
+                default:
+                    query = query.orderBy(asc(Users.name)); // Default to name ascending
+                    break;
+            }
         }
-    }
-    // Handle legacy sorting
-    else if (sort && typeof sort === "string" && sort.trim() !== "") {
-        switch (sort) {
-            case "name_asc":
-                query = query.orderBy(asc(Users.name));
-                break;
-            case "name_desc":
-                query = query.orderBy(desc(Users.name));
-                break;
-            case "newest":
-                query = query.orderBy(desc(Users.createdAt));
-                break;
-            case "oldest":
-                query = query.orderBy(asc(Users.createdAt));
-                break;
-            default:
-                query = query.orderBy(asc(Users.name));
-                break;
+        // Handle legacy sorting
+        else if (sort && typeof sort === "string" && sort.trim() !== "") {
+            switch (sort) {
+                case "name_asc":
+                    query = query.orderBy(asc(Users.name));
+                    break;
+                case "name_desc":
+                    query = query.orderBy(desc(Users.name));
+                    break;
+                case "newest":
+                    query = query.orderBy(desc(Users.createdAt));
+                    break;
+                case "oldest":
+                    query = query.orderBy(asc(Users.createdAt));
+                    break;
+                default:
+                    query = query.orderBy(asc(Users.name));
+                    break;
+            }
+        } else {
+            // Default sort if none specified
+            query = query.orderBy(asc(Users.name));
         }
-    } else {
-        // Default sort if none specified
-        query = query.orderBy(asc(Users.name));
+
+        // Execute the count query to get total count for pagination
+        const countResult = await countQuery;
+        const total = countResult[0]?.count || 0;
+
+        // Apply pagination if provided
+        let limit = 10; // Default page size
+        let offset = 0;
+
+        if (page && pageSize) {
+            const pageNum = parseInt(page.toString()) || 1;
+            limit = parseInt(pageSize.toString()) || 10;
+            offset = (pageNum - 1) * limit;
+        }
+
+        // Apply limit and offset to the query
+        query = query.limit(limit).offset(offset);
+
+        // Execute the query
+        const users = await query;
+
+        return { data: users, total };
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw new Error("Failed to fetch users");
     }
-
-    // Apply pagination if provided
-    let limit = 10; // Default page size
-    let offset = 0;
-
-    if (filter_params.page && filter_params.pageSize) {
-        const page = parseInt(filter_params.page.toString()) || 1;
-        limit = parseInt(filter_params.pageSize.toString()) || 10;
-        offset = (page - 1) * limit;
-    }
-
-    // Get total count for pagination
-    const countResult = await db
-        .select({ count: count() })
-        .from(Users);
-    const total = countResult[0].count;
-
-    // Apply limit and offset to the query
-    query = query.limit(limit).offset(offset);
-
-    // Execute the query
-    const users = await query;
-    
-    return { data: users, total };
-
 }
 
 export async function updateUserProfile(
@@ -260,7 +275,8 @@ export async function updateUserProfile(
             if (email !== user.email) {
                 return {
                     success: false,
-                    message: "Cannot change email for Google OAuth accounts. Only name changes are allowed.",
+                    message:
+                        "Cannot change email for Google OAuth accounts. Only name changes are allowed.",
                 };
             }
         } else {
@@ -479,5 +495,4 @@ export async function updateNotificationPreferences(
             message: "Failed to update notification preferences",
         };
     }
-
 }
