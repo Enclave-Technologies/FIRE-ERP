@@ -1,7 +1,8 @@
 "use server";
 
+import { supabase } from "@/app/supabaseClient";
 import { db } from "@/db";
-import { Users, rolesEnum } from "@/db/schema";
+import { NotificationPreferences, Users, rolesEnum } from "@/db/schema";
 import { asc, count, desc, eq, like, or } from "drizzle-orm";
 
 export async function getUserRole(userId: string) {

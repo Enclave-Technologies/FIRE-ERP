@@ -204,21 +204,143 @@ export const columns: ColumnDef<SelectInventory>[] = [
             if (price === null || price === undefined) return <div>-</div>;
 
             const numericPrice =
-                typeof price === "number"
-                    ? price
-                    : parseFloat(String(price));
+                typeof price === "number" ? price : parseFloat(String(price));
 
             return (
                 <div>
                     {!isNaN(numericPrice) && numericPrice > 0
                         ? `AED ${new Intl.NumberFormat("en-AE", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
                           }).format(numericPrice * 1000000)}`
                         : "-"}
                 </div>
             );
         },
+    },
+    {
+        accessorKey: "inrCr",
+        header: "Price (INR Cr)",
+        cell: ({ row }) => {
+            const price = row.original.inrCr;
+            if (price === null || price === undefined) return <div>-</div>;
+
+            const numericPrice =
+                typeof price === "number" ? price : parseFloat(String(price));
+
+            return (
+                <div>
+                    {!isNaN(numericPrice) && numericPrice > 0
+                        ? `₹ ${new Intl.NumberFormat("en-IN", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                          }).format(numericPrice)} Cr`
+                        : "-"}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "rentApprox",
+        header: "Approx. Rent",
+        cell: ({ row }) => {
+            const rent = row.original.rentApprox;
+            if (rent === null || rent === undefined) return <div>-</div>;
+
+            const numericRent =
+                typeof rent === "number" ? rent : parseFloat(String(rent));
+
+            return (
+                <div>
+                    {!isNaN(numericRent) && numericRent > 0
+                        ? `AED ${new Intl.NumberFormat("en-AE", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                          }).format(numericRent)}`
+                        : "-"}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "roiGross",
+        header: "ROI (%)",
+        cell: ({ row }) => {
+            const roi = row.original.roiGross;
+            if (roi === null || roi === undefined) return <div>-</div>;
+
+            const numericRoi =
+                typeof roi === "number" ? roi : parseFloat(String(roi));
+
+            return (
+                <div>
+                    {!isNaN(numericRoi) && numericRoi > 0
+                        ? `${numericRoi.toFixed(2)}%`
+                        : "-"}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "markup",
+        header: "Markup",
+        cell: ({ row }) => {
+            const markup = row.original.markup;
+            if (markup === null || markup === undefined) return <div>-</div>;
+
+            const numericMarkup =
+                typeof markup === "number"
+                    ? markup
+                    : parseFloat(String(markup));
+
+            return (
+                <div>
+                    {!isNaN(numericMarkup) && numericMarkup > 0
+                        ? `AED ${new Intl.NumberFormat("en-AE", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                          }).format(numericMarkup)}`
+                        : "-"}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "brokerage",
+        header: "Brokerage",
+        cell: ({ row }) => {
+            const brokerage = row.original.brokerage;
+            if (brokerage === null || brokerage === undefined)
+                return <div>-</div>;
+
+            const numericBrokerage =
+                typeof brokerage === "number"
+                    ? brokerage
+                    : parseFloat(String(brokerage));
+
+            return (
+                <div>
+                    {!isNaN(numericBrokerage) && numericBrokerage > 0
+                        ? `AED ${new Intl.NumberFormat("en-AE", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                          }).format(numericBrokerage)}`
+                        : "-"}
+                </div>
+            );
+        },
+    },
+    {
+        accessorKey: "remarks",
+        header: "Remarks",
+        cell: ({ row }) => (
+            <div
+                className="whitespace-normal"
+                title={row.original.remarks || ""}
+            >
+                {row.original.remarks || "-"}
+            </div>
+        ),
     },
     {
         accessorKey: "unitStatus",
