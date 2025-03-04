@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function UsersLoading() {
+export default function RequirementsLoading() {
     return (
         <div className="container mx-auto py-4 px-2 sm:px-4">
             <Skeleton className="h-8 w-64 mb-6" />
