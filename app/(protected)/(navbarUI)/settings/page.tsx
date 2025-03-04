@@ -1,3 +1,4 @@
+
 import {
     IsGuest,
     LoggedInOrRedirectToLogin,
@@ -7,11 +8,13 @@ import { redirect } from "next/navigation";
 import { ProfileSettings } from "@/components/settings/profile-settings";
 import { getNotificationPreferences } from "@/actions/user-actions"; // Import the function
 
+
 export default async function Page() {
     const data = await LoggedInOrRedirectToLogin();
     if (await IsGuest(data.user.id)) {
         redirect("/");
     }
+
 
     // Get user information
     const userInfo = await UserInfo(data.user.id);

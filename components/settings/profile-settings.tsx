@@ -120,6 +120,9 @@ export function ProfileSettings({
     async function onProfileSubmit(data: ProfileFormValues) {
         setIsUpdating(true);
         try {
+            // Check if email is being changed
+            const isEmailChanged = data.email !== userInfo.email;
+
             // Update profile (name and email) with password verification
             const result = await updateUserProfile(
                 userId,
@@ -129,10 +132,23 @@ export function ProfileSettings({
             );
 
             if (result.success) {
+                // Show success toast
                 toast({
                     title: "Success",
                     description: "Your profile has been updated.",
                 });
+
+                // If email was changed, show additional verification toast
+                if (isEmailChanged) {
+                    toast({
+                        title: "Email Verification Required",
+                        description:
+                            "Please check your email and click the verification link to confirm your new email address.",
+                        variant: "default",
+                        duration: 6000, // Show for longer (6 seconds)
+                    });
+                }
+
                 // Reset the password field
                 profileForm.setValue("currentPassword", "");
             } else {
@@ -272,6 +288,8 @@ export function ProfileSettings({
                                                 <Input
                                                     placeholder="Your email"
                                                     {...field}
+                                                    readOnly
+                                                    className="bg-gray-300 dark:bg-gray-700"
                                                 />
                                             </FormControl>
                                             <FormDescription>

@@ -1,17 +1,16 @@
 "use client";
 
-import { SelectInventory, inventoryStatus } from "@/db/schema";
+import { SelectRequirement, dealStages } from "@/db/schema";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { EditInventory } from "@/components/inventory/edit-inventory";
 import { Spotlight } from "@/components/ui/spotlight";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { updateInventoryStatus } from "@/actions/inventory-actions";
+import { updateRequirement } from "@/actions/requirement-actions";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { Copy, Edit } from "lucide-react";
+import { Copy } from "lucide-react";
 
 // Animation variants
 const VARIANTS_CONTAINER = {
@@ -33,52 +32,68 @@ const TRANSITION_SECTION = {
     duration: 0.3,
 };
 
-// Status badge variants to match the table
+// Status badge variants
 const getStatusVariant = (
     status: string | null
 ): "default" | "destructive" | "secondary" | "outline" => {
     switch (status) {
-        case "available":
+        case "open":
             return "default"; // Green in both modes
-        case "sold":
+        case "assigned":
             return "outline"; // Blue in both modes
-        case "reserved":
+        case "negotiation":
             return "destructive"; // Yellow/Orange in both modes
-        case "rented":
+        case "closed":
             return "secondary"; // Purple in both modes
+        case "rejected":
+            return "destructive"; // Red in both modes
         default:
             return "default";
     }
 };
 
-export default function InventoryDetails({
-    inventory,
+// Category badge variants
+const getCategoryVariant = (
+    category: string | null
+): "default" | "destructive" | "secondary" | "outline" => {
+    switch (category) {
+        case "RISE":
+            return "default";
+        case "NESTSEEKERS":
+            return "secondary";
+        case "LUXURY CONCIERGE":
+            return "outline";
+        default:
+            return "default";
+    }
+};
+
+export default function RequirementDetails({
+    requirement,
 }: {
-    inventory: SelectInventory;
+    requirement: SelectRequirement;
 }) {
     const { toast } = useToast();
     const [status, setStatus] = useState<
-        (typeof inventoryStatus.enumValues)[number]
-    >(inventory.unitStatus || "available");
+        (typeof dealStages.enumValues)[number]
+    >(requirement.status || "open");
     const [isUpdating, setIsUpdating] = useState(false);
-    const [showEditSheet, setShowEditSheet] = useState(false);
 
     const handleStatusChange = async (
-        newStatus: (typeof inventoryStatus.enumValues)[number]
+        newStatus: (typeof dealStages.enumValues)[number]
     ) => {
         if (newStatus === status) return;
 
         setIsUpdating(true);
         try {
-            const result = await updateInventoryStatus(
-                inventory.inventoryId,
-                newStatus
-            );
+            const result = await updateRequirement(requirement.requirementId, {
+                status: newStatus,
+            });
             if (result.success) {
                 setStatus(newStatus);
                 toast({
                     title: "Status Updated",
-                    description: `Inventory status changed to ${newStatus}`,
+                    description: `Requirement status changed to ${newStatus}`,
                 });
             } else {
                 toast({
@@ -120,14 +135,14 @@ export default function InventoryDetails({
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <Link
-                            href="/matching/inventory"
+                            href="/matching/requirements"
                             className="text-sm text-blue-600 hover:underline mb-3 inline-block"
                         >
-                            ← Back to Inventory
+                            ← Back to Requirements
                         </Link>
                         <div className="flex items-center gap-2">
                             <h1 className="text-3xl font-bold mb-2">
-                                {inventory.projectName || "Unnamed Project"}
+                                {requirement.demand || "Unnamed Requirement"}
                             </h1>
                             <div className="flex items-center gap-2 mb-2">
                                 <Button
@@ -136,57 +151,44 @@ export default function InventoryDetails({
                                     className="h-8 w-8"
                                     onClick={() => {
                                         navigator.clipboard.writeText(
-                                            inventory.inventoryId
+                                            requirement.requirementId
                                         );
                                         toast({
                                             title: "ID Copied",
                                             description:
-                                                "Inventory ID copied to clipboard",
+                                                "Requirement ID copied to clipboard",
                                         });
                                     }}
                                     title="Copy ID"
                                 >
                                     <Copy className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    title="Edit Inventory"
-                                    onClick={() => setShowEditSheet(true)}
-                                >
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-
-                                {/* Edit Inventory Sheet */}
-                                {showEditSheet && (
-                                    <EditInventory
-                                        inventory={inventory}
-                                        open={showEditSheet}
-                                        onOpenChange={setShowEditSheet}
-                                    />
-                                )}
                             </div>
                         </div>
-                        <p className="text-lg text-zinc-600 dark:text-zinc-400">
-                            {inventory.buildingName}
-                            {inventory.unitNumber
-                                ? ` - Unit ${inventory.unitNumber}`
-                                : ""}
-                        </p>
+                        <div className="flex gap-2">
+                            <Badge
+                                variant={getStatusVariant(status)}
+                                className="text-sm px-3 py-1 pointer-events-none"
+                            >
+                                {status.charAt(0).toUpperCase() +
+                                    status.slice(1)}
+                            </Badge>
+                            <Badge
+                                variant={getCategoryVariant(
+                                    requirement.category
+                                )}
+                                className="text-sm px-3 py-1 pointer-events-none"
+                            >
+                                {requirement.category || "RISE"}
+                            </Badge>
+                        </div>
                     </div>
-                    <Badge
-                        variant={getStatusVariant(status)}
-                        className="text-sm px-3 py-1 pointer-events-none"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Badge>
                 </div>
             </motion.section>
 
             {/* Main Content */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                {/* Left Column - Property Details */}
+                {/* Left Column - Requirement Details */}
                 <motion.section
                     variants={VARIANTS_SECTION}
                     transition={TRANSITION_SECTION}
@@ -194,68 +196,78 @@ export default function InventoryDetails({
                 >
                     <Card className="shadow-sm">
                         <CardHeader className="pb-4">
-                            <CardTitle>Property Details</CardTitle>
+                            <CardTitle>Requirement Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 rounded-lg">
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                        Preferred Type
+                                    </h3>
+                                    <p className="text-lg font-medium">
+                                        {requirement.preferredType || "N/A"}
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                        Preferred Location
+                                    </h3>
+                                    <p className="text-lg font-medium">
+                                        {requirement.preferredLocation || "N/A"}
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                        Budget
+                                    </h3>
+                                    <p className="text-lg font-medium">
+                                        {requirement.budget
+                                            ? `AED ${Number(
+                                                  requirement.budget
+                                              ).toLocaleString("en-US", {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2,
+                                              })}`
+                                            : "N/A"}
+                                    </p>
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
                                         Property Type
                                     </h3>
                                     <p className="text-lg font-medium">
-                                        {inventory.propertyType || "N/A"}
+                                        {requirement.rtmOffplan
+                                            ? "RTM"
+                                            : "Off-plan"}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        Location
+                                        Preferred Square Footage
                                     </h3>
                                     <p className="text-lg font-medium">
-                                        {inventory.location || "N/A"}
+                                        {requirement.preferredSquareFootage
+                                            ? `${requirement.preferredSquareFootage} SQFT`
+                                            : "N/A"}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        Area (SQFT)
+                                        Date Created
                                     </h3>
                                     <p className="text-lg font-medium">
-                                        {inventory.areaSQFT?.toString() ||
-                                            "N/A"}
-                                    </p>
-                                </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        BUA (SQFT)
-                                    </h3>
-                                    <p className="text-lg font-medium">
-                                        {inventory.buSQFT?.toString() || "N/A"}
-                                    </p>
-                                </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        Completion Date
-                                    </h3>
-                                    <p className="text-lg font-medium">
-                                        {formatDate(inventory.completionDate)}
-                                    </p>
-                                </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        Date Added
-                                    </h3>
-                                    <p className="text-lg font-medium">
-                                        {formatDate(inventory.dateAdded)}
+                                        {formatDate(requirement.dateCreated)}
                                     </p>
                                 </div>
                             </div>
 
-                            {inventory.description && (
+                            {requirement.description && (
                                 <div className="mt-8 p-4">
                                     <h3 className="text-lg font-medium mb-3">
                                         Description
                                     </h3>
                                     <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                                        {inventory.description}
+                                        {requirement.description}
                                     </p>
                                 </div>
                             )}
@@ -263,7 +275,7 @@ export default function InventoryDetails({
                     </Card>
                 </motion.section>
 
-                {/* Right Column - Financial Details & Actions */}
+                {/* Right Column - Additional Details & Actions */}
                 <motion.section
                     variants={VARIANTS_SECTION}
                     transition={TRANSITION_SECTION}
@@ -283,76 +295,11 @@ export default function InventoryDetails({
                                 <div className="relative space-y-4">
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
                                         <span className="text-zinc-500 dark:text-zinc-400">
-                                            Price
+                                            Preferred ROI
                                         </span>
                                         <span className="font-medium">
-                                            {inventory.priceAED
-                                                ? `AED ${Number(inventory.priceAED).toLocaleString(
-                                                      "en-US",
-                                                      {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2,
-                                                      }
-                                                  )}`
-                                                : "N/A"}
-
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
-                                        <span className="text-zinc-500 dark:text-zinc-400">
-                                            Price (M)
-                                        </span>
-                                        <span className="font-medium">
-                                            {inventory.sellingPriceMillionAED
-                                                ? `AED ${(
-                                                      Number(inventory.sellingPriceMillionAED) *
-                                                      1000000
-                                                  ).toLocaleString("en-US", {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2,
-                                                  })}`
-                                                : "N/A"}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
-                                        <span className="text-zinc-500 dark:text-zinc-400">
-                                            INR (Cr)
-                                        </span>
-                                        <span className="font-medium">
-                                            {inventory.inrCr
-                                                ? `₹ ${Number(inventory.inrCr).toLocaleString(
-                                                      "en-US",
-                                                      {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2,
-                                                      }
-                                                  )}`
-                                                : "N/A"}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
-                                        <span className="text-zinc-500 dark:text-zinc-400">
-                                            Rent (Approx)
-                                        </span>
-                                        <span className="font-medium">
-                                            {inventory.rentApprox
-                                                ? `AED ${Number(inventory.rentApprox).toLocaleString(
-                                                      "en-US",
-                                                      {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2,
-                                                      }
-                                                  )}`
-                                                : "N/A"}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-2">
-                                        <span className="text-zinc-500 dark:text-zinc-400">
-                                            ROI (Gross)
-                                        </span>
-                                        <span className="font-medium">
-                                            {inventory.roiGross
-                                                ? `${inventory.roiGross}%`
+                                            {requirement.preferredROI
+                                                ? `${requirement.preferredROI}%`
                                                 : "N/A"}
                                         </span>
                                     </div>
@@ -370,48 +317,39 @@ export default function InventoryDetails({
                             <div className="grid grid-cols-2 gap-6 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 rounded-lg">
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        Maid&apos;s Room
+                                        PHPP Applicable
                                     </h3>
                                     <p className="font-medium">
-                                        {inventory.maidsRoom || "0"}
+                                        {requirement.phpp ? "Yes" : "No"}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        Study Room
+                                        Call Made
                                     </h3>
                                     <p className="font-medium">
-                                        {inventory.studyRoom || "0"}
+                                        {requirement.call ? "Yes" : "No"}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        Car Park
+                                        Viewing Scheduled
                                     </h3>
                                     <p className="font-medium">
-                                        {inventory.carPark || "0"}
+                                        {requirement.viewing ? "Yes" : "No"}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                        PHPP Eligible
+                                        Shared with ICP
                                     </h3>
                                     <p className="font-medium">
-                                        {inventory.phppEligible ? "Yes" : "No"}
+                                        {requirement.sharedWithIndianChannelPartner
+                                            ? "Yes"
+                                            : "No"}
                                     </p>
                                 </div>
                             </div>
-
-                            {inventory.phppDetails && (
-                                <div className="mt-6 p-4">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
-                                        PHPP Details
-                                    </h3>
-                                    <p className="text-sm">
-                                        {inventory.phppDetails}
-                                    </p>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
 
@@ -422,26 +360,24 @@ export default function InventoryDetails({
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-3 p-4">
-                                {inventoryStatus.enumValues.map(
-                                    (statusOption) => (
-                                        <Button
-                                            key={statusOption}
-                                            variant={
-                                                status === statusOption
-                                                    ? "default"
-                                                    : "outline"
-                                            }
-                                            size="sm"
-                                            onClick={() =>
-                                                handleStatusChange(statusOption)
-                                            }
-                                            disabled={isUpdating}
-                                            className="capitalize"
-                                        >
-                                            {statusOption}
-                                        </Button>
-                                    )
-                                )}
+                                {dealStages.enumValues.map((statusOption) => (
+                                    <Button
+                                        key={statusOption}
+                                        variant={
+                                            status === statusOption
+                                                ? "default"
+                                                : "outline"
+                                        }
+                                        size="sm"
+                                        onClick={() =>
+                                            handleStatusChange(statusOption)
+                                        }
+                                        disabled={isUpdating}
+                                        className="capitalize"
+                                    >
+                                        {statusOption}
+                                    </Button>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>
@@ -449,7 +385,7 @@ export default function InventoryDetails({
             </div>
 
             {/* Remarks Section */}
-            {inventory.remarks && (
+            {requirement.remarks && (
                 <motion.section
                     variants={VARIANTS_SECTION}
                     transition={TRANSITION_SECTION}
@@ -461,7 +397,7 @@ export default function InventoryDetails({
                         </CardHeader>
                         <CardContent className="p-6">
                             <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                                {inventory.remarks}
+                                {requirement.remarks}
                             </p>
                         </CardContent>
                     </Card>
