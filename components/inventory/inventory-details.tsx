@@ -283,20 +283,34 @@ export default function InventoryDetails({
                                 <div className="relative space-y-4">
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
                                         <span className="text-zinc-500 dark:text-zinc-400">
-                                            Price (AED)
+                                            Price
                                         </span>
                                         <span className="font-medium">
-                                            {inventory.priceAED?.toLocaleString() ||
-                                                "N/A"}
+                                            {inventory.priceAED
+                                                ? `AED ${Number(inventory.priceAED).toLocaleString(
+                                                      "en-US",
+                                                      {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2,
+                                                      }
+                                                  )}`
+                                                : "N/A"}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
                                         <span className="text-zinc-500 dark:text-zinc-400">
-                                            Price (M AED)
+                                            Price (M)
                                         </span>
                                         <span className="font-medium">
-                                            {inventory.sellingPriceMillionAED?.toString() ||
-                                                "N/A"}
+                                            {inventory.sellingPriceMillionAED
+                                                ? `AED ${(
+                                                      Number(inventory.sellingPriceMillionAED) *
+                                                      1000000
+                                                  ).toLocaleString("en-US", {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2,
+                                                  })}`
+                                                : "N/A"}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
@@ -304,8 +318,15 @@ export default function InventoryDetails({
                                             INR (Cr)
                                         </span>
                                         <span className="font-medium">
-                                            {inventory.inrCr?.toString() ||
-                                                "N/A"}
+                                            {inventory.inrCr
+                                                ? `₹ ${Number(inventory.inrCr).toLocaleString(
+                                                      "en-US",
+                                                      {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2,
+                                                      }
+                                                  )}`
+                                                : "N/A"}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
@@ -313,8 +334,15 @@ export default function InventoryDetails({
                                             Rent (Approx)
                                         </span>
                                         <span className="font-medium">
-                                            {inventory.rentApprox?.toLocaleString() ||
-                                                "N/A"}
+                                            {inventory.rentApprox
+                                                ? `AED ${Number(inventory.rentApprox).toLocaleString(
+                                                      "en-US",
+                                                      {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2,
+                                                      }
+                                                  )}`
+                                                : "N/A"}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2">

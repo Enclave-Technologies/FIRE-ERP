@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectRequirement, dealStages } from "@/db/schema";
+import { SelectRequirement } from "@/db/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,16 +17,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 // import { updateRequirement } from "@/actions/requirement-actions";
 
 // Create a separate component for the status cell to use hooks
 const StatusCell = ({ requirement }: { requirement: SelectRequirement }) => {
     // const { toast } = useToast();
-    // const [status, setStatus] = useState<typeof requirement.status>(
-    //     requirement.status
-    // );
-
+    const [status] = useState<typeof requirement.status>(requirement.status);
     // Function to handle status change
     // const handleStatusChange = async (
     //     newStatus: (typeof dealStages.enumValues)[number]
@@ -190,7 +188,26 @@ export const columns: ColumnDef<SelectRequirement>[] = [
     },
     {
         accessorKey: "budget",
-        header: "Budget",
+        header: "Budget (AED)",
+        cell: ({ row }) => {
+            const budget = row.original.budget;
+            if (budget === null || budget === undefined) return <div>-</div>;
+
+            const numericBudget =
+                typeof budget === "number"
+                    ? budget
+                    : parseFloat(String(budget));
+
+            return (
+                <div>
+                    {!isNaN(numericBudget) && numericBudget > 0
+                        ? `AED ${new Intl.NumberFormat("en-AE").format(
+                              numericBudget
+                          )}`
+                        : "-"}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "preferredSquareFootage",

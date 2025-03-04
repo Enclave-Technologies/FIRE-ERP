@@ -198,14 +198,27 @@ export const columns: ColumnDef<SelectInventory>[] = [
     },
     {
         accessorKey: "sellingPriceMillionAED",
-        header: "Price (M AED)",
-        cell: ({ row }) => (
-            <div>
-                {row.original.sellingPriceMillionAED
-                    ? `${row.original.sellingPriceMillionAED}M AED`
-                    : "-"}
-            </div>
-        ),
+        header: "Price (AED)",
+        cell: ({ row }) => {
+            const price = row.original.sellingPriceMillionAED;
+            if (price === null || price === undefined) return <div>-</div>;
+
+            const numericPrice =
+                typeof price === "number"
+                    ? price
+                    : parseFloat(String(price));
+
+            return (
+                <div>
+                    {!isNaN(numericPrice) && numericPrice > 0
+                        ? `AED ${new Intl.NumberFormat("en-AE", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          }).format(numericPrice * 1000000)}`
+                        : "-"}
+                </div>
+            );
+        },
     },
     {
         accessorKey: "unitStatus",

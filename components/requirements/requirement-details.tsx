@@ -86,10 +86,9 @@ export default function RequirementDetails({
 
         setIsUpdating(true);
         try {
-            const result = await updateRequirement(
-                requirement.requirementId,
-                { status: newStatus }
-            );
+            const result = await updateRequirement(requirement.requirementId, {
+                status: newStatus,
+            });
             if (result.success) {
                 setStatus(newStatus);
                 toast({
@@ -171,10 +170,13 @@ export default function RequirementDetails({
                                 variant={getStatusVariant(status)}
                                 className="text-sm px-3 py-1 pointer-events-none"
                             >
-                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                                {status.charAt(0).toUpperCase() +
+                                    status.slice(1)}
                             </Badge>
                             <Badge
-                                variant={getCategoryVariant(requirement.category)}
+                                variant={getCategoryVariant(
+                                    requirement.category
+                                )}
                                 className="text-sm px-3 py-1 pointer-events-none"
                             >
                                 {requirement.category || "RISE"}
@@ -219,7 +221,14 @@ export default function RequirementDetails({
                                         Budget
                                     </h3>
                                     <p className="text-lg font-medium">
-                                        {requirement.budget || "N/A"}
+                                        {requirement.budget
+                                            ? `AED ${Number(
+                                                  requirement.budget
+                                              ).toLocaleString("en-US", {
+                                                  minimumFractionDigits: 2,
+                                                  maximumFractionDigits: 2,
+                                              })}`
+                                            : "N/A"}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
@@ -227,7 +236,9 @@ export default function RequirementDetails({
                                         Property Type
                                     </h3>
                                     <p className="text-lg font-medium">
-                                        {requirement.rtmOffplan ? "RTM" : "Off-plan"}
+                                        {requirement.rtmOffplan
+                                            ? "RTM"
+                                            : "Off-plan"}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
@@ -333,7 +344,9 @@ export default function RequirementDetails({
                                         Shared with ICP
                                     </h3>
                                     <p className="font-medium">
-                                        {requirement.sharedWithIndianChannelPartner ? "Yes" : "No"}
+                                        {requirement.sharedWithIndianChannelPartner
+                                            ? "Yes"
+                                            : "No"}
                                     </p>
                                 </div>
                             </div>
@@ -347,26 +360,24 @@ export default function RequirementDetails({
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-3 p-4">
-                                {dealStages.enumValues.map(
-                                    (statusOption) => (
-                                        <Button
-                                            key={statusOption}
-                                            variant={
-                                                status === statusOption
-                                                    ? "default"
-                                                    : "outline"
-                                            }
-                                            size="sm"
-                                            onClick={() =>
-                                                handleStatusChange(statusOption)
-                                            }
-                                            disabled={isUpdating}
-                                            className="capitalize"
-                                        >
-                                            {statusOption}
-                                        </Button>
-                                    )
-                                )}
+                                {dealStages.enumValues.map((statusOption) => (
+                                    <Button
+                                        key={statusOption}
+                                        variant={
+                                            status === statusOption
+                                                ? "default"
+                                                : "outline"
+                                        }
+                                        size="sm"
+                                        onClick={() =>
+                                            handleStatusChange(statusOption)
+                                        }
+                                        disabled={isUpdating}
+                                        className="capitalize"
+                                    >
+                                        {statusOption}
+                                    </Button>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>
