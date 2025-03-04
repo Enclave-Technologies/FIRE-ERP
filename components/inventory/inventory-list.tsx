@@ -38,10 +38,10 @@ export default function InventoryList({ inventories }: InventoryListProps) {
                         </CardTitle>
                         <Badge
                             className={`${getStatusColor(
-                                inventory.unitStatus
+                                inventory.unitStatus ?? "unknown"
                             )}`}
                         >
-                            {inventory.unitStatus}
+                            {inventory.unitStatus ?? "Unknown"}
                         </Badge>
                     </CardHeader>
                     <CardContent>

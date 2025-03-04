@@ -58,10 +58,10 @@ const navItems = {
                     title: "Profile",
                     url: "/settings",
                 },
-                {
-                    title: "System",
-                    url: "/profile/system",
-                },
+                // {
+                //     title: "System",
+                //     url: "/settings/system",
+                // },
             ],
         },
         {

@@ -1,6 +1,8 @@
 "use server";
 
-import { SelectUser, Users } from "@/db/schema";
+
+import { Users } from "@/db/schema";
+import type { SelectUser } from "@/db/schema";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 

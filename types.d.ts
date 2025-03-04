@@ -61,6 +61,9 @@ type TableFunctionsProps<TData, TValue> = {
 type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    totalItems?: number;
+    currentPage?: number;
+    pageSize?: number;
 };
 
 type ErrorState = {
@@ -104,3 +107,10 @@ type ErrorDisplayProps = {
     variant?: "error" | "warning" | "info";
     className?: string;
 };
+
+type ProfileSettingsProps = {
+    userId: string;
+    userInfo: SelectUser;
+    userNotifPref: SelectNotificationPreferences;
+};
+

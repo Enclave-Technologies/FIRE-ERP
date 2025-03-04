@@ -1,19 +1,16 @@
 "use server";
 
 import { db } from "@/db";
-import {
-    Inventories,
-    InsertInventory,
-    SelectInventory,
-    inventoryStatus,
-} from "@/db/schema";
-import { asc, desc, eq, ilike, or } from "drizzle-orm";
+import { Inventories, inventoryStatus } from "@/db/schema";
+import type { InsertInventory, SelectInventory } from "@/db/schema";
+import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getInventories(params?: {
     [key: string]: string | string[] | undefined;
-}): Promise<SelectInventory[]> {
+}): Promise<{ data: SelectInventory[]; total: number }> {
     try {
+        // Start with a dynamic query
         let query = db.select().from(Inventories).$dynamic();
 
         // Apply filters if provided
@@ -24,7 +21,6 @@ export async function getInventories(params?: {
                 const value = params.filterValue.toString();
 
                 if (column && value) {
-                    // Handle different column types appropriately
                     switch (column) {
                         case "Project Name":
                             query = query.where(
@@ -144,8 +140,95 @@ export async function getInventories(params?: {
             query = query.orderBy(desc(Inventories.dateAdded));
         }
 
+        // Create a clone of the query for counting before pagination
+        // We need to convert the query to SQL to clone it
+        const countQuery = db
+            .select({ count: count() })
+            .from(Inventories)
+            .$dynamic();
+
+        // Apply the same filters to the count query
+        // We need to manually apply the same filters
+        if (params) {
+            // Filter by column
+            if (params.filterColumn && params.filterValue) {
+                const column = params.filterColumn.toString();
+                const value = params.filterValue.toString();
+
+                if (column && value) {
+                    switch (column) {
+                        case "Project Name":
+                            countQuery.where(
+                                ilike(Inventories.projectName, `%${value}%`)
+                            );
+                            break;
+                        case "Property Type":
+                            countQuery.where(
+                                ilike(Inventories.propertyType, `%${value}%`)
+                            );
+                            break;
+                        case "Location":
+                            countQuery.where(
+                                ilike(Inventories.location, `%${value}%`)
+                            );
+                            break;
+                        case "Status":
+                            // Check if value is a valid inventory status
+                            if (
+                                inventoryStatus.enumValues.includes(
+                                    value as (typeof inventoryStatus.enumValues)[number]
+                                )
+                            ) {
+                                countQuery.where(
+                                    eq(
+                                        Inventories.unitStatus,
+                                        value as (typeof inventoryStatus.enumValues)[number]
+                                    )
+                                );
+                            }
+                            break;
+                    }
+                }
+            }
+
+            // Apply search across multiple columns
+            if (params.search) {
+                const searchValue = params.search.toString();
+                if (searchValue) {
+                    countQuery.where(
+                        or(
+                            ilike(Inventories.projectName, `%${searchValue}%`),
+                            ilike(Inventories.propertyType, `%${searchValue}%`),
+                            ilike(Inventories.location, `%${searchValue}%`),
+                            ilike(Inventories.buildingName, `%${searchValue}%`),
+                            ilike(Inventories.unitNumber, `%${searchValue}%`)
+                        )
+                    );
+                }
+            }
+        }
+
+        // Apply pagination
+        let limit = 10; // Default page size
+        let offset = 0;
+
+        if (params?.page && params?.pageSize) {
+            const page = parseInt(params.page.toString()) || 1;
+            limit = parseInt(params.pageSize.toString()) || 10;
+            offset = (page - 1) * limit;
+        }
+
+        // Execute the count query
+        const countResult = await countQuery;
+        const total = countResult[0]?.count || 0;
+
+        // Apply limit and offset to the main query
+        query = query.limit(limit).offset(offset);
+
+        // Execute the main query
         const inventories = await query;
-        return inventories;
+
+        return { data: inventories, total };
     } catch (error) {
         console.error("Error fetching inventories:", error);
         throw new Error("Failed to fetch inventories");
@@ -190,6 +273,10 @@ export async function getInventoryById(
     inventoryId: string
 ): Promise<SelectInventory | undefined> {
     try {
+        if (!inventoryId) {
+            throw new Error("Inventory ID is required");
+        }
+
         const [inventory] = await db
             .select()
             .from(Inventories)
@@ -208,6 +295,10 @@ export async function updateInventoryDetails(
     data: Partial<InsertInventory>
 ): Promise<{ success: boolean; message?: string }> {
     try {
+        if (!inventoryId) {
+            return { success: false, message: "Inventory ID is required" };
+        }
+
         await db
             .update(Inventories)
             .set(data)

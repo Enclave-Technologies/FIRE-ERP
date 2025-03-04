@@ -23,11 +23,10 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet";
 import { useState } from "react";
-import AddInventory from "@/components/inventory/add-inventory";
+import AddRequirement from "@/components/requirements/add-requirement";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-
 
 export function DataTable<TData, TValue>({
     columns,
@@ -50,6 +49,7 @@ export function DataTable<TData, TValue>({
     const handleNewClick = () => {
         setIsAddSheetOpen(true);
     };
+
     // Calculate total pages
     const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -94,7 +94,9 @@ export function DataTable<TData, TValue>({
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
+                                    data-state={
+                                        row.getIsSelected() && "selected"
+                                    }
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
@@ -125,7 +127,8 @@ export function DataTable<TData, TValue>({
                 <div className="flex items-center justify-between space-x-2 py-4">
                     <div className="text-sm text-muted-foreground">
                         Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                        {Math.min(currentPage * pageSize, totalItems)} of {totalItems} entries
+                        {Math.min(currentPage * pageSize, totalItems)} of{" "}
+                        {totalItems} entries
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
@@ -153,13 +156,12 @@ export function DataTable<TData, TValue>({
                 </div>
             )}
 
-
             {/* Add Inventory Sheet */}
             <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>
                 <SheetContent className="w-full md:w-1/2 overflow-y-auto">
                     <SheetHeader>
-                        <SheetTitle>Add New Inventory</SheetTitle>
-                        <AddInventory />
+                        <SheetTitle>Add New Requirement</SheetTitle>
+                        <AddRequirement />
                     </SheetHeader>
                 </SheetContent>
             </Sheet>

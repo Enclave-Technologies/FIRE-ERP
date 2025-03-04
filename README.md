@@ -1,12 +1,13 @@
 # FIRE-ERP
 
--   [ ] Deployment
+-   [x] Deployment
 -   [x] Theming
 -   [x] Supabase setup
 -   [x] Auth
 -   [x] Redirections
 -   [ ] Dashboard
 -   [x] Inventory
--   [ ] Requirements
+-   [x] Requirements
 -   [x] User management
--   [ ] Settings
+-   [x] Settings
+-   [ ] Notifications

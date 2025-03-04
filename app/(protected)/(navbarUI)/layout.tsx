@@ -38,6 +38,7 @@ export default async function AppLayout({
             <AppSidebar data={data.user} />
             <SidebarInset>
                 <MainHeader />
+
                 {children}
             </SidebarInset>
         </SidebarProvider>
