@@ -280,10 +280,17 @@ export async function updateUserProfile(
                 };
             }
         } else {
-            // For email/password users, verify current password
+            // For email/password users, verify current password using the CURRENT email
+            if (!user || !user.email) {
+                return {
+                    success: false,
+                    message: "Unable to retrieve current user email",
+                };
+            }
+
             const { data: authData, error: authError } =
                 await supabase.auth.signInWithPassword({
-                    email: email,
+                    email: user.email, // Use the current email from the user object
                     password: currentPassword,
                 });
 
