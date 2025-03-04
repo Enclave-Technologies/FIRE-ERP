@@ -1,6 +1,7 @@
 "use server";
 
-import { supabase } from "@/app/supabaseClient";
+import "server-only";
+import { createClient } from "@/supabase/server";
 import { db } from "@/db";
 import { NotificationPreferences, Users, rolesEnum } from "@/db/schema";
 import { asc, count, desc, eq, like, or } from "drizzle-orm";
@@ -261,6 +262,8 @@ export async function updateUserProfile(
     currentPassword: string
 ) {
     try {
+        const supabase = await createClient();
+
         // Get user's auth provider
         const {
             data: { user },
@@ -302,43 +305,99 @@ export async function updateUserProfile(
             }
         }
 
-        // If password is correct, update the user information
-        const result = await db
-            .update(Users)
-            .set({
-                name: name,
-                email: email,
-                updatedAt: new Date(),
-            })
-            .where(eq(Users.userId, userId));
-
-        // Check if the update was successful
-        if (!result) {
-            throw new Error("Failed to update user profile");
-        }
-
-        // Update email and user data in Supabase Auth
+        // First update the auth data in Supabase Auth
+        // Update email first
         const { error: emailError } = await supabase.auth.updateUser({
             email: email,
         });
 
-        if (emailError) throw emailError;
+        if (emailError) {
+            throw new Error(
+                `Failed to update email in auth: ${emailError.message}`
+            );
+        }
 
+        // Then update user metadata
         const { error: nameError } = await supabase.auth.updateUser({
             data: { full_name: name },
         });
 
-        if (nameError) throw nameError;
+        if (nameError) {
+            // If name update fails, try to rollback email update
+            if (user?.email && user.email !== email) {
+                await supabase.auth.updateUser({
+                    email: user.email,
+                });
+            }
+            throw new Error(
+                `Failed to update name in auth: ${nameError.message}`
+            );
+        }
+
+        // If auth updates are successful, update the database
+        try {
+            const result = await db
+                .update(Users)
+                .set({
+                    name: name,
+                    email: email,
+                    updatedAt: new Date(),
+                })
+                .where(eq(Users.userId, userId));
+
+            // Check if the update was successful
+            if (!result) {
+                // If DB update fails, try to rollback auth changes
+                if (user?.email && user.email !== email) {
+                    await supabase.auth.updateUser({
+                        email: user.email,
+                    });
+                }
+                if (
+                    user?.user_metadata?.full_name &&
+                    user.user_metadata.full_name !== name
+                ) {
+                    await supabase.auth.updateUser({
+                        data: { full_name: user.user_metadata.full_name },
+                    });
+                }
+                throw new Error("Failed to update user profile in database");
+            }
+        } catch (dbError) {
+            // If DB update fails, try to rollback auth changes
+            if (user?.email && user.email !== email) {
+                await supabase.auth.updateUser({
+                    email: user.email,
+                });
+            }
+            if (
+                user?.user_metadata?.full_name &&
+                user.user_metadata.full_name !== name
+            ) {
+                await supabase.auth.updateUser({
+                    data: { full_name: user.user_metadata.full_name },
+                });
+            }
+            throw dbError;
+        }
 
         return { success: true, message: "Profile updated successfully" };
     } catch (error) {
         console.error("Error updating profile:", error);
-        return { success: false, message: "Failed to update profile" };
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update profile",
+        };
     }
 }
 
 export async function updateUserEmail(userId: string, newEmail: string) {
     try {
+        const supabase = await createClient();
+
         // Get user's auth provider
         const {
             data: { user },
@@ -355,29 +414,54 @@ export async function updateUserEmail(userId: string, newEmail: string) {
             };
         }
 
-        // Update email in the database using Drizzle ORM
-        const result = await db
-            .update(Users)
-            .set({
-                email: newEmail,
-                updatedAt: new Date(),
-            })
-            .where(eq(Users.userId, userId));
-
-        if (!result) {
-            throw new Error("Failed to update email in the database");
-        }
-
-        // Also update email in Supabase Auth
+        // First update email in Supabase Auth
         const { error } = await supabase.auth.updateUser({
             email: newEmail,
         });
 
-        if (error) throw error;
+        if (error) {
+            throw new Error(`Failed to update email in auth: ${error.message}`);
+        }
+
+        // If auth update is successful, update the database
+        try {
+            const result = await db
+                .update(Users)
+                .set({
+                    email: newEmail,
+                    updatedAt: new Date(),
+                })
+                .where(eq(Users.userId, userId));
+
+            if (!result) {
+                // If DB update fails, try to rollback auth changes
+                if (user?.email && user.email !== newEmail) {
+                    await supabase.auth.updateUser({
+                        email: user.email,
+                    });
+                }
+                throw new Error("Failed to update email in the database");
+            }
+        } catch (dbError) {
+            // If DB update fails, try to rollback auth changes
+            if (user?.email && user.email !== newEmail) {
+                await supabase.auth.updateUser({
+                    email: user.email,
+                });
+            }
+            throw dbError;
+        }
+
         return { success: true, message: "Email updated successfully" };
     } catch (error) {
         console.error("Error updating email:", error);
-        return { success: false, message: "Failed to update email" };
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update email",
+        };
     }
 }
 
@@ -387,6 +471,8 @@ export async function updateUserPassword(
     newPassword: string
 ) {
     try {
+        const supabase = await createClient();
+
         // First get the user's email to verify the current password
         const user = await db
             .select({ email: Users.email })
@@ -420,11 +506,17 @@ export async function updateUserPassword(
             password: newPassword,
         });
 
-        if (error) throw error;
+        if (error) {
+            throw new Error(`Failed to update password: ${error.message}`);
+        }
+        
         return { success: true, message: "Password updated successfully" };
     } catch (error) {
         console.error("Error updating password:", error);
-        return { success: false, message: "Failed to update password" };
+        return { 
+            success: false, 
+            message: error instanceof Error ? error.message : "Failed to update password" 
+        };
     }
 }
 
