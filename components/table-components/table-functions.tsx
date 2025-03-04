@@ -137,7 +137,7 @@ const TableFunctions = <TData, TValue>({
                 <input
                     type="hidden"
                     name="pageSize"
-                    value={new URLSearchParams(window.location.search).get("pageSize") || "10"}
+                    value={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("pageSize") || "10" : "10"}
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

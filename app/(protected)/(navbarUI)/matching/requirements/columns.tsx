@@ -13,55 +13,55 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Eye, Copy, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+// import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 
-import { updateRequirement } from "@/actions/requirement-actions";
+// import { updateRequirement } from "@/actions/requirement-actions";
 
 // Create a separate component for the status cell to use hooks
 const StatusCell = ({ requirement }: { requirement: SelectRequirement }) => {
-    const { toast } = useToast();
-    const [status, setStatus] = useState<typeof requirement.status>(
-        requirement.status
-    );
+    // const { toast } = useToast();
+    // const [status, setStatus] = useState<typeof requirement.status>(
+    //     requirement.status
+    // );
 
     // Function to handle status change
-    const handleStatusChange = async (
-        newStatus: (typeof dealStages.enumValues)[number]
-    ) => {
-        if (newStatus === status) return;
+    // const handleStatusChange = async (
+    //     newStatus: (typeof dealStages.enumValues)[number]
+    // ) => {
+    //     if (newStatus === status) return;
 
-        try {
-            const result = await updateRequirement(requirement.requirementId, {
-                status: newStatus,
-            });
+    //     try {
+    //         const result = await updateRequirement(requirement.requirementId, {
+    //             status: newStatus,
+    //         });
 
-            if (result.success) {
-                toast({
-                    title: "Status Updated",
-                    description: `Requirement status changed to ${newStatus}`,
-                });
+    //         if (result.success) {
+    //             toast({
+    //                 title: "Status Updated",
+    //                 description: `Requirement status changed to ${newStatus}`,
+    //             });
 
-                // Update the local state to reflect the change
-                setStatus(newStatus);
-            } else {
-                toast({
-                    title: "Error",
-                    description: result.message || "Failed to update status",
-                    variant: "destructive",
-                });
-            }
-        } catch (err) {
-            console.error("Error updating status:", err);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred",
-                variant: "destructive",
-            });
-        }
-    };
+    //             // Update the local state to reflect the change
+    //             setStatus(newStatus);
+    //         } else {
+    //             toast({
+    //                 title: "Error",
+    //                 description: result.message || "Failed to update status",
+    //                 variant: "destructive",
+    //             });
+    //         }
+    //     } catch (err) {
+    //         console.error("Error updating status:", err);
+    //         toast({
+    //             title: "Error",
+    //             description: "An unexpected error occurred",
+    //             variant: "destructive",
+    //         });
+    //     }
+    // };
 
     const getStatusVariant = (
         status: string | null
@@ -87,7 +87,7 @@ const StatusCell = ({ requirement }: { requirement: SelectRequirement }) => {
             <Badge variant={getStatusVariant(status)} className="mr-2">
                 {status}
             </Badge>
-            <DropdownMenu>
+            {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">
                         <span className="sr-only">Open menu</span>
@@ -107,7 +107,7 @@ const StatusCell = ({ requirement }: { requirement: SelectRequirement }) => {
                         </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
         </div>
     );
 };

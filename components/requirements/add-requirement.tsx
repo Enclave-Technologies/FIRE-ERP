@@ -27,9 +27,11 @@ const formSchema = z.object({
         .min(1, { message: "Preferred location is required" }),
     budget: z.string().min(1, { message: "Budget is required" }),
     description: z.string().min(1, { message: "Description is required" }),
-    preferredSquareFootage: z.coerce.number().optional(),
-    preferredROI: z.coerce.number().optional(),
-    rtmOffplan: z.boolean().default(false),
+    preferredSquareFootage: z.string().optional(), // Change to string
+    preferredROI: z.string().optional(), // Change to string
+    rtmOffplan: z
+        .enum(["RTM", "OFFPLAN", "RTM-OFFPLAN", "NONE"])
+        .default("NONE"),
     phpp: z.boolean().default(false),
     sharedWithIndianChannelPartner: z.boolean().default(false),
     call: z.boolean().default(false),
@@ -47,9 +49,9 @@ export default function AddRequirement() {
             preferredLocation: "",
             budget: "",
             description: "",
-            preferredSquareFootage: undefined,
-            preferredROI: undefined,
-            rtmOffplan: false,
+            preferredSquareFootage: "",
+            preferredROI: "",
+            rtmOffplan: "NONE", // Update to match the new enum structure
             phpp: false,
             sharedWithIndianChannelPartner: false,
             call: false,
@@ -196,13 +198,22 @@ export default function AddRequirement() {
                     name="rtmOffplan"
                     render={({ field }) => (
                         <FormItem>
-                            <FormControl>
-                                <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                />
-                            </FormControl>
                             <FormLabel>RTM Offplan</FormLabel>
+                            <FormControl>
+                                <select
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    className="ml-2"
+                                >
+                                    <option value="RTM">RTM</option>
+                                    <option value="OFFPLAN">OFFPLAN</option>
+                                    <option value="RTM-OFFPLAN">
+                                        RTM/OFFPLAN
+                                    </option>
+                                    <option value="NONE">None</option>
+                                </select>
+                            </FormControl>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />

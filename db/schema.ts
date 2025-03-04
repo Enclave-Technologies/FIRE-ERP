@@ -33,6 +33,13 @@ export const dealMilestones = pgEnum("dealMilestones", [
     "closed",
 ]);
 
+export const rtmOffplanStatus = pgEnum("rtmOffplanStatus", [
+    "RTM",
+    "OFFPLAN",
+    "RTM-OFFPLAN",
+    "NONE", // Option for no selection
+]);
+
 export const inventoryStatus = pgEnum("inventoryStatus", [
     "available",
     "sold",
@@ -72,7 +79,7 @@ export const Requirements = pgTable("requirements", {
     preferredType: varchar("preferred_type", { length: 100 }).notNull(), // Type of property
     preferredLocation: varchar("preferred_location", { length: 255 }).notNull(), // Desired location
     budget: varchar("budget", { length: 50 }).notNull(), // Budget range (e.g., "900K - 1.2M")
-    rtmOffplan: boolean("rtm_offplan").default(false), // True if RTM, false for off-plan
+    rtmOffplan: rtmOffplanStatus("rtm_offplan").default("NONE"), // Change to use the new enum
     phpp: boolean("phpp").default(false), // Indicates if a PHPP is applicable
     preferredSquareFootage: numeric("preferred_square_footage", {
         precision: 10,
