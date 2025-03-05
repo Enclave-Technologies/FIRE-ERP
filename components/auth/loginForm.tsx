@@ -122,7 +122,7 @@ export function LoginForm({
                                         required
                                     />
                                     <Link
-                                        href="#"
+                                        href="/reset-password"
                                         className="ml-auto text-sm underline-offset-4 hover:underline"
                                     >
                                         Forgot your password?
