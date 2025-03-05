@@ -31,7 +31,7 @@ const formSchema = z.object({
     preferredSquareFootage: z.string().optional(), // Change to string
     preferredROI: z.string().optional(), // Change to string
     rtmOffplan: z
-        .enum(["RTM", "OFFPLAN", "RTM-OFFPLAN", "NONE"])
+        .enum(["RTM", "OFFPLAN", "RTM/OFFPLAN", "NONE"])
         .default("NONE"),
     phpp: z.boolean().default(false),
     sharedWithIndianChannelPartner: z.boolean().default(false),
@@ -219,7 +219,7 @@ export default function AddRequirement() {
                                 >
                                     <option value="RTM">RTM</option>
                                     <option value="OFFPLAN">OFFPLAN</option>
-                                    <option value="RTM-OFFPLAN">
+                                    <option value="RTM/OFFPLAN">
                                         RTM/OFFPLAN
                                     </option>
                                     <option value="NONE">None</option>

@@ -45,7 +45,7 @@ const requirementFormSchema = z.object({
     preferredSquareFootage: z.string().optional(),
     preferredROI: z.string().optional(),
     rtmOffplan: z
-        .enum(["RTM", "OFFPLAN", "RTM-OFFPLAN", "NONE"])
+        .enum(["RTM", "OFFPLAN", "RTM/OFFPLAN", "NONE"])
         .default("NONE"),
     phpp: z.boolean().default(false),
     sharedWithIndianChannelPartner: z.boolean().default(false),
@@ -111,7 +111,7 @@ export function EditRequirement({
 
         try {
             const formData = form.getValues();
-            
+
             // Process budget field using the utility function
             const processedBudget = processBudgetString(formData.budget);
 
@@ -313,7 +313,7 @@ export function EditRequirement({
                                                     <option value="OFFPLAN">
                                                         OFFPLAN
                                                     </option>
-                                                    <option value="RTM-OFFPLAN">
+                                                    <option value="RTM/OFFPLAN">
                                                         RTM/OFFPLAN
                                                     </option>
                                                     <option value="NONE">

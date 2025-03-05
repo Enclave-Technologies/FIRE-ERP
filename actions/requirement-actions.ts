@@ -183,14 +183,14 @@ export async function getRequirements(params?: {
                                 [
                                     "RTM",
                                     "OFFPLAN",
-                                    "RTM-OFFPLAN",
+                                    "RTM/OFFPLAN",
                                     "NONE",
                                 ].includes(value)
                             ) {
                                 const typedValue = value as
                                     | "RTM"
                                     | "OFFPLAN"
-                                    | "RTM-OFFPLAN"
+                                    | "RTM/OFFPLAN"
                                     | "NONE";
 
                                 query = query.where(

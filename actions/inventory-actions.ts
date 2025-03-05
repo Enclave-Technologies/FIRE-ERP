@@ -113,7 +113,14 @@ export async function getInventories(params?: {
                                 : desc(Inventories.dateAdded)
                         );
                         break;
-                    case "Price (M AED)":
+                    case "Price (AED)":
+                        query = query.orderBy(
+                            sortDirection === "asc"
+                                ? asc(Inventories.priceAED)
+                                : desc(Inventories.priceAED)
+                        );
+                        break;
+                    case "Selling Price (AED)":
                         query = query.orderBy(
                             sortDirection === "asc"
                                 ? asc(Inventories.sellingPriceMillionAED)

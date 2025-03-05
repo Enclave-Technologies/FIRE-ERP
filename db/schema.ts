@@ -36,7 +36,7 @@ export const dealMilestones = pgEnum("dealMilestones", [
 export const rtmOffplanStatus = pgEnum("rtmOffplanStatus", [
     "RTM",
     "OFFPLAN",
-    "RTM-OFFPLAN",
+    "RTM/OFFPLAN",
     "NONE", // Option for no selection
 ]);
 
