@@ -35,7 +35,9 @@ export function DataTable<TData, TValue>({
     currentPage = 1,
     pageSize = 10,
 }: DataTableProps<TData, TValue>) {
+
     const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
