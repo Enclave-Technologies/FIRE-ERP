@@ -16,6 +16,8 @@ import { Users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { HOST_URL } from "@/utils/contants";
 
+import { Resend } from "resend";
+
 export async function login(state: { error: string }, formData: FormData) {
     const supabase = await createClient();
 
@@ -170,4 +172,85 @@ export async function UserInfo(userId: string) {
 export async function IsGuest(userId: string) {
     const user = await db.select().from(Users).where(eq(Users.userId, userId));
     return user[0].role === "guest";
+}
+
+export async function createUser(name: string, email: string) {
+    try {
+        // Use the admin client with service role key for admin operations
+        // const supabase = await createAdminClient();
+        const supabase = await createClient();
+
+        // Generate a random password for the user
+        const tempPassword = Math.random().toString(36).slice(-8);
+
+        // Create the user in Supabase Auth
+        // const { data: authData, error: authError } =
+        //     await supabase.auth.admin.inviteUserByEmail(email);
+
+        const { error: authError, data: authData } = await supabase.auth.signUp(
+            {
+                email,
+                password: tempPassword,
+                options: {
+                    data: {
+                        full_name: name,
+                    },
+                },
+            }
+        );
+
+        console.log(authData);
+
+        console.log(authError);
+
+        if (authError) {
+            throw new Error(
+                `Failed to create user in auth: ${authError.message}`
+            );
+        }
+
+        if (!authData.user) {
+            throw new Error("User creation failed: No user returned from auth");
+        }
+
+        // Insert the user into our database
+        await db.insert(Users).values({
+            userId: authData.user.id,
+            name: name,
+            email: email,
+            role: "guest", // Default role
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        // Send welcome email with temporary password
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        const { error: emailError } = await resend.emails.send({
+            from: "onboarding@fire-erp.enclave.live",
+            to: email,
+            subject: "Welcome to Fire ERP",
+            html: `<p>Your account has been created successfully. Your temporary password is: <strong>${tempPassword}</strong></p>
+                   <p>Please change your password after logging in.</p>`,
+        });
+
+        if (emailError) {
+            console.error("Failed to send welcome email:", emailError);
+            // Continue even if email fails since user creation succeeded
+        }
+
+        return {
+            success: true,
+            message: "User created successfully",
+            userId: authData.user.id,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to create user",
+        };
+    }
 }
