@@ -1,6 +1,17 @@
 "use client";
 
 import { SelectRequirement } from "@/db/schema";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { deleteRequirement } from "@/actions/requirement-actions";
 
 // Extended type for requirements with deal status
 type RequirementWithDeal = SelectRequirement & { hasDeal: boolean };
@@ -14,7 +25,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Copy, Edit } from "lucide-react";
+import { MoreHorizontal, Eye, Copy, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { EditRequirement } from "@/components/requirements/edit-requirement";
 import { Badge } from "@/components/ui/badge";
@@ -137,6 +148,8 @@ const ActionsCell = ({ requirement }: { requirement: RequirementWithDeal }) => {
     const router = useRouter();
     const { toast } = useToast();
     const [showEditSheet, setShowEditSheet] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleViewDetails = () => {
         router.push(`/matching/requirements/${requirement.requirementId}`);
@@ -178,8 +191,81 @@ const ActionsCell = ({ requirement }: { requirement: RequirementWithDeal }) => {
                     >
                         <Edit className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowDeleteDialog(true);
+                        }}
+                        className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-950"
+                    >
+                        <Trash className="mr-2 h-4 w-4" /> Delete
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            <AlertDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Are you sure you want to delete this requirement?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete the requirement and remove its data from our
+                            servers.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={isDeleting}
+                            onClick={async () => {
+                                setIsDeleting(true);
+                                try {
+                                    const result = await deleteRequirement(
+                                        requirement.requirementId
+                                    );
+                                    if (result.success) {
+                                        toast({
+                                            title: "Requirement Deleted",
+                                            description:
+                                                "Requirement was successfully deleted",
+                                        });
+                                        router.refresh();
+                                    } else {
+                                        toast({
+                                            title: "Error",
+                                            description:
+                                                result.message ||
+                                                "Failed to delete requirement",
+                                            variant: "destructive",
+                                        });
+                                    }
+                                } catch {
+                                    toast({
+                                        title: "Error",
+                                        description:
+                                            "An unexpected error occurred",
+                                        variant: "destructive",
+                                    });
+                                } finally {
+                                    setIsDeleting(false);
+                                    setShowDeleteDialog(false);
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Edit Requirement Sheet - Moved outside of dropdown to prevent it from closing */}
             {showEditSheet && (

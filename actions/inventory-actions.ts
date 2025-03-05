@@ -323,3 +323,26 @@ export async function updateInventoryDetails(
         };
     }
 }
+
+export async function deleteInventory(
+    inventoryId: string
+): Promise<{ success: boolean; message?: string }> {
+    try {
+        if (!inventoryId) {
+            return { success: false, message: "Inventory ID is required" };
+        }
+
+        await db
+            .delete(Inventories)
+            .where(eq(Inventories.inventoryId, inventoryId));
+
+        revalidatePath("/matching/inventory");
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting inventory:", error);
+        return {
+            success: false,
+            message: "Failed to delete inventory",
+        };
+    }
+}

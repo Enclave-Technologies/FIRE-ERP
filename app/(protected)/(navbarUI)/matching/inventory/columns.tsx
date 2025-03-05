@@ -4,6 +4,16 @@ import { SelectInventory, inventoryStatus } from "@/db/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -11,14 +21,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Copy, Edit } from "lucide-react";
+import { MoreHorizontal, Eye, Copy, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { EditInventory } from "@/components/inventory/edit-inventory";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
-
+import { deleteInventory } from "@/actions/inventory-actions";
 import { updateInventoryStatus } from "@/actions/inventory-actions";
 
 // Create a separate component for the status cell to use hooks
@@ -116,6 +126,8 @@ const ActionsCell = ({ inventory }: { inventory: SelectInventory }) => {
     const router = useRouter();
     const { toast } = useToast();
     const [showEditSheet, setShowEditSheet] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleViewDetails = () => {
         router.push(`/matching/inventory/${inventory.inventoryId}`);
@@ -159,8 +171,81 @@ const ActionsCell = ({ inventory }: { inventory: SelectInventory }) => {
                     >
                         <Edit className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowDeleteDialog(true);
+                        }}
+                        className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-950"
+                    >
+                        <Trash className="mr-2 h-4 w-4" /> Delete
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            <AlertDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Are you sure you want to delete this inventory?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete the inventory and remove its data from our
+                            servers.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={isDeleting}
+                            onClick={async () => {
+                                setIsDeleting(true);
+                                try {
+                                    const result = await deleteInventory(
+                                        inventory.inventoryId
+                                    );
+                                    if (result.success) {
+                                        toast({
+                                            title: "Inventory Deleted",
+                                            description:
+                                                "Inventory was successfully deleted",
+                                        });
+                                        router.refresh();
+                                    } else {
+                                        toast({
+                                            title: "Error",
+                                            description:
+                                                result.message ||
+                                                "Failed to delete inventory",
+                                            variant: "destructive",
+                                        });
+                                    }
+                                } catch {
+                                    toast({
+                                        title: "Error",
+                                        description:
+                                            "An unexpected error occurred",
+                                        variant: "destructive",
+                                    });
+                                } finally {
+                                    setIsDeleting(false);
+                                    setShowDeleteDialog(false);
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {isDeleting ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* Edit Inventory Sheet - Moved outside of dropdown to prevent it from closing */}
             {showEditSheet && (
@@ -174,6 +259,7 @@ const ActionsCell = ({ inventory }: { inventory: SelectInventory }) => {
     );
 };
 
+// Rest of the file remains unchanged...
 export const columns: ColumnDef<SelectInventory>[] = [
     {
         accessorKey: "projectName",

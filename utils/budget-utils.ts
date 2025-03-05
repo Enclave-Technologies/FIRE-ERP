@@ -9,17 +9,20 @@
  */
 export const parseBudgetValue = (value: string): string => {
     // Remove any commas and spaces
-    value = value.replace(/,|\s/g, '');
-    
+    value = value.replace(/,|\s/g, "");
+
     // Handle K/M suffixes
-    if (value.toUpperCase().includes('K')) {
-        const num = parseFloat(value.toUpperCase().replace('K', ''));
+    if (value.toUpperCase().includes("K")) {
+        const num = parseFloat(value.toUpperCase().replace("K", ""));
         return (num * 1000).toString();
-    } else if (value.toUpperCase().includes('M')) {
-        const num = parseFloat(value.toUpperCase().replace('M', ''));
+    } else if (value.toUpperCase().includes("M")) {
+        const num = parseFloat(value.toUpperCase().replace("M", ""));
         return (num * 1000000).toString();
+    } else if (value.toUpperCase().includes("CR")) {
+        const num = parseFloat(value.toUpperCase().replace("CR", ""));
+        return (num * 10000000).toString();
     }
-    
+
     return value;
 };
 
@@ -29,24 +32,24 @@ export const parseBudgetValue = (value: string): string => {
  * @returns The formatted budget string with commas
  */
 export const formatBudgetForDisplay = (budget: string): string => {
-    if (!budget) return '';
-    
+    if (!budget) return "";
+
     // Handle range format (e.g., "900000-1000000")
-    if (budget.includes('-')) {
-        const parts = budget.split('-');
-        const formattedParts = parts.map(part => {
-            const num = parseFloat(part.trim().replace(/[^0-9.]/g, ''));
-            return !isNaN(num) 
-                ? new Intl.NumberFormat('en-US').format(num) 
+    if (budget.includes("-")) {
+        const parts = budget.split("-");
+        const formattedParts = parts.map((part) => {
+            const num = parseFloat(part.trim().replace(/[^0-9.]/g, ""));
+            return !isNaN(num)
+                ? new Intl.NumberFormat("en-US").format(num)
                 : part.trim();
         });
-        return formattedParts.join(' - ');
-    } 
+        return formattedParts.join(" - ");
+    }
     // Handle single value
     else {
-        const num = parseFloat(budget.replace(/[^0-9.]/g, ''));
+        const num = parseFloat(budget.replace(/[^0-9.]/g, ""));
         return !isNaN(num)
-            ? new Intl.NumberFormat('en-US').format(num)
+            ? new Intl.NumberFormat("en-US").format(num)
             : budget;
     }
 };
@@ -57,12 +60,12 @@ export const formatBudgetForDisplay = (budget: string): string => {
  * @returns The processed budget string
  */
 export const processBudgetString = (budget: string): string => {
-    if (!budget) return '';
-    
-    if (budget.includes('-')) {
-        const parts = budget.split('-');
-        const parsedParts = parts.map(part => parseBudgetValue(part.trim()));
-        return parsedParts.join('-');
+    if (!budget) return "";
+
+    if (budget.includes("-")) {
+        const parts = budget.split("-");
+        const parsedParts = parts.map((part) => parseBudgetValue(part.trim()));
+        return parsedParts.join("-");
     } else {
         return parseBudgetValue(budget);
     }
