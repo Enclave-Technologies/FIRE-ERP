@@ -174,7 +174,11 @@ export async function IsGuest(userId: string) {
     return user[0].role === "guest";
 }
 
-export async function createUser(name: string, email: string) {
+export async function createUser(
+    name: string,
+    email: string,
+    role: "broker" | "customer" | "admin" | "staff" | "guest"
+) {
     try {
         // Use the admin client with service role key for admin operations
         // const supabase = await createAdminClient();
@@ -218,7 +222,7 @@ export async function createUser(name: string, email: string) {
             userId: authData.user.id,
             name: name,
             email: email,
-            role: "guest", // Default role
+            role: role,
             createdAt: new Date(),
             updatedAt: new Date(),
         });
@@ -230,8 +234,10 @@ export async function createUser(name: string, email: string) {
             from: "onboarding@fire-erp.enclave.live",
             to: email,
             subject: "Welcome to Fire ERP",
-            html: `<p>Your account has been created successfully. Your temporary password is: <strong>${tempPassword}</strong></p>
-                   <p>Please change your password after logging in.</p>`,
+            html: `<p>Your account has been created successfully!</p>
+                <p>Your temporary password is: <strong style="color: #007bff;">${tempPassword}</strong></p>
+                <p>Please check your email for the verification link to activate your account.</p>
+                <p>After logging in, make sure to change your password for security reasons.</p>`,
         });
 
         if (emailError) {

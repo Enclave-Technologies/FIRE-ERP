@@ -6,6 +6,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
     Form,
     FormControl,
     FormField,
@@ -20,6 +27,9 @@ import { useRouter } from "next/navigation";
 const formSchema = z.object({
     fullName: z.string().min(1, { message: "Full name is required" }),
     email: z.string().email({ message: "Invalid email address" }),
+    role: z.enum(["broker", "customer", "admin", "staff", "guest"], {
+        required_error: "Please select a role",
+    }),
 });
 
 export default function AddUserSheet() {
@@ -28,6 +38,7 @@ export default function AddUserSheet() {
         defaultValues: {
             fullName: "",
             email: "",
+            role: "guest",
         },
     });
 
@@ -46,7 +57,11 @@ export default function AddUserSheet() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
         try {
-            const result = await createUser(values.fullName, values.email);
+            const result = await createUser(
+                values.fullName,
+                values.email,
+                values.role
+            );
 
             if (!result.success) {
                 throw new Error(result.message);
@@ -102,6 +117,37 @@ export default function AddUserSheet() {
                             <FormControl>
                                 <Input type="email" {...field} />
                             </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Role</FormLabel>
+                            <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                            >
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="broker">
+                                        Broker
+                                    </SelectItem>
+                                    <SelectItem value="customer">
+                                        Customer
+                                    </SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                    <SelectItem value="staff">Staff</SelectItem>
+                                    <SelectItem value="guest">Guest</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <FormMessage />
                         </FormItem>
                     )}
