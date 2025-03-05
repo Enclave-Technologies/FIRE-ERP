@@ -19,7 +19,14 @@ import type { DataTableProps } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-
+import { useState } from "react";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet";
+import AddUserSheet from "@/components/auth/add-user";
 
 export function DataTable<TData, TValue>({
     columns,
@@ -28,6 +35,7 @@ export function DataTable<TData, TValue>({
     currentPage = 1,
     pageSize = 10,
 }: DataTableProps<TData, TValue>) {
+    const [isAddUserOpen, setIsAddUserOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -37,6 +45,10 @@ export function DataTable<TData, TValue>({
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
+
+    const handleNewClick = () => {
+        setIsAddUserOpen(true);
+    };
 
     // Calculate total pages
     const totalPages = Math.ceil(totalItems / pageSize);
@@ -51,7 +63,11 @@ export function DataTable<TData, TValue>({
 
     return (
         <div className="rounded-md">
-            <TableFunctions columns={columns} action="/users" />
+            <TableFunctions
+                columns={columns}
+                action="/users"
+                onNewClick={handleNewClick}
+            />
             <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
@@ -135,6 +151,16 @@ export function DataTable<TData, TValue>({
                     </div>
                 </div>
             )}
+
+            {/* Add User Sheet */}
+            <Sheet open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                <SheetContent className="w-full md:w-1/2 overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle>Invite New User by Email</SheetTitle>
+                    </SheetHeader>
+                    <AddUserSheet />
+                </SheetContent>
+            </Sheet>
         </div>
     );
 }

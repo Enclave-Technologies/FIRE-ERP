@@ -64,6 +64,7 @@ export const Users = pgTable("users", {
         .notNull()
         .$onUpdate(() => new Date()),
     lastLogin: timestamp("last_login"),
+    isDisabled: boolean("is_disabled").default(false),
 }).enableRLS();
 
 export const Requirements = pgTable("requirements", {

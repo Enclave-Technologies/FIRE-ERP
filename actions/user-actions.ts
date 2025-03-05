@@ -509,13 +509,16 @@ export async function updateUserPassword(
         if (error) {
             throw new Error(`Failed to update password: ${error.message}`);
         }
-        
+
         return { success: true, message: "Password updated successfully" };
     } catch (error) {
         console.error("Error updating password:", error);
-        return { 
-            success: false, 
-            message: error instanceof Error ? error.message : "Failed to update password" 
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update password",
         };
     }
 }
@@ -594,5 +597,4 @@ export async function updateNotificationPreferences(
             message: "Failed to update notification preferences",
         };
     }
-
 }

@@ -16,6 +16,8 @@ import { Users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { HOST_URL } from "@/utils/contants";
 
+import { Resend } from "resend";
+
 export async function login(state: { error: string }, formData: FormData) {
     const supabase = await createClient();
 
@@ -35,6 +37,20 @@ export async function login(state: { error: string }, formData: FormData) {
     }
 
     const { email, password } = loginValidation.data;
+
+    // Check if user is disabled
+    const dbUser = await db.select().from(Users).where(eq(Users.email, email));
+    if (dbUser.length > 0 && dbUser[0].isDisabled) {
+        // redirect(
+        //     `/login?error=${encodeURIComponent(
+        //         "Your account has been disabled. Please contact support."
+        //     )}`
+        // );
+
+        return {
+            error: "Your account has been disabled. Please contact support.",
+        };
+    }
 
     const { error, data: user } = await supabase.auth.signInWithPassword({
         email,
@@ -136,6 +152,23 @@ export async function signOut() {
 export async function GoogleLogin() {
     const supabase = await createClient();
 
+    // Get the user's email from the session if they're already signed in
+    const { data: session } = await supabase.auth.getSession();
+    if (session?.session?.user?.email) {
+        // Check if user is disabled
+        const dbUser = await db
+            .select()
+            .from(Users)
+            .where(eq(Users.email, session.session.user.email));
+        if (dbUser.length > 0 && dbUser[0].isDisabled) {
+            // Sign them out if they're disabled
+            await supabase.auth.signOut();
+            redirect(
+                "/login?error=Your account has been disabled. Please contact support."
+            );
+        }
+    }
+
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -145,11 +178,11 @@ export async function GoogleLogin() {
 
     if (error) {
         console.log("Error occurred", error);
-        // redirect("/login");
+        redirect("/login?error=" + error.message);
     }
 
     if (data.url) {
-        redirect(data.url); // use the redirect API for your server framework
+        redirect(data.url);
     }
 }
 
@@ -170,4 +203,141 @@ export async function UserInfo(userId: string) {
 export async function IsGuest(userId: string) {
     const user = await db.select().from(Users).where(eq(Users.userId, userId));
     return user[0].role === "guest";
+}
+
+export async function isAdmin(userId: string) {
+    const user = await db.select().from(Users).where(eq(Users.userId, userId));
+    return user[0].role === "admin";
+}
+
+export async function resetUserPassword(email: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${HOST_URL}/auth/callback`,
+    });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return { success: true };
+}
+
+export async function restrictUserAccess(userId: string) {
+    try {
+        await db
+            .update(Users)
+            .set({ isDisabled: true })
+            .where(eq(Users.userId, userId));
+
+        revalidatePath("/users");
+        return { success: true };
+    } catch (error) {
+        throw new Error(
+            error instanceof Error
+                ? error.message
+                : "Failed to restrict user access"
+        );
+    }
+}
+
+export async function enableUserAccess(userId: string) {
+    try {
+        await db
+            .update(Users)
+            .set({ isDisabled: false })
+            .where(eq(Users.userId, userId));
+
+        revalidatePath("/users");
+        return { success: true };
+    } catch (error) {
+        throw new Error(
+            error instanceof Error
+                ? error.message
+                : "Failed to enable user access"
+        );
+    }
+}
+
+export async function createUser(
+    name: string,
+    email: string,
+    role: "broker" | "customer" | "admin" | "staff" | "guest"
+) {
+    try {
+        // Use the admin client with service role key for admin operations
+        // const supabase = await createAdminClient();
+        const supabase = await createClient();
+
+        // Generate a random password for the user
+        const tempPassword = Math.random().toString(36).slice(-8);
+
+        // Create the user in Supabase Auth
+        // const { data: authData, error: authError } =
+        //     await supabase.auth.admin.inviteUserByEmail(email);
+
+        const { error: authError, data: authData } = await supabase.auth.signUp(
+            {
+                email,
+                password: tempPassword,
+                options: {
+                    data: {
+                        full_name: name,
+                    },
+                },
+            }
+        );
+
+        if (authError) {
+            throw new Error(
+                `Failed to create user in auth: ${authError.message}`
+            );
+        }
+
+        if (!authData.user) {
+            throw new Error("User creation failed: No user returned from auth");
+        }
+
+        // Insert the user into our database
+        await db.insert(Users).values({
+            userId: authData.user.id,
+            name: name,
+            email: email,
+            role: role,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
+
+        // Send welcome email with temporary password
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        const { error: emailError } = await resend.emails.send({
+            from: "onboarding@fire-erp.enclave.live",
+            to: email,
+            subject: "Welcome to Fire ERP",
+            html: `<p>Your account has been created successfully!</p>
+                <p>Your temporary password is: <strong style="color: #007bff;">${tempPassword}</strong></p>
+                <p>Please check your email for the verification link to activate your account.</p>
+                <p>After logging in, make sure to change your password for security reasons.</p>`,
+        });
+
+        if (emailError) {
+            console.error("Failed to send welcome email:", emailError);
+            // Continue even if email fails since user creation succeeded
+        }
+
+        return {
+            success: true,
+            message: "User created successfully",
+            userId: authData.user.id,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to create user",
+        };
+    }
 }
