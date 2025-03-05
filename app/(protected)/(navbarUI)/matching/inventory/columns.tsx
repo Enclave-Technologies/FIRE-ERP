@@ -98,7 +98,7 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
             </Badge>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
+                    <Button variant="ghost" className="h-8 w-8 p-0 dark:bg-gray-800 dark:text-gray-200">
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
@@ -177,7 +177,7 @@ const ActionsCell = ({ inventory }: { inventory: SelectInventory }) => {
                             e.preventDefault();
                             setShowDeleteDialog(true);
                         }}
-                        className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-950"
+                        className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-950 dark:hover:bg-red-800"
                     >
                         <Trash className="mr-2 h-4 w-4" /> Delete
                     </DropdownMenuItem>
@@ -239,7 +239,7 @@ const ActionsCell = ({ inventory }: { inventory: SelectInventory }) => {
                                     setShowDeleteDialog(false);
                                 }
                             }}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="bg-red-600 hover:bg-red-700 dark:bg-red-800 dark:hover:bg-red-900"
                         >
                             {isDeleting ? "Deleting..." : "Delete"}
                         </AlertDialogAction>
