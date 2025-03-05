@@ -11,9 +11,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Loader2 } from "lucide-react";
 import { updateUserRole } from "@/actions/user-actions";
-import { resetUserPassword, restrictUserAccess, enableUserAccess } from "@/actions/auth-actions";
+import {
+    resetUserPassword,
+    restrictUserAccess,
+    enableUserAccess,
+} from "@/actions/auth-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -76,11 +80,13 @@ const RoleCell = ({ user }: { user: SelectUser }) => {
 };
 
 const StatusCell = ({ isDisabled }: { isDisabled: boolean }) => (
-    <div className={`px-2 py-1 rounded-full text-sm w-fit ${
-        isDisabled 
-            ? "bg-destructive/20 text-destructive"
-            : "bg-green-100 text-green-800"
-    }`}>
+    <div
+        className={`px-2 py-1 rounded-full text-sm w-fit ${
+            isDisabled
+                ? "bg-destructive/20 text-destructive"
+                : "bg-green-100 text-green-800"
+        }`}
+    >
         {isDisabled ? "Disabled" : "Active"}
     </div>
 );
@@ -88,8 +94,16 @@ const StatusCell = ({ isDisabled }: { isDisabled: boolean }) => (
 const ActionsCell = ({ user }: { user: SelectUser }) => {
     const { toast } = useToast();
     const [isDisabled, setIsDisabled] = useState(user.isDisabled || false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleResetPassword = async () => {
+        if (
+            !confirm(
+                "Are you sure you want to reset this user's password? They will receive an email with reset instructions."
+            )
+        ) {
+            return;
+        }
         try {
             await resetUserPassword(user.email);
             toast({
@@ -109,6 +123,14 @@ const ActionsCell = ({ user }: { user: SelectUser }) => {
     };
 
     const handleToggleAccess = async () => {
+        const action = isDisabled ? "enable" : "disable";
+        if (
+            !confirm(`Are you sure you want to ${action} this user's account?`)
+        ) {
+            return;
+        }
+
+        setIsLoading(true);
         try {
             if (isDisabled) {
                 await enableUserAccess(user.userId);
@@ -133,6 +155,8 @@ const ActionsCell = ({ user }: { user: SelectUser }) => {
                         : "Failed to update user access",
                 variant: "destructive",
             });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -153,9 +177,22 @@ const ActionsCell = ({ user }: { user: SelectUser }) => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                     onClick={handleToggleAccess}
-                    className={isDisabled ? "text-green-600" : "text-destructive"}
+                    disabled={isLoading}
+                    className={
+                        isDisabled ? "text-green-600" : "text-destructive"
+                    }
                 >
-                    {isDisabled ? "Enable Account" : "Disable Account"}
+                    {/* {isDisabled ? "Enable Account" : "Disable Account"} */}
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                        </>
+                    ) : isDisabled ? (
+                        "Enable Account"
+                    ) : (
+                        "Disable Account"
+                    )}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -179,7 +216,9 @@ export const columns: ColumnDef<SelectUser>[] = [
     {
         accessorKey: "isDisabled",
         header: "Status",
-        cell: ({ row }) => <StatusCell isDisabled={row.original.isDisabled || false} />,
+        cell: ({ row }) => (
+            <StatusCell isDisabled={row.original.isDisabled || false} />
+        ),
     },
     {
         id: "actions",
