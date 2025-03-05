@@ -1,6 +1,9 @@
 "use client";
 
 import { SelectRequirement } from "@/db/schema";
+
+// Extended type for requirements with deal status
+type RequirementWithDeal = SelectRequirement & { hasDeal: boolean };
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,11 +22,29 @@ import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatBudgetForDisplay } from "@/utils/budget-utils";
+import { Handshake } from "lucide-react";
 
 // import { updateRequirement } from "@/actions/requirement-actions";
 
+// Create a component for the deal badge
+const DealBadge = ({ hasDeal }: { hasDeal: boolean }) => {
+    if (!hasDeal) {
+        return null;
+    }
+
+    return (
+        <Badge
+            variant="outline"
+            className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1"
+        >
+            <Handshake className="h-3 w-3" />
+            <span>Deal</span>
+        </Badge>
+    );
+};
+
 // Create a separate component for the status cell to use hooks
-const StatusCell = ({ requirement }: { requirement: SelectRequirement }) => {
+const StatusCell = ({ requirement }: { requirement: RequirementWithDeal }) => {
     // const { toast } = useToast();
     const [status] = useState<typeof requirement.status>(requirement.status);
     // Function to handle status change
@@ -112,7 +133,7 @@ const StatusCell = ({ requirement }: { requirement: SelectRequirement }) => {
 };
 
 // Create a separate component for the actions cell to use hooks
-const ActionsCell = ({ requirement }: { requirement: SelectRequirement }) => {
+const ActionsCell = ({ requirement }: { requirement: RequirementWithDeal }) => {
     const router = useRouter();
     const { toast } = useToast();
     const [showEditSheet, setShowEditSheet] = useState(false);
@@ -183,7 +204,7 @@ const BooleanIndicator = ({ value }: { value: boolean }) => {
     );
 };
 
-export const columns: ColumnDef<SelectRequirement>[] = [
+export const columns: ColumnDef<RequirementWithDeal>[] = [
     {
         accessorKey: "demand",
         header: "Demand",
@@ -202,7 +223,7 @@ export const columns: ColumnDef<SelectRequirement>[] = [
         cell: ({ row }) => {
             const budget = row.original.budget;
             if (budget === null || budget === undefined) return <div>-</div>;
-            
+
             return <div>{`AED ${formatBudgetForDisplay(budget)}`}</div>;
         },
     },
@@ -255,6 +276,11 @@ export const columns: ColumnDef<SelectRequirement>[] = [
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => <StatusCell requirement={row.original} />,
+    },
+    {
+        id: "deal",
+        header: "Deal",
+        cell: ({ row }) => <DealBadge hasDeal={row.original.hasDeal} />,
     },
     {
         accessorKey: "dateCreated",
