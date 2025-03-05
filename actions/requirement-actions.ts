@@ -25,9 +25,15 @@ export async function createRequirement(
         // Prepare the data with required fields from the schema
         const requirementData: InsertRequirement = {
             ...data,
-            preferredSquareFootage: data.preferredSquareFootage
-                ? data.preferredSquareFootage
-                : null,
+            preferredSquareFootage:
+                data.preferredSquareFootage &&
+                data.preferredSquareFootage !== ""
+                    ? data.preferredSquareFootage
+                    : "0",
+            preferredROI:
+                data.preferredROI && data.preferredROI !== ""
+                    ? data.preferredROI
+                    : "0",
             userId,
             status: "open" as (typeof dealStages.enumValues)[0],
             dateCreated: new Date(),
@@ -380,9 +386,23 @@ export async function updateRequirement(
             return { success: false, message: "Requirement ID is required" };
         }
 
+        // Ensure numeric fields have default values
+        const processedData = {
+            ...data,
+            preferredSquareFootage:
+                data.preferredSquareFootage &&
+                data.preferredSquareFootage !== ""
+                    ? data.preferredSquareFootage
+                    : "0",
+            preferredROI:
+                data.preferredROI && data.preferredROI !== ""
+                    ? data.preferredROI
+                    : "0",
+        };
+
         await db
             .update(Requirements)
-            .set(data)
+            .set(processedData)
             .where(eq(Requirements.requirementId, requirementId));
 
         revalidatePath("/matching/requirements");

@@ -9,6 +9,7 @@ import {
     SelectInventory,
 } from "@/db/schema";
 import { and, between, eq, or } from "drizzle-orm";
+import { parseBudgetValue } from "@/utils/budget-utils";
 
 // Function to create a new deal
 export async function createDeal(requirementId: string) {
@@ -48,13 +49,18 @@ export async function getRecommendedProperties(requirementId: string) {
             throw new Error("Requirement not found");
         }
 
-        // Parse budget range
-        const budgetRange = requirement.budget
-            .split("-")
-            .map((b) => parseFloat(b.trim().replace(/[^0-9.]/g, "")));
-
-        const minBudget = budgetRange[0];
-        const maxBudget = budgetRange[1] || minBudget * 1.2; // If max not specified, use 20% above min
+        // Parse budget range using the utility function
+        let minBudget, maxBudget;
+        
+        if (requirement.budget.includes('-')) {
+            const parts = requirement.budget.split('-');
+            const parsedParts = parts.map(part => parseFloat(parseBudgetValue(part.trim())));
+            minBudget = parsedParts[0];
+            maxBudget = parsedParts[1] || minBudget * 1.2; // If max not specified, use 20% above min
+        } else {
+            minBudget = parseFloat(parseBudgetValue(requirement.budget));
+            maxBudget = minBudget * 1.2; // If no range, use 20% above the value
+        }
 
         // Start with basic query
         let query = db

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Copy } from "lucide-react";
+import { formatBudgetForDisplay } from "@/utils/budget-utils";
 
 // Animation variants
 const VARIANTS_CONTAINER = {
@@ -222,12 +223,7 @@ export default function RequirementDetails({
                                     </h3>
                                     <p className="text-lg font-medium">
                                         {requirement.budget
-                                            ? `AED ${Number(
-                                                  requirement.budget
-                                              ).toLocaleString("en-US", {
-                                                  minimumFractionDigits: 2,
-                                                  maximumFractionDigits: 2,
-                                              })}`
+                                            ? `AED ${formatBudgetForDisplay(requirement.budget)}`
                                             : "N/A"}
                                     </p>
                                 </div>

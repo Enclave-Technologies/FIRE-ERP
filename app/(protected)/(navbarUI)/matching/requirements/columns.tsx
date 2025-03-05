@@ -13,11 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Eye, Copy, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-// import { useState } from "react";
+import { EditRequirement } from "@/components/requirements/edit-requirement";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { formatBudgetForDisplay } from "@/utils/budget-utils";
 
 // import { updateRequirement } from "@/actions/requirement-actions";
 
@@ -114,6 +115,7 @@ const StatusCell = ({ requirement }: { requirement: SelectRequirement }) => {
 const ActionsCell = ({ requirement }: { requirement: SelectRequirement }) => {
     const router = useRouter();
     const { toast } = useToast();
+    const [showEditSheet, setShowEditSheet] = useState(false);
 
     const handleViewDetails = () => {
         router.push(`/matching/requirements/${requirement.requirementId}`);
@@ -148,16 +150,24 @@ const ActionsCell = ({ requirement }: { requirement: SelectRequirement }) => {
                         <Eye className="mr-2 h-4 w-4" /> View Details
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        onClick={() => {
-                            router.push(
-                                `/matching/requirements/${requirement.requirementId}`
-                            );
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowEditSheet(true);
                         }}
                     >
                         <Edit className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Edit Requirement Sheet - Moved outside of dropdown to prevent it from closing */}
+            {showEditSheet && (
+                <EditRequirement
+                    requirement={requirement}
+                    open={showEditSheet}
+                    onOpenChange={setShowEditSheet}
+                />
+            )}
         </div>
     );
 };
@@ -192,21 +202,8 @@ export const columns: ColumnDef<SelectRequirement>[] = [
         cell: ({ row }) => {
             const budget = row.original.budget;
             if (budget === null || budget === undefined) return <div>-</div>;
-
-            const numericBudget =
-                typeof budget === "number"
-                    ? budget
-                    : parseFloat(String(budget));
-
-            return (
-                <div>
-                    {!isNaN(numericBudget) && numericBudget > 0
-                        ? `AED ${new Intl.NumberFormat("en-AE").format(
-                              numericBudget
-                          )}`
-                        : "-"}
-                </div>
-            );
+            
+            return <div>{`AED ${formatBudgetForDisplay(budget)}`}</div>;
         },
     },
     {
