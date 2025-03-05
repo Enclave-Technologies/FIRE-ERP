@@ -38,6 +38,20 @@ export async function login(state: { error: string }, formData: FormData) {
 
     const { email, password } = loginValidation.data;
 
+    // Check if user is disabled
+    const dbUser = await db.select().from(Users).where(eq(Users.email, email));
+    if (dbUser.length > 0 && dbUser[0].isDisabled) {
+        // redirect(
+        //     `/login?error=${encodeURIComponent(
+        //         "Your account has been disabled. Please contact support."
+        //     )}`
+        // );
+
+        return {
+            error: "Your account has been disabled. Please contact support.",
+        };
+    }
+
     const { error, data: user } = await supabase.auth.signInWithPassword({
         email,
         password,
