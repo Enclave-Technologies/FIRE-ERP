@@ -288,10 +288,6 @@ export async function createUser(
             }
         );
 
-        console.log(authData);
-
-        console.log(authError);
-
         if (authError) {
             throw new Error(
                 `Failed to create user in auth: ${authError.message}`
