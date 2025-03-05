@@ -84,10 +84,17 @@ export async function getRecommendedProperties(requirementId: string) {
 
         // Add budget range match
         query = query.where(
-            between(
-                Inventories.sellingPriceMillionAED,
-                minBudget.toString(),
-                maxBudget.toString()
+            or(
+                between(
+                    Inventories.sellingPriceMillionAED,
+                    minBudget.toString(),
+                    maxBudget.toString()
+                ),
+                between(
+                    Inventories.priceAED,
+                    minBudget.toString(),
+                    maxBudget.toString()
+                )
             )
         );
 
@@ -407,19 +414,32 @@ export async function searchInventories(filters: {
 
         if (filters.minPrice && filters.maxPrice) {
             query = query.where(
-                between(
-                    Inventories.sellingPriceMillionAED,
-                    filters.minPrice,
-                    filters.maxPrice
+                or(
+                    between(
+                        Inventories.sellingPriceMillionAED,
+                        filters.minPrice,
+                        filters.maxPrice
+                    ),
+                    between(
+                        Inventories.priceAED,
+                        filters.maxPrice,
+                        filters.minPrice
+                    )
                 )
             );
         } else if (filters.minPrice) {
             query = query.where(
-                gte(Inventories.sellingPriceMillionAED, filters.minPrice)
+                or(
+                    gte(Inventories.sellingPriceMillionAED, filters.minPrice),
+                    gte(Inventories.priceAED, filters.minPrice)
+                )
             );
         } else if (filters.maxPrice) {
             query = query.where(
-                lte(Inventories.sellingPriceMillionAED, filters.maxPrice)
+                or(
+                    lte(Inventories.sellingPriceMillionAED, filters.maxPrice),
+                    lte(Inventories.priceAED, filters.maxPrice)
+                )
             );
         }
 

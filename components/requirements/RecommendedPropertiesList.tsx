@@ -250,476 +250,514 @@ export default function RecommendedPropertiesList({
     };
 
     return (
-        <Card className="mt-8">
-            <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                    <span>Deal Flow</span>
-                    {!dealId && (
-                        <Button
-                            onClick={handleCreateDeal}
-                            disabled={loading || initialLoading}
-                        >
-                            {loading ? "Creating..." : "Create Deal"}
-                        </Button>
-                    )}
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                {!dealId ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                        Create a deal to start matching properties
-                    </div>
-                ) : propertiesLoading ? (
-                    <div className="text-center py-8">
-                        Loading recommended properties...
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {/* Selected Properties */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Selected Properties for this Deal
-                            </label>
-                            <div className="border border-input rounded-md p-2">
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedProperties.length === 0 ? (
-                                        <div className="text-muted-foreground p-2">
-                                            No properties selected yet. Select
-                                            properties from the table below.
-                                        </div>
-                                    ) : (
-                                        selectedProperties.map((propertyId) => {
-                                            const property = properties.find(
-                                                (p) =>
-                                                    p.inventoryId === propertyId
-                                            );
-                                            if (!property) return null;
-
-                                            return (
-                                                <Badge
-                                                    key={propertyId}
-                                                    variant="secondary"
-                                                    className="px-2 py-1 flex items-center gap-1"
-                                                >
-                                                    <span>
-                                                        {property.projectName}{" "}
-                                                        {property.unitNumber &&
-                                                            `- ${property.unitNumber}`}
-                                                    </span>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-4 w-4 p-0 ml-1"
-                                                        onClick={() =>
-                                                            handlePropertySelectionChange(
-                                                                selectedProperties.filter(
-                                                                    (id) =>
-                                                                        id !==
-                                                                        propertyId
-                                                                )
-                                                            )
-                                                        }
-                                                    >
-                                                        <span className="sr-only">
-                                                            Remove
-                                                        </span>
-                                                        ×
-                                                    </Button>
-                                                </Badge>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </div>
+        <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <Card className="mt-8">
+                <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                        <span>Deal Flow</span>
+                        {!dealId && (
+                            <Button
+                                onClick={handleCreateDeal}
+                                disabled={loading || initialLoading}
+                            >
+                                {loading ? "Creating..." : "Create Deal"}
+                            </Button>
+                        )}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {!dealId ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                            Create a deal to start matching properties
                         </div>
-
-                        {/* Recommended Properties Grid */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                                Recommended Properties
-                            </label>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {properties
-                                    .filter(
-                                        (p) =>
-                                            p.propertyType ===
-                                                properties.find(
-                                                    (prop) => prop.propertyType
-                                                )?.propertyType &&
-                                            p.location ===
-                                                properties.find(
-                                                    (prop) => prop.location
-                                                )?.location
-                                    )
-                                    .slice(0, 3)
-                                    .map((property) => (
-                                        <Card
-                                            key={property.inventoryId}
-                                            className={`overflow-hidden border-2 ${
-                                                selectedProperties.includes(
-                                                    property.inventoryId
-                                                )
-                                                    ? "border-primary"
-                                                    : "border-primary/10 hover:border-primary/20"
-                                            } transition-all relative`}
-                                        >
-                                            <div className="absolute top-2 right-2 flex items-center gap-2">
-                                                <Checkbox
-                                                    checked={selectedProperties.includes(
-                                                        property.inventoryId
-                                                    )}
-                                                    onCheckedChange={() =>
-                                                        togglePropertySelection(
-                                                            property.inventoryId
-                                                        )
-                                                    }
-                                                    className="bg-white border-gray-400 h-5 w-5"
-                                                />
-                                                <Badge className="bg-primary text-primary-foreground">
-                                                    Recommended
-                                                </Badge>
+                    ) : propertiesLoading ? (
+                        <div className="text-center py-8">
+                            Loading recommended properties...
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {/* Selected Properties */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                    Selected Properties for this Deal
+                                </label>
+                                <div className="border border-input rounded-md p-2">
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedProperties.length === 0 ? (
+                                            <div className="text-muted-foreground p-2">
+                                                No properties selected yet.
+                                                Select properties from the table
+                                                below.
                                             </div>
-                                            <CardHeader className="p-4 pb-2 bg-muted/30">
-                                                <CardTitle className="text-base">
-                                                    <span>
-                                                        {property.projectName}
-                                                        {property.unitNumber &&
-                                                            ` - ${property.unitNumber}`}
-                                                    </span>
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="p-4 pt-2">
-                                                <div className="space-y-2 text-sm">
-                                                    <div className="flex items-center gap-2">
-                                                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                                                        <span>
-                                                            {property.location}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Building2 className="h-4 w-4 text-muted-foreground" />
-                                                        <span>
-                                                            {property.propertyType ||
-                                                                "Property"}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Ruler className="h-4 w-4 text-muted-foreground" />
-                                                        <span>
-                                                            {property.areaSQFT}{" "}
-                                                            sqft
-                                                        </span>
-                                                    </div>
-                                                    {property.roiGross && (
-                                                        <div className="flex items-center gap-2">
-                                                            <Percent className="h-4 w-4 text-muted-foreground" />
+                                        ) : (
+                                            selectedProperties.map(
+                                                (propertyId) => {
+                                                    const property =
+                                                        properties.find(
+                                                            (p) =>
+                                                                p.inventoryId ===
+                                                                propertyId
+                                                        );
+                                                    if (!property) return null;
+
+                                                    return (
+                                                        <Badge
+                                                            key={propertyId}
+                                                            variant="secondary"
+                                                            className="px-2 py-1 flex items-center gap-1"
+                                                        >
                                                             <span>
                                                                 {
-                                                                    property.roiGross
-                                                                }
-                                                                % ROI
+                                                                    property.projectName
+                                                                }{" "}
+                                                                {property.unitNumber &&
+                                                                    `- ${property.unitNumber}`}
                                                             </span>
-                                                        </div>
-                                                    )}
-                                                    <div className="pt-2 font-medium">
-                                                        {property.sellingPriceMillionAED &&
-                                                            `AED ${formatBudgetForDisplay(
-                                                                property.sellingPriceMillionAED.toString()
-                                                            )}`}
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                            </div>
-                        </div>
-
-                        {/* Property Search Filters */}
-                        <div className="space-y-4 border rounded-md p-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-medium flex items-center gap-2">
-                                    <Filter className="h-5 w-5" />
-                                    Property Filters
-                                </h3>
-                                <Button
-                                    onClick={handleSearchProperties}
-                                    size="sm"
-                                    className="flex items-center gap-1"
-                                >
-                                    <Search className="h-4 w-4" />
-                                    Search
-                                </Button>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="propertyType">
-                                        Property Type
-                                    </Label>
-                                    <Input
-                                        id="propertyType"
-                                        placeholder="e.g. Apartment, Villa"
-                                        value={propertyTypeFilter}
-                                        onChange={(e) =>
-                                            setPropertyTypeFilter(
-                                                e.target.value
-                                            )
-                                        }
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="location">Location</Label>
-                                    <Input
-                                        id="location"
-                                        placeholder="e.g. Dubai Marina"
-                                        value={locationFilter}
-                                        onChange={(e) =>
-                                            setLocationFilter(e.target.value)
-                                        }
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Price Range (AED)</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            placeholder="Min"
-                                            value={minPriceFilter}
-                                            onChange={(e) =>
-                                                setMinPriceFilter(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                        <Input
-                                            placeholder="Max"
-                                            value={maxPriceFilter}
-                                            onChange={(e) =>
-                                                setMaxPriceFilter(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Area Range (sqft)</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            placeholder="Min"
-                                            value={minAreaFilter}
-                                            onChange={(e) =>
-                                                setMinAreaFilter(e.target.value)
-                                            }
-                                        />
-                                        <Input
-                                            placeholder="Max"
-                                            value={maxAreaFilter}
-                                            onChange={(e) =>
-                                                setMaxAreaFilter(e.target.value)
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>ROI Range (%)</Label>
-                                    <div className="flex gap-2">
-                                        <Input
-                                            placeholder="Min"
-                                            value={minROIFilter}
-                                            onChange={(e) =>
-                                                setMinROIFilter(e.target.value)
-                                            }
-                                        />
-                                        <Input
-                                            placeholder="Max"
-                                            value={maxROIFilter}
-                                            onChange={(e) =>
-                                                setMaxROIFilter(e.target.value)
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2 flex items-end">
-                                    <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="phpp"
-                                            checked={phppFilter === true}
-                                            onCheckedChange={(checked) => {
-                                                if (
-                                                    checked === "indeterminate"
-                                                ) {
-                                                    setPhppFilter(undefined);
-                                                } else {
-                                                    setPhppFilter(
-                                                        checked as
-                                                            | boolean
-                                                            | undefined
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-4 w-4 p-0 ml-1"
+                                                                onClick={() =>
+                                                                    handlePropertySelectionChange(
+                                                                        selectedProperties.filter(
+                                                                            (
+                                                                                id
+                                                                            ) =>
+                                                                                id !==
+                                                                                propertyId
+                                                                        )
+                                                                    )
+                                                                }
+                                                            >
+                                                                <span className="sr-only">
+                                                                    Remove
+                                                                </span>
+                                                                ×
+                                                            </Button>
+                                                        </Badge>
                                                     );
                                                 }
-                                            }}
-                                        />
-                                        <Label htmlFor="phpp">
-                                            PHPP Eligible
-                                        </Label>
+                                            )
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Properties Table */}
-                        <div className="border rounded-md overflow-hidden">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-12"></TableHead>
-                                        <TableHead>Property</TableHead>
-                                        <TableHead>Location</TableHead>
-                                        <TableHead>Type</TableHead>
-                                        <TableHead>Area (sqft)</TableHead>
-                                        <TableHead>Price (M AED)</TableHead>
-                                        <TableHead>Price (AED)</TableHead>
-                                        <TableHead>INR (Cr)</TableHead>
-                                        <TableHead>Rent (AED)</TableHead>
-                                        <TableHead>ROI (%)</TableHead>
-                                        <TableHead>Markup</TableHead>
-                                        <TableHead>Brokerage</TableHead>
-                                        <TableHead>PHPP</TableHead>
-                                        <TableHead className="w-24">
-                                            Status
-                                        </TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {properties.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={14}
-                                                className="text-center py-4 text-muted-foreground"
-                                            >
-                                                No matching properties found
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        properties.map((property) => {
-                                            // Check if this is a recommended property
-                                            const isRecommended =
-                                                property.propertyType ===
+                            {/* Recommended Properties Grid */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">
+                                    Recommended Properties
+                                </label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {properties
+                                        .filter(
+                                            (p) =>
+                                                p.propertyType ===
                                                     properties.find(
                                                         (prop) =>
                                                             prop.propertyType
                                                     )?.propertyType &&
-                                                property.location ===
+                                                p.location ===
                                                     properties.find(
                                                         (prop) => prop.location
-                                                    )?.location;
-
-                                            return (
-                                                <TableRow
-                                                    key={property.inventoryId}
-                                                    className={
-                                                        selectedProperties.includes(
+                                                    )?.location
+                                        )
+                                        .slice(0, 3)
+                                        .map((property) => (
+                                            <Card
+                                                key={property.inventoryId}
+                                                className={`overflow-hidden border-2 ${
+                                                    selectedProperties.includes(
+                                                        property.inventoryId
+                                                    )
+                                                        ? "border-primary"
+                                                        : "border-primary/10 hover:border-primary/20"
+                                                } transition-all relative`}
+                                            >
+                                                <div className="absolute top-2 right-2 flex items-center gap-2">
+                                                    <Checkbox
+                                                        checked={selectedProperties.includes(
                                                             property.inventoryId
-                                                        )
-                                                            ? "bg-primary/5"
-                                                            : ""
-                                                    }
-                                                >
-                                                    <TableCell>
-                                                        <Checkbox
-                                                            checked={selectedProperties.includes(
+                                                        )}
+                                                        onCheckedChange={() =>
+                                                            togglePropertySelection(
                                                                 property.inventoryId
-                                                            )}
-                                                            onCheckedChange={() =>
-                                                                togglePropertySelection(
-                                                                    property.inventoryId
-                                                                )
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="font-medium">
+                                                            )
+                                                        }
+                                                        className="bg-white border-gray-400 h-5 w-5"
+                                                    />
+                                                    <Badge className="bg-primary text-primary-foreground">
+                                                        Recommended
+                                                    </Badge>
+                                                </div>
+                                                <CardHeader className="p-4 pb-2 bg-muted/30">
+                                                    <CardTitle className="text-base">
+                                                        <span>
                                                             {
                                                                 property.projectName
                                                             }
                                                             {property.unitNumber &&
                                                                 ` - ${property.unitNumber}`}
+                                                        </span>
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="p-4 pt-2">
+                                                    <div className="space-y-2 text-sm">
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                                                            <span>
+                                                                {
+                                                                    property.location
+                                                                }
+                                                            </span>
                                                         </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.location}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.propertyType}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.areaSQFT}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.sellingPriceMillionAED &&
-                                                            formatBudgetForDisplay(
-                                                                property.sellingPriceMillionAED.toString()
-                                                            )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.priceAED &&
-                                                            formatBudgetForDisplay(
-                                                                property.priceAED.toString()
-                                                            )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.inrCr &&
-                                                            formatBudgetForDisplay(
-                                                                property.inrCr.toString()
-                                                            )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.rentApprox &&
-                                                            formatBudgetForDisplay(
-                                                                property.rentApprox.toString()
-                                                            )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.roiGross}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.markup &&
-                                                            formatBudgetForDisplay(
-                                                                property.markup.toString()
-                                                            )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.brokerage &&
-                                                            formatBudgetForDisplay(
-                                                                property.brokerage.toString()
-                                                            )}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {property.phppEligible
-                                                            ? "Yes"
-                                                            : "No"}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {isRecommended && (
-                                                            <Badge className="bg-primary text-primary-foreground">
-                                                                Recommended
-                                                            </Badge>
+                                                        <div className="flex items-center gap-2">
+                                                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                                                            <span>
+                                                                {property.propertyType ||
+                                                                    "Property"}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Ruler className="h-4 w-4 text-muted-foreground" />
+                                                            <span>
+                                                                {
+                                                                    property.areaSQFT
+                                                                }{" "}
+                                                                sqft
+                                                            </span>
+                                                        </div>
+                                                        {property.roiGross && (
+                                                            <div className="flex items-center gap-2">
+                                                                <Percent className="h-4 w-4 text-muted-foreground" />
+                                                                <span>
+                                                                    {
+                                                                        property.roiGross
+                                                                    }
+                                                                    % ROI
+                                                                </span>
+                                                            </div>
                                                         )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
-                                    )}
-                                </TableBody>
-                            </Table>
+                                                        <div className="pt-2 font-medium">
+                                                            {property.sellingPriceMillionAED &&
+                                                                `AED ${formatBudgetForDisplay(
+                                                                    property.sellingPriceMillionAED.toString()
+                                                                )}`}
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                </div>
+                            </div>
+
+                            {/* Property Search Filters */}
+                            <div className="space-y-4 border rounded-md p-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-medium flex items-center gap-2">
+                                        <Filter className="h-5 w-5" />
+                                        Property Filters
+                                    </h3>
+                                    <Button
+                                        onClick={handleSearchProperties}
+                                        size="sm"
+                                        className="flex items-center gap-1"
+                                    >
+                                        <Search className="h-4 w-4" />
+                                        Search
+                                    </Button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="propertyType">
+                                            Property Type
+                                        </Label>
+                                        <Input
+                                            id="propertyType"
+                                            placeholder="e.g. Apartment, Villa"
+                                            value={propertyTypeFilter}
+                                            onChange={(e) =>
+                                                setPropertyTypeFilter(
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="location">
+                                            Location
+                                        </Label>
+                                        <Input
+                                            id="location"
+                                            placeholder="e.g. Dubai Marina"
+                                            value={locationFilter}
+                                            onChange={(e) =>
+                                                setLocationFilter(
+                                                    e.target.value
+                                                )
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Price Range (AED)</Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                placeholder="Min"
+                                                value={minPriceFilter}
+                                                onChange={(e) =>
+                                                    setMinPriceFilter(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                            <Input
+                                                placeholder="Max"
+                                                value={maxPriceFilter}
+                                                onChange={(e) =>
+                                                    setMaxPriceFilter(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Area Range (sqft)</Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                placeholder="Min"
+                                                value={minAreaFilter}
+                                                onChange={(e) =>
+                                                    setMinAreaFilter(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                            <Input
+                                                placeholder="Max"
+                                                value={maxAreaFilter}
+                                                onChange={(e) =>
+                                                    setMaxAreaFilter(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>ROI Range (%)</Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                placeholder="Min"
+                                                value={minROIFilter}
+                                                onChange={(e) =>
+                                                    setMinROIFilter(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                            <Input
+                                                placeholder="Max"
+                                                value={maxROIFilter}
+                                                onChange={(e) =>
+                                                    setMaxROIFilter(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2 flex items-end">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id="phpp"
+                                                checked={phppFilter === true}
+                                                onCheckedChange={(checked) => {
+                                                    if (
+                                                        checked ===
+                                                        "indeterminate"
+                                                    ) {
+                                                        setPhppFilter(
+                                                            undefined
+                                                        );
+                                                    } else {
+                                                        setPhppFilter(
+                                                            checked as
+                                                                | boolean
+                                                                | undefined
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                            <Label htmlFor="phpp">
+                                                PHPP Eligible
+                                            </Label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Properties Table */}
+                            <div className="border rounded-md overflow-hidden">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-12"></TableHead>
+                                            <TableHead>Property</TableHead>
+                                            <TableHead>Location</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Area (sqft)</TableHead>
+                                            <TableHead>Price (M AED)</TableHead>
+                                            <TableHead>Price (AED)</TableHead>
+                                            <TableHead>INR (Cr)</TableHead>
+                                            <TableHead>Rent (AED)</TableHead>
+                                            <TableHead>ROI (%)</TableHead>
+                                            <TableHead>Markup</TableHead>
+                                            <TableHead>Brokerage</TableHead>
+                                            <TableHead>PHPP</TableHead>
+                                            <TableHead className="w-24">
+                                                Status
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {properties.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={14}
+                                                    className="text-center py-4 text-muted-foreground"
+                                                >
+                                                    No matching properties found
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            properties.map((property) => {
+                                                // Check if this is a recommended property
+                                                const isRecommended =
+                                                    property.propertyType ===
+                                                        properties.find(
+                                                            (prop) =>
+                                                                prop.propertyType
+                                                        )?.propertyType &&
+                                                    property.location ===
+                                                        properties.find(
+                                                            (prop) =>
+                                                                prop.location
+                                                        )?.location;
+
+                                                return (
+                                                    <TableRow
+                                                        key={
+                                                            property.inventoryId
+                                                        }
+                                                        className={
+                                                            selectedProperties.includes(
+                                                                property.inventoryId
+                                                            )
+                                                                ? "bg-primary/5"
+                                                                : ""
+                                                        }
+                                                    >
+                                                        <TableCell>
+                                                            <Checkbox
+                                                                checked={selectedProperties.includes(
+                                                                    property.inventoryId
+                                                                )}
+                                                                onCheckedChange={() =>
+                                                                    togglePropertySelection(
+                                                                        property.inventoryId
+                                                                    )
+                                                                }
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <div className="font-medium">
+                                                                {
+                                                                    property.projectName
+                                                                }
+                                                                {property.unitNumber &&
+                                                                    ` - ${property.unitNumber}`}
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.location}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {
+                                                                property.propertyType
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.areaSQFT}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.sellingPriceMillionAED &&
+                                                                formatBudgetForDisplay(
+                                                                    property.sellingPriceMillionAED.toString()
+                                                                )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.priceAED &&
+                                                                formatBudgetForDisplay(
+                                                                    property.priceAED.toString()
+                                                                )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.inrCr &&
+                                                                formatBudgetForDisplay(
+                                                                    property.inrCr.toString()
+                                                                )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.rentApprox &&
+                                                                formatBudgetForDisplay(
+                                                                    property.rentApprox.toString()
+                                                                )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.roiGross}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.markup &&
+                                                                formatBudgetForDisplay(
+                                                                    property.markup.toString()
+                                                                )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.brokerage &&
+                                                                formatBudgetForDisplay(
+                                                                    property.brokerage.toString()
+                                                                )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {property.phppEligible
+                                                                ? "Yes"
+                                                                : "No"}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {isRecommended && (
+                                                                <Badge className="bg-primary text-primary-foreground">
+                                                                    Recommended
+                                                                </Badge>
+                                                            )}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
     );
 }
