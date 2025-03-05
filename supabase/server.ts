@@ -56,18 +56,22 @@ export async function handlePasswordRecovery(
     newPassword: string
 ) {
     if (event === "PASSWORD_RECOVERY") {
-        const supabaseAdmin = await createAdminClient();
-        const { data, error } = await supabaseAdmin.auth.updateUser({
-            password: newPassword,
-        });
+        try {
+            const supabaseAdmin = await createAdminClient();
+            const { data, error } = await supabaseAdmin.auth.updateUser({
+                password: newPassword,
+            });
 
-        if (data) {
-            console.log("Password updated successfully!");
-        } else if (error) {
-            console.error(
-                "There was an error updating the password:",
-                error.message
-            );
+            if (data) {
+                console.log("Password updated successfully!");
+            } else if (error) {
+                console.error(
+                    "There was an error updating the password:",
+                    error.message
+                );
+            }
+        } catch (err) {
+            console.error("Failed to create admin client:", err);
         }
     }
 }
