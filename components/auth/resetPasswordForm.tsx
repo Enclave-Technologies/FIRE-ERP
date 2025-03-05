@@ -40,16 +40,25 @@ export function ResetPasswordForm() {
     };
 
     return (
-        <div className="grid gap-4">
+        <form
+            className="grid gap-4"
+            onSubmit={(e) => {
+                e.preventDefault();
+                handleResetPassword();
+            }}
+        >
             <Input
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                aria-label="Email address"
+                required
             />
-            <Button onClick={handleResetPassword} disabled={loading}>
+
+            <Button type="submit" disabled={loading}>
                 {loading ? "Sending..." : "Reset Password"}
             </Button>
-        </div>
+        </form>
     );
 }
