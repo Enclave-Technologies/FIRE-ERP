@@ -20,10 +20,16 @@ export async function GET(request: Request) {
         if (!error) {
             const { user } = data;
             const { user_metadata } = user;
-            const isInDb = await db.$count(Users, eq(Users.userId, user.id));
+            // Check if user exists and if they're disabled
+            const existingUser = await db.select().from(Users).where(eq(Users.userId, user.id));
             const adminCount = await db.$count(Users, eq(Users.role, "admin"));
 
-            if (isInDb === 0) {
+            if (existingUser.length > 0 && existingUser[0].isDisabled) {
+                await supabase.auth.signOut();
+                return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("Your account has been disabled. Please contact support.")}`);
+            }
+
+            if (existingUser.length === 0) {
                 try {
                     await db.insert(Users).values({
                         userId: user.id as string,
@@ -47,6 +53,7 @@ export async function GET(request: Request) {
                     console.error(error);
                 }
             }
+
 
             const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === "development";

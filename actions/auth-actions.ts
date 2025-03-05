@@ -138,6 +138,23 @@ export async function signOut() {
 export async function GoogleLogin() {
     const supabase = await createClient();
 
+    // Get the user's email from the session if they're already signed in
+    const { data: session } = await supabase.auth.getSession();
+    if (session?.session?.user?.email) {
+        // Check if user is disabled
+        const dbUser = await db
+            .select()
+            .from(Users)
+            .where(eq(Users.email, session.session.user.email));
+        if (dbUser.length > 0 && dbUser[0].isDisabled) {
+            // Sign them out if they're disabled
+            await supabase.auth.signOut();
+            redirect(
+                "/login?error=Your account has been disabled. Please contact support."
+            );
+        }
+    }
+
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -147,11 +164,11 @@ export async function GoogleLogin() {
 
     if (error) {
         console.log("Error occurred", error);
-        // redirect("/login");
+        redirect("/login?error=" + error.message);
     }
 
     if (data.url) {
-        redirect(data.url); // use the redirect API for your server framework
+        redirect(data.url);
     }
 }
 
@@ -184,12 +201,48 @@ export async function resetUserPassword(email: string) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${HOST_URL}/auth/callback`,
     });
-    
+
     if (error) {
         throw new Error(error.message);
     }
-    
+
     return { success: true };
+}
+
+export async function restrictUserAccess(userId: string) {
+    try {
+        await db
+            .update(Users)
+            .set({ isDisabled: true })
+            .where(eq(Users.userId, userId));
+
+        revalidatePath("/users");
+        return { success: true };
+    } catch (error) {
+        throw new Error(
+            error instanceof Error
+                ? error.message
+                : "Failed to restrict user access"
+        );
+    }
+}
+
+export async function enableUserAccess(userId: string) {
+    try {
+        await db
+            .update(Users)
+            .set({ isDisabled: false })
+            .where(eq(Users.userId, userId));
+
+        revalidatePath("/users");
+        return { success: true };
+    } catch (error) {
+        throw new Error(
+            error instanceof Error
+                ? error.message
+                : "Failed to enable user access"
+        );
+    }
 }
 
 export async function createUser(

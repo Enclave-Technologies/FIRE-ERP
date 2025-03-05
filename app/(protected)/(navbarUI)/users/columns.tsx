@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { updateUserRole } from "@/actions/user-actions";
-import { resetUserPassword } from "@/actions/auth-actions";
+import { resetUserPassword, restrictUserAccess, enableUserAccess } from "@/actions/auth-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -75,8 +75,19 @@ const RoleCell = ({ user }: { user: SelectUser }) => {
     );
 };
 
+const StatusCell = ({ isDisabled }: { isDisabled: boolean }) => (
+    <div className={`px-2 py-1 rounded-full text-sm w-fit ${
+        isDisabled 
+            ? "bg-destructive/20 text-destructive"
+            : "bg-green-100 text-green-800"
+    }`}>
+        {isDisabled ? "Disabled" : "Active"}
+    </div>
+);
+
 const ActionsCell = ({ user }: { user: SelectUser }) => {
     const { toast } = useToast();
+    const [isDisabled, setIsDisabled] = useState(user.isDisabled || false);
 
     const handleResetPassword = async () => {
         try {
@@ -88,7 +99,38 @@ const ActionsCell = ({ user }: { user: SelectUser }) => {
         } catch (error) {
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to reset password",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to reset password",
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleToggleAccess = async () => {
+        try {
+            if (isDisabled) {
+                await enableUserAccess(user.userId);
+                toast({
+                    title: "Success",
+                    description: "User account has been enabled",
+                });
+            } else {
+                await restrictUserAccess(user.userId);
+                toast({
+                    title: "Success",
+                    description: "User account has been disabled",
+                });
+            }
+            setIsDisabled(!isDisabled);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to update user access",
                 variant: "destructive",
             });
         }
@@ -108,6 +150,13 @@ const ActionsCell = ({ user }: { user: SelectUser }) => {
                 <DropdownMenuItem onClick={handleResetPassword}>
                     Reset Password
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                    onClick={handleToggleAccess}
+                    className={isDisabled ? "text-green-600" : "text-destructive"}
+                >
+                    {isDisabled ? "Enable Account" : "Disable Account"}
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -126,6 +175,11 @@ export const columns: ColumnDef<SelectUser>[] = [
         accessorKey: "role",
         header: "Role",
         cell: ({ row }) => <RoleCell user={row.original} />,
+    },
+    {
+        accessorKey: "isDisabled",
+        header: "Status",
+        cell: ({ row }) => <StatusCell isDisabled={row.original.isDisabled || false} />,
     },
     {
         id: "actions",
