@@ -18,8 +18,6 @@ export async function createRequirement(
             throw new Error("You must be logged in to create a requirement");
         }
 
-        console.log(JSON.stringify(data, null, 2));
-
         const userId = session.user.id;
 
         // Prepare the data with required fields from the schema
