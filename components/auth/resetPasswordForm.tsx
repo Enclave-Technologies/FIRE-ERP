@@ -25,12 +25,15 @@ export function ResetPasswordForm() {
                 description:
                     "Password reset email sent. Please check your inbox.",
             });
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
+        } catch (error: unknown) {
+            toast({
+                title: "Error",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "An error occurred",
+                variant: "destructive",
+            });
         } finally {
             setLoading(false);
         }

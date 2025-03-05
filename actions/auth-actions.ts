@@ -174,6 +174,24 @@ export async function IsGuest(userId: string) {
     return user[0].role === "guest";
 }
 
+export async function isAdmin(userId: string) {
+    const user = await db.select().from(Users).where(eq(Users.userId, userId));
+    return user[0].role === "admin";
+}
+
+export async function resetUserPassword(email: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${HOST_URL}/auth/callback`,
+    });
+    
+    if (error) {
+        throw new Error(error.message);
+    }
+    
+    return { success: true };
+}
+
 export async function createUser(
     name: string,
     email: string,

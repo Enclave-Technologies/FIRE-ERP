@@ -2,7 +2,11 @@ import React, { Suspense } from "react";
 import { getUsers } from "@/actions/user-actions";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
-import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
+import {
+    IsGuest,
+    LoggedInOrRedirectToLogin,
+    isAdmin,
+} from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import RequirementsTableSkeleton from "@/components/requirements/requirements-table-skeleton";
 
@@ -31,7 +35,7 @@ const AllUsers = async ({
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
     const data = await LoggedInOrRedirectToLogin();
-    if (await IsGuest(data.user.id)) {
+    if ((await IsGuest(data.user.id)) || !(await isAdmin(data.user.id))) {
         redirect("/");
     }
     const resolvedParams = await searchParams;

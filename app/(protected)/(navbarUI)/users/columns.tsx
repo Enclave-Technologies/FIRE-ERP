@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { updateUserRole } from "@/actions/user-actions";
+import { resetUserPassword } from "@/actions/auth-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -74,6 +75,44 @@ const RoleCell = ({ user }: { user: SelectUser }) => {
     );
 };
 
+const ActionsCell = ({ user }: { user: SelectUser }) => {
+    const { toast } = useToast();
+
+    const handleResetPassword = async () => {
+        try {
+            await resetUserPassword(user.email);
+            toast({
+                title: "Success",
+                description: "Password reset email has been sent",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to reset password",
+                variant: "destructive",
+            });
+        }
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleResetPassword}>
+                    Reset Password
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
+
 export const columns: ColumnDef<SelectUser>[] = [
     {
         accessorKey: "name",
@@ -87,5 +126,10 @@ export const columns: ColumnDef<SelectUser>[] = [
         accessorKey: "role",
         header: "Role",
         cell: ({ row }) => <RoleCell user={row.original} />,
+    },
+    {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => <ActionsCell user={row.original} />,
     },
 ];
