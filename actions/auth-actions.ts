@@ -14,7 +14,7 @@ import { createClient } from "@/supabase/server";
 import { db } from "@/db";
 import { Users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { HOST_URL } from "@/utils/contants";
+import { HOST_URL } from "@/utils/constants";
 
 import { Resend } from "resend";
 

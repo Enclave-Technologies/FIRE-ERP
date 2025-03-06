@@ -37,7 +37,7 @@ const navItems = {
             items: [],
         },
         {
-            title: "Matching",
+            title: "Deals",
             url: "/matching",
             items: [
                 {
@@ -47,6 +47,10 @@ const navItems = {
                 {
                     title: "Inventory",
                     url: "/matching/inventory",
+                },
+                {
+                    title: "Bulk Upload",
+                    url: "/matching/upload",
                 },
             ],
         },

@@ -27,14 +27,14 @@ import AddInventory from "@/components/inventory/add-inventory";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     totalItems = 0,
     currentPage = 1,
-    pageSize = 10,
+    pageSize = DEFAULT_PAGE_SIZE,
 }: DataTableProps<TData, TValue>) {
     const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
     const router = useRouter();
@@ -94,7 +94,9 @@ export function DataTable<TData, TValue>({
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    data-state={row.getIsSelected() && "selected"}
+                                    data-state={
+                                        row.getIsSelected() && "selected"
+                                    }
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
@@ -125,7 +127,8 @@ export function DataTable<TData, TValue>({
                 <div className="flex items-center justify-between space-x-2 py-4">
                     <div className="text-sm text-muted-foreground">
                         Showing {(currentPage - 1) * pageSize + 1} to{" "}
-                        {Math.min(currentPage * pageSize, totalItems)} of {totalItems} entries
+                        {Math.min(currentPage * pageSize, totalItems)} of{" "}
+                        {totalItems} entries
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
@@ -152,7 +155,6 @@ export function DataTable<TData, TValue>({
                     </div>
                 </div>
             )}
-
 
             {/* Add Inventory Sheet */}
             <Sheet open={isAddSheetOpen} onOpenChange={setIsAddSheetOpen}>

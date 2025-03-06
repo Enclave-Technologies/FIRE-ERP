@@ -1,11 +1,16 @@
 "use server";
 
-import { Requirements, dealStages } from "@/db/schema";
-import type { InsertRequirement, SelectRequirement } from "@/db/schema";
+import { Deals, Requirements } from "@/db/schema";
+import type {
+    InsertRequirement,
+    SelectRequirement,
+    SelectDeal,
+} from "@/db/schema";
 import { db } from "@/db/index";
 import { createClient } from "@/supabase/server";
 import { eq, ilike, asc, desc, or, count, gte, lte } from "drizzle-orm"; // Add these imports
 import { revalidatePath } from "next/cache";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 export async function createRequirement(
     data: Omit<InsertRequirement, "userId" | "status" | "dateCreated">
@@ -18,18 +23,22 @@ export async function createRequirement(
             throw new Error("You must be logged in to create a requirement");
         }
 
-        console.log(JSON.stringify(data, null, 2));
-
         const userId = session.user.id;
 
         // Prepare the data with required fields from the schema
         const requirementData: InsertRequirement = {
             ...data,
-            preferredSquareFootage: data.preferredSquareFootage
-                ? data.preferredSquareFootage
-                : null,
+            preferredSquareFootage:
+                data.preferredSquareFootage &&
+                data.preferredSquareFootage !== ""
+                    ? data.preferredSquareFootage
+                    : "0",
+            preferredROI:
+                data.preferredROI && data.preferredROI !== ""
+                    ? data.preferredROI
+                    : "0",
             userId,
-            status: "open" as (typeof dealStages.enumValues)[0],
+            // status: "open" as (typeof dealStages.enumValues)[0],
             dateCreated: new Date(),
         };
 
@@ -42,15 +51,29 @@ export async function createRequirement(
 
 export async function getRequirements(params?: {
     [key: string]: string | string[] | undefined;
-}): Promise<{ data: SelectRequirement[]; total: number }> {
+}): Promise<{
+    data: { requirements: SelectRequirement; deals: SelectDeal | null }[];
+    total: number;
+}> {
     try {
         // Start with a dynamic query
-        let query = db.select().from(Requirements).$dynamic();
+        let query = db
+            .select()
+            .from(Requirements)
+            .leftJoin(
+                Deals,
+                eq(Requirements.requirementId, Deals.requirementId)
+            )
+            .$dynamic();
 
         // Create a clone of the query for counting before pagination
         let countQuery = db
             .select({ count: count() })
             .from(Requirements)
+            .leftJoin(
+                Deals,
+                eq(Requirements.requirementId, Deals.requirementId)
+            )
             .$dynamic();
 
         // Apply filters if provided
@@ -179,14 +202,14 @@ export async function getRequirements(params?: {
                                 [
                                     "RTM",
                                     "OFFPLAN",
-                                    "RTM-OFFPLAN",
+                                    "RTM/OFFPLAN",
                                     "NONE",
                                 ].includes(value)
                             ) {
                                 const typedValue = value as
                                     | "RTM"
                                     | "OFFPLAN"
-                                    | "RTM-OFFPLAN"
+                                    | "RTM/OFFPLAN"
                                     | "NONE";
 
                                 query = query.where(
@@ -227,32 +250,32 @@ export async function getRequirements(params?: {
                                 );
                             }
                             break;
-                        case "Status":
-                            // Cast the value to the appropriate enum type
-                            if (
-                                [
-                                    "open",
-                                    "assigned",
-                                    "negotiation",
-                                    "closed",
-                                    "rejected",
-                                ].includes(value)
-                            ) {
-                                const typedValue = value as
-                                    | "open"
-                                    | "assigned"
-                                    | "negotiation"
-                                    | "closed"
-                                    | "rejected";
+                        // case "Status":
+                        //     // Cast the value to the appropriate enum type
+                        //     if (
+                        //         [
+                        //             "open",
+                        //             "assigned",
+                        //             "negotiation",
+                        //             "closed",
+                        //             "rejected",
+                        //         ].includes(value)
+                        //     ) {
+                        //         const typedValue = value as
+                        //             | "open"
+                        //             | "assigned"
+                        //             | "negotiation"
+                        //             | "closed"
+                        //             | "rejected";
 
-                                query = query.where(
-                                    eq(Requirements.status, typedValue)
-                                );
-                                countQuery.where(
-                                    eq(Requirements.status, typedValue)
-                                );
-                            }
-                            break;
+                        //         // query = query.where(
+                        //         //     eq(Requirements.status, typedValue)
+                        //         // );
+                        //         // countQuery.where(
+                        //         //     eq(Requirements.status, typedValue)
+                        //         // );
+                        //     }
+                        //     break;
                     }
                 }
             }
@@ -290,13 +313,13 @@ export async function getRequirements(params?: {
                                 : desc(Requirements.preferredType)
                         );
                         break;
-                    case "Status":
-                        query = query.orderBy(
-                            sortDirection === "asc"
-                                ? asc(Requirements.status)
-                                : desc(Requirements.status)
-                        );
-                        break;
+                    // case "Status":
+                    //     query = query.orderBy(
+                    //         sortDirection === "asc"
+                    //             ? asc(Requirements.status)
+                    //             : desc(Requirements.status)
+                    //     );
+                    //     break;
                     case "Date Created":
                         query = query.orderBy(
                             sortDirection === "asc"
@@ -309,6 +332,13 @@ export async function getRequirements(params?: {
                             sortDirection === "asc"
                                 ? asc(Requirements.budget)
                                 : desc(Requirements.budget)
+                        );
+                        break;
+                    case "Deal":
+                        query = query.orderBy(
+                            sortDirection === "asc"
+                                ? asc(Deals.dealId)
+                                : desc(Deals.dealId)
                         );
                         break;
                     default:
@@ -324,7 +354,7 @@ export async function getRequirements(params?: {
         }
 
         // Apply pagination
-        let limit = 10; // Default page size
+        let limit = DEFAULT_PAGE_SIZE; // Default page size
         let offset = 0;
 
         if (params?.page && params?.pageSize) {
@@ -380,13 +410,28 @@ export async function updateRequirement(
             return { success: false, message: "Requirement ID is required" };
         }
 
+        // Ensure numeric fields have default values
+        const processedData = {
+            ...data,
+            preferredSquareFootage:
+                data.preferredSquareFootage &&
+                data.preferredSquareFootage !== ""
+                    ? data.preferredSquareFootage
+                    : "0",
+            preferredROI:
+                data.preferredROI && data.preferredROI !== ""
+                    ? data.preferredROI
+                    : "0",
+        };
+
         await db
             .update(Requirements)
-            .set(data)
+            .set(processedData)
             .where(eq(Requirements.requirementId, requirementId));
 
         revalidatePath("/matching/requirements");
         revalidatePath(`/matching/requirements/${requirementId}`);
+        revalidatePath("/matching"); // Revalidate the matching page
 
         return { success: true };
     } catch (error) {

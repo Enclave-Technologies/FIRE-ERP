@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { createRequirement } from "@/actions/requirement-actions"; // Assuming this action exists
 import { useRouter } from "next/navigation";
+import { processBudgetString } from "@/utils/budget-utils";
 
 const formSchema = z.object({
     demand: z.string().min(1, { message: "Demand is required" }),
@@ -30,7 +31,7 @@ const formSchema = z.object({
     preferredSquareFootage: z.string().optional(), // Change to string
     preferredROI: z.string().optional(), // Change to string
     rtmOffplan: z
-        .enum(["RTM", "OFFPLAN", "RTM-OFFPLAN", "NONE"])
+        .enum(["RTM", "OFFPLAN", "RTM/OFFPLAN", "NONE"])
         .default("NONE"),
     phpp: z.boolean().default(false),
     sharedWithIndianChannelPartner: z.boolean().default(false),
@@ -76,7 +77,18 @@ export default function AddRequirement() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setIsSubmitting(true);
         try {
-            await createRequirement(values);
+            // Process budget field using the utility function
+            const processedBudget = processBudgetString(values.budget);
+
+            // Update the values with the processed budget and ensure numeric fields have default values
+            const processedValues = {
+                ...values,
+                budget: processedBudget,
+                preferredSquareFootage: values.preferredSquareFootage || "0",
+                preferredROI: values.preferredROI || "0"
+            };
+
+            await createRequirement(processedValues);
             toast({
                 title: "Success",
                 description: "Requirement has been successfully created",
@@ -207,7 +219,7 @@ export default function AddRequirement() {
                                 >
                                     <option value="RTM">RTM</option>
                                     <option value="OFFPLAN">OFFPLAN</option>
-                                    <option value="RTM-OFFPLAN">
+                                    <option value="RTM/OFFPLAN">
                                         RTM/OFFPLAN
                                     </option>
                                     <option value="NONE">None</option>

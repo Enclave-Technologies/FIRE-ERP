@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { Inventories, inventoryStatus } from "@/db/schema";
 import type { InsertInventory, SelectInventory } from "@/db/schema";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -113,7 +114,14 @@ export async function getInventories(params?: {
                                 : desc(Inventories.dateAdded)
                         );
                         break;
-                    case "Price (M AED)":
+                    case "Price (AED)":
+                        query = query.orderBy(
+                            sortDirection === "asc"
+                                ? asc(Inventories.priceAED)
+                                : desc(Inventories.priceAED)
+                        );
+                        break;
+                    case "Selling Price (AED)":
                         query = query.orderBy(
                             sortDirection === "asc"
                                 ? asc(Inventories.sellingPriceMillionAED)
@@ -209,7 +217,7 @@ export async function getInventories(params?: {
         }
 
         // Apply pagination
-        let limit = 10; // Default page size
+        let limit = DEFAULT_PAGE_SIZE; // Default page size
         let offset = 0;
 
         if (params?.page && params?.pageSize) {
@@ -313,6 +321,29 @@ export async function updateInventoryDetails(
         return {
             success: false,
             message: "Failed to update inventory details",
+        };
+    }
+}
+
+export async function deleteInventory(
+    inventoryId: string
+): Promise<{ success: boolean; message?: string }> {
+    try {
+        if (!inventoryId) {
+            return { success: false, message: "Inventory ID is required" };
+        }
+
+        await db
+            .delete(Inventories)
+            .where(eq(Inventories.inventoryId, inventoryId));
+
+        revalidatePath("/matching/inventory");
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting inventory:", error);
+        return {
+            success: false,
+            message: "Failed to delete inventory",
         };
     }
 }
