@@ -4,7 +4,7 @@ import {
     SelectDeal,
     SelectInventory,
     SelectRequirement,
-    dealMilestones,
+    dealStages,
 } from "@/db/schema";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -45,18 +45,16 @@ const getStatusVariant = (
     status: string | null
 ): "default" | "destructive" | "secondary" | "outline" => {
     switch (status) {
-        case "received":
+        case "open":
             return "default"; // Green in both modes
         case "negotiation":
             return "secondary"; // Purple in both modes
-        case "offer":
+        case "assigned":
             return "outline"; // Blue in both modes
-        case "accepted":
-            return "outline"; // Blue in both modes
-        case "signed":
+        case "rejected":
             return "destructive"; // Red in both modes
         case "closed":
-            return "destructive"; // Red in both modes
+            return "outline"; // Red in both modes
         default:
             return "default";
     }
@@ -71,8 +69,8 @@ export default function DealDetails({
 }) {
     const { toast } = useToast();
     const [status, setStatus] = useState<
-        (typeof dealMilestones.enumValues)[number]
-    >(deal.status || "received");
+        (typeof dealStages.enumValues)[number]
+    >(deal.status || "open");
     const [isUpdating, setIsUpdating] = useState(false);
     const [assignedInventory, setAssignedInventory] =
         useState<SelectInventory | null>(null);
@@ -100,7 +98,7 @@ export default function DealDetails({
     }, [deal.inventoryId]);
 
     const handleStatusChange = async (
-        newStatus: (typeof dealMilestones.enumValues)[number]
+        newStatus: (typeof dealStages.enumValues)[number]
     ) => {
         if (newStatus === status) return;
 
@@ -436,26 +434,24 @@ export default function DealDetails({
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-wrap gap-3 p-4">
-                                {dealMilestones.enumValues.map(
-                                    (statusOption) => (
-                                        <Button
-                                            key={statusOption}
-                                            variant={
-                                                status === statusOption
-                                                    ? "default"
-                                                    : "outline"
-                                            }
-                                            size="sm"
-                                            onClick={() =>
-                                                handleStatusChange(statusOption)
-                                            }
-                                            disabled={isUpdating}
-                                            className="capitalize"
-                                        >
-                                            {statusOption}
-                                        </Button>
-                                    )
-                                )}
+                                {dealStages.enumValues.map((statusOption) => (
+                                    <Button
+                                        key={statusOption}
+                                        variant={
+                                            status === statusOption
+                                                ? "default"
+                                                : "outline"
+                                        }
+                                        size="sm"
+                                        onClick={() =>
+                                            handleStatusChange(statusOption)
+                                        }
+                                        disabled={isUpdating}
+                                        className="capitalize"
+                                    >
+                                        {statusOption}
+                                    </Button>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>
