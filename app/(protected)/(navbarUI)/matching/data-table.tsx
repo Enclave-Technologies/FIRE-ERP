@@ -21,7 +21,11 @@ export function DataTable<TData, TValue>({
     columns,
     data,
     title,
-}: DataTableProps<TData, TValue> & { title?: string }) {
+    tableId,
+}: DataTableProps<TData, TValue> & {
+    title?: string;
+    tableId: string; // Add a unique identifier for the table
+}) {
     const table = useReactTable({
         data,
         columns,
@@ -37,6 +41,9 @@ export function DataTable<TData, TValue>({
                 showFilterButton={false}
                 showSortButton={false}
                 showNewButton={false}
+                extraInputs={
+                    <input type="hidden" name="tableId" value={tableId} />
+                }
             />
             <div className="rounded-md border overflow-x-auto">
                 <Table>

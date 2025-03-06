@@ -1,21 +1,10 @@
 import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
-import { getAllDeals } from "@/actions/deal-actions";
+import { getOpenDeals, getClosedDeals } from "@/actions/deal-actions";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const MILESTONES = [
-    "received",
-    "negotiation",
-    "offer",
-    "accepted",
-    "signed",
-    "closed",
-];
-
-const FINISHED_MILESTONES = ["signed", "closed"];
 
 // Create a loading skeleton component
 function DealsTableSkeleton() {
@@ -55,46 +44,69 @@ function DealsTableSkeleton() {
 }
 
 // Create a component for the data fetching part
-async function DealsDataTable() {
-    const deals = await getAllDeals();
+async function DealsDataTable({
+    searchParams,
+}: {
+    searchParams: { [key: string]: string | string[] | undefined };
+}) {
+    // Get search parameters
+    const searchParam = searchParams.search;
+    // Ensure searchQuery is a string
+    const searchQuery = Array.isArray(searchParam)
+        ? searchParam[0]
+        : searchParam;
+    const tableIdParam = searchParams.tableId as string | undefined;
 
-    // Sort deals by milestone order and last modified date
-    const sortedDeals = deals.sort((a, b) => {
-        const statusDiff =
-            MILESTONES.indexOf(a.deal.status as string) -
-            MILESTONES.indexOf(b.deal.status as string);
-        if (statusDiff !== 0) return statusDiff;
-        return (
-            new Date(b.deal.updatedAt).getTime() -
-            new Date(a.deal.updatedAt).getTime()
-        );
-    });
-
-    // Separate open and finished deals
-    const openDeals = sortedDeals.filter(
-        (d) => !FINISHED_MILESTONES.includes(d.deal.status || "")
+    // Fetch open and closed deals separately with search filtering
+    // This is more efficient than fetching all deals and filtering client-side
+    const openDeals = await getOpenDeals(
+        tableIdParam === "open-deals" || !tableIdParam
+            ? typeof searchQuery === "string"
+                ? searchQuery
+                : undefined
+            : undefined
     );
-    const finishedDeals = sortedDeals.filter((d) =>
-        FINISHED_MILESTONES.includes(d.deal.status || "")
+
+    // Only fetch closed deals if we're not specifically searching in open deals
+    const closedDeals = await getClosedDeals(
+        tableIdParam === "finished-deals" || !tableIdParam
+            ? typeof searchQuery === "string"
+                ? searchQuery
+                : undefined
+            : undefined,
+        10 // Limit to 10 closed deals for better performance
     );
 
     return (
         <div className="space-y-8">
-            <DataTable columns={columns} data={openDeals} title="Open Deals" />
             <DataTable
                 columns={columns}
-                data={finishedDeals}
+                data={openDeals}
+                title="Open Deals"
+                tableId="open-deals"
+            />
+            <DataTable
+                columns={columns}
+                data={closedDeals}
                 title="Finished Deals"
+                tableId="finished-deals"
             />
         </div>
     );
 }
 
-export default async function Page() {
+export default async function Page({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
     const data = await LoggedInOrRedirectToLogin();
     if (await IsGuest(data.user.id)) {
         redirect("/");
     }
+
+    // Get the search params
+    const resolvedParams = await searchParams;
 
     return (
         <div className="container mx-auto py-4 px-2 sm:px-4">
@@ -104,7 +116,7 @@ export default async function Page() {
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <div className="p-2 sm:p-6">
                     <Suspense fallback={<DealsTableSkeleton />}>
-                        <DealsDataTable />
+                        <DealsDataTable searchParams={resolvedParams} />
                     </Suspense>
                 </div>
             </div>

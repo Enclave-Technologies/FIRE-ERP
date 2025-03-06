@@ -431,6 +431,7 @@ export async function updateRequirement(
 
         revalidatePath("/matching/requirements");
         revalidatePath(`/matching/requirements/${requirementId}`);
+        revalidatePath("/matching"); // Revalidate the matching page
 
         return { success: true };
     } catch (error) {

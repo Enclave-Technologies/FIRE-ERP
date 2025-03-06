@@ -9,7 +9,18 @@ import {
     SelectInventory,
     SelectRequirement,
 } from "@/db/schema";
-import { and, between, eq, gte, ilike, lte, or } from "drizzle-orm";
+import {
+    and,
+    asc,
+    between,
+    desc,
+    eq,
+    gte,
+    ilike,
+    lte,
+    not,
+    or,
+} from "drizzle-orm";
 import { parseBudgetValue } from "@/utils/budget-utils";
 import { getRequirements } from "./requirement-actions";
 
@@ -273,7 +284,94 @@ export async function getDealById(dealId: string) {
     }
 }
 
-// Function to get all deals
+// Function to get all open deals
+export async function getOpenDeals(searchQuery?: string) {
+    try {
+        let query = db
+            .select({
+                deal: Deals,
+                requirement: Requirements,
+            })
+            .from(Deals)
+            .innerJoin(
+                Requirements,
+                eq(Deals.requirementId, Requirements.requirementId)
+            )
+            .where(
+                not(or(eq(Deals.status, "signed"), eq(Deals.status, "closed"))!)
+            )
+            .$dynamic();
+
+        // Apply search filter if provided
+        if (searchQuery && typeof searchQuery === 'string' && searchQuery.trim() !== "") {
+            const search = searchQuery.toLowerCase();
+            query = query.where(
+                or(
+                    ilike(Deals.dealId, `%${search}%`),
+                    ilike(Deals.status || "", `%${search}%`),
+                    ilike(Requirements.demand, `%${search}%`),
+                    ilike(Requirements.preferredType, `%${search}%`),
+                    ilike(Requirements.preferredLocation, `%${search}%`),
+                    ilike(Requirements.budget, `%${search}%`)
+                )
+            );
+        }
+
+        // Sort by status and last modified date
+        const deals = await query.orderBy(
+            asc(Deals.status),
+            desc(Deals.updatedAt)
+        );
+
+        return deals;
+    } catch (error) {
+        console.error("Error fetching open deals:", error);
+        throw error;
+    }
+}
+
+// Function to get the last 10 closed deals
+export async function getClosedDeals(searchQuery?: string, limit: number = 10) {
+    try {
+        let query = db
+            .select({
+                deal: Deals,
+                requirement: Requirements,
+            })
+            .from(Deals)
+            .innerJoin(
+                Requirements,
+                eq(Deals.requirementId, Requirements.requirementId)
+            )
+            .where(or(eq(Deals.status, "signed"), eq(Deals.status, "closed")))
+            .$dynamic();
+
+        // Apply search filter if provided
+        if (searchQuery && searchQuery.trim() !== "") {
+            const search = searchQuery.toLowerCase();
+            query = query.where(
+                or(
+                    ilike(Deals.dealId, `%${search}%`),
+                    ilike(Deals.status, `%${search}%`),
+                    ilike(Requirements.demand, `%${search}%`),
+                    ilike(Requirements.preferredType, `%${search}%`),
+                    ilike(Requirements.preferredLocation, `%${search}%`),
+                    ilike(Requirements.budget, `%${search}%`)
+                )
+            );
+        }
+
+        // Sort by last modified date and limit to the specified number
+        const deals = await query.orderBy(desc(Deals.updatedAt)).limit(limit);
+
+        return deals;
+    } catch (error) {
+        console.error("Error fetching closed deals:", error);
+        throw error;
+    }
+}
+
+// Function to get all deals (kept for backward compatibility)
 export async function getAllDeals() {
     try {
         const deals = await db
@@ -282,7 +380,10 @@ export async function getAllDeals() {
                 requirement: Requirements, // Include the Requirements table
             })
             .from(Deals)
-            .innerJoin(Requirements, eq(Deals.requirementId, Requirements.requirementId)); // Join with Requirements
+            .innerJoin(
+                Requirements,
+                eq(Deals.requirementId, Requirements.requirementId)
+            ); // Join with Requirements
         return deals;
     } catch (error) {
         console.error("Error fetching deals:", error);

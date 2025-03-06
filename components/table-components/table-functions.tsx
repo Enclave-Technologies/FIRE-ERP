@@ -32,6 +32,7 @@ export type TableFunctionsProps<TData, TValue> = {
     showFilterButton?: boolean; // Option to show/hide filter button
     showSortButton?: boolean; // Option to show/hide sort button
     showNewButton?: boolean; // Option to show/hide new button
+    extraInputs?: React.ReactNode; // Additional hidden inputs
 };
 import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
@@ -42,6 +43,7 @@ const TableFunctions = <TData, TValue>({
     showFilterButton = true,
     showSortButton = true,
     showNewButton = true,
+    extraInputs,
 }: TableFunctionsProps<TData, TValue>) => {
     const [selectedFilterColumn, setSelectedFilterColumn] = useState<
         string | null
@@ -160,6 +162,9 @@ const TableFunctions = <TData, TValue>({
                             : `${DEFAULT_PAGE_SIZE}`
                     }
                 />
+                
+                {/* Extra inputs */}
+                {extraInputs}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Left side - Filter display area with fixed height */}
