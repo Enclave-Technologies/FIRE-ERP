@@ -23,6 +23,7 @@ import {
 } from "drizzle-orm";
 import { parseBudgetValue } from "@/utils/budget-utils";
 import { getRequirements } from "./requirement-actions";
+import { revalidatePath } from "next/cache";
 
 // Function to create a new deal
 export async function createDeal(requirementId: string) {
@@ -257,10 +258,61 @@ export async function updateDealStatus(
                 .where(eq(Inventories.inventoryId, data.inventoryId));
         }
 
+        // Revalidate paths
+        revalidatePath("/matching");
+        revalidatePath(`/matching/${dealId}`);
+
         return updatedDeal;
     } catch (error) {
         console.error("Error updating deal status:", error);
         throw error;
+    }
+}
+
+// Function to assign a final inventory to a deal and update statuses
+export async function assignFinalInventoryToDeal(
+    dealId: string,
+    inventoryId: string,
+    remarks?: string
+) {
+    try {
+        // Start a transaction to ensure all updates succeed or fail together
+        const result = await db.transaction(async (tx) => {
+            // 1. Update the deal with the inventory ID and set status to negotiation
+            const [updatedDeal] = await tx
+                .update(Deals)
+                .set({
+                    inventoryId,
+                    status: "negotiation",
+                    remarks: remarks || null,
+                })
+                .where(eq(Deals.dealId, dealId))
+                .returning();
+
+            // 2. Update the inventory status to reserved
+            await tx
+                .update(Inventories)
+                .set({ unitStatus: "reserved" })
+                .where(eq(Inventories.inventoryId, inventoryId));
+
+            return updatedDeal;
+        });
+
+        // Revalidate paths
+        revalidatePath("/matching");
+        revalidatePath(`/matching/${dealId}`);
+        revalidatePath("/matching/inventory");
+
+        return { success: true, deal: result };
+    } catch (error) {
+        console.error("Error assigning final inventory to deal:", error);
+        return {
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unknown error occurred",
+        };
     }
 }
 
@@ -284,6 +336,33 @@ export async function getDealById(dealId: string) {
     }
 }
 
+// Function to get deal with its associated requirement
+export async function getDealWithRequirement(dealId: string) {
+    try {
+        const [dealWithRequirement] = await db
+            .select({
+                deal: Deals,
+                requirement: Requirements,
+            })
+            .from(Deals)
+            .innerJoin(
+                Requirements,
+                eq(Deals.requirementId, Requirements.requirementId)
+            )
+            .where(eq(Deals.dealId, dealId))
+            .limit(1);
+
+        if (!dealWithRequirement) {
+            return null;
+        }
+
+        return dealWithRequirement;
+    } catch (error) {
+        console.error("Error fetching deal with requirement:", error);
+        throw error;
+    }
+}
+
 // Function to get all open deals
 export async function getOpenDeals(searchQuery?: string) {
     try {
@@ -303,7 +382,11 @@ export async function getOpenDeals(searchQuery?: string) {
             .$dynamic();
 
         // Apply search filter if provided
-        if (searchQuery && typeof searchQuery === 'string' && searchQuery.trim() !== "") {
+        if (
+            searchQuery &&
+            typeof searchQuery === "string" &&
+            searchQuery.trim() !== ""
+        ) {
             const search = searchQuery.toLowerCase();
             query = query.where(
                 or(

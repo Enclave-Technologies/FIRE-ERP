@@ -37,7 +37,7 @@ const navItems = {
             items: [],
         },
         {
-            title: "Matching",
+            title: "Deals",
             url: "/matching",
             items: [
                 {
