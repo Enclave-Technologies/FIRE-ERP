@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { Inventories, inventoryStatus } from "@/db/schema";
 import type { InsertInventory, SelectInventory } from "@/db/schema";
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -216,7 +217,7 @@ export async function getInventories(params?: {
         }
 
         // Apply pagination
-        let limit = 10; // Default page size
+        let limit = DEFAULT_PAGE_SIZE; // Default page size
         let offset = 0;
 
         if (params?.page && params?.pageSize) {

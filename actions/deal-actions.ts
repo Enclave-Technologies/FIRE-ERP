@@ -9,8 +9,9 @@ import {
     SelectInventory,
     SelectRequirement,
 } from "@/db/schema";
-import { and, between, eq, gte, ilike, inArray, lte, or } from "drizzle-orm";
+import { and, between, eq, gte, ilike, lte, or } from "drizzle-orm";
 import { parseBudgetValue } from "@/utils/budget-utils";
+import { getRequirements } from "./requirement-actions";
 
 // Function to create a new deal
 export async function createDeal(requirementId: string) {
@@ -339,38 +340,12 @@ export async function getRequirementsWithDealStatus(params?: {
 }> {
     try {
         // Import the getRequirements function to reuse its filtering logic
-        const { data: requirements, total } = await import(
-            "./requirement-actions"
-        ).then((module) => module.getRequirements(params));
-
-        // Get all requirement IDs
-        const requirementIds = requirements.map((req) => req.requirementId);
-
-        // If there are no requirements, return early
-        if (requirementIds.length === 0) {
-            return {
-                data: requirements.map((req) => ({ ...req, hasDeal: false })),
-                total,
-            };
-        }
-
-        // Get all deals for these requirements in a single query
-        const deals = await db
-            .select({
-                requirementId: Deals.requirementId,
-            })
-            .from(Deals)
-            .where(inArray(Deals.requirementId, requirementIds));
-
-        // Create a Set of requirement IDs that have deals for O(1) lookup
-        const requirementIdsWithDeals = new Set(
-            deals.map((deal) => deal.requirementId)
-        );
+        const { data: requirements, total } = await getRequirements(params);
 
         // Map the requirements with the deal status
         const requirementsWithDealStatus = requirements.map((requirement) => ({
-            ...requirement,
-            hasDeal: requirementIdsWithDeals.has(requirement.requirementId),
+            ...requirement.requirements,
+            hasDeal: requirement.deals !== null,
         }));
 
         return { data: requirementsWithDealStatus, total };

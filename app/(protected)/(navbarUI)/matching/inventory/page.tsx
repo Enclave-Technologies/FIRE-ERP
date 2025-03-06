@@ -5,26 +5,25 @@ import { columns } from "./columns";
 import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import InventoryTableSkeleton from "@/components/inventory/inventory-table-skeleton";
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
 // Create a component for the data fetching part
-async function InventoryDataTable({ 
-    resolvedParams 
-}: { 
-    resolvedParams: { [key: string]: string | string[] | undefined } 
+async function InventoryDataTable({
+    resolvedParams,
+}: {
+    resolvedParams: { [key: string]: string | string[] | undefined };
 }) {
     // Fetch data
     const { data: inventories, total } = await getInventories(resolvedParams);
-    
+
     return (
         <DataTable
             columns={columns}
             data={inventories}
             totalItems={total}
-            currentPage={parseInt(
-                resolvedParams.page?.toString() || "1"
-            )}
+            currentPage={parseInt(resolvedParams.page?.toString() || "1")}
             pageSize={parseInt(
-                resolvedParams.pageSize?.toString() || "10"
+                resolvedParams.pageSize?.toString() || `${DEFAULT_PAGE_SIZE}`
             )}
         />
     );

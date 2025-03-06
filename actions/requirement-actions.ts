@@ -1,11 +1,16 @@
 "use server";
 
-import { Requirements, dealStages } from "@/db/schema";
-import type { InsertRequirement, SelectRequirement } from "@/db/schema";
+import { Deals, Requirements, dealStages } from "@/db/schema";
+import type {
+    InsertRequirement,
+    SelectRequirement,
+    SelectDeal,
+} from "@/db/schema";
 import { db } from "@/db/index";
 import { createClient } from "@/supabase/server";
 import { eq, ilike, asc, desc, or, count, gte, lte } from "drizzle-orm"; // Add these imports
 import { revalidatePath } from "next/cache";
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
 export async function createRequirement(
     data: Omit<InsertRequirement, "userId" | "status" | "dateCreated">
@@ -46,15 +51,29 @@ export async function createRequirement(
 
 export async function getRequirements(params?: {
     [key: string]: string | string[] | undefined;
-}): Promise<{ data: SelectRequirement[]; total: number }> {
+}): Promise<{
+    data: { requirements: SelectRequirement; deals: SelectDeal | null }[];
+    total: number;
+}> {
     try {
         // Start with a dynamic query
-        let query = db.select().from(Requirements).$dynamic();
+        let query = db
+            .select()
+            .from(Requirements)
+            .leftJoin(
+                Deals,
+                eq(Requirements.requirementId, Deals.requirementId)
+            )
+            .$dynamic();
 
         // Create a clone of the query for counting before pagination
         let countQuery = db
             .select({ count: count() })
             .from(Requirements)
+            .leftJoin(
+                Deals,
+                eq(Requirements.requirementId, Deals.requirementId)
+            )
             .$dynamic();
 
         // Apply filters if provided
@@ -315,6 +334,13 @@ export async function getRequirements(params?: {
                                 : desc(Requirements.budget)
                         );
                         break;
+                    case "Deal":
+                        query = query.orderBy(
+                            sortDirection === "asc"
+                                ? asc(Deals.dealId)
+                                : desc(Deals.dealId)
+                        );
+                        break;
                     default:
                         query = query.orderBy(desc(Requirements.dateCreated));
                 }
@@ -328,7 +354,7 @@ export async function getRequirements(params?: {
         }
 
         // Apply pagination
-        let limit = 10; // Default page size
+        let limit = DEFAULT_PAGE_SIZE; // Default page size
         let offset = 0;
 
         if (params?.page && params?.pageSize) {

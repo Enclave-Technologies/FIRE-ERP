@@ -27,13 +27,14 @@ import AddRequirement from "@/components/requirements/add-requirement";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     totalItems = 0,
     currentPage = 1,
-    pageSize = 10,
+    pageSize = DEFAULT_PAGE_SIZE,
 }: DataTableProps<TData, TValue>) {
     const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
     const router = useRouter();
@@ -65,7 +66,7 @@ export function DataTable<TData, TValue>({
         <div className="rounded-md">
             <TableFunctions
                 columns={columns}
-                action="/matching/inventory"
+                action="/matching/requirements"
                 onNewClick={handleNewClick}
             />
             <div className="rounded-md border overflow-x-auto">

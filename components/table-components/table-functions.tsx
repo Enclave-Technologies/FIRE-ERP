@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Form from "next/form";
 import type { SortDirection, TableFunctionsProps } from "@/types";
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
 const TableFunctions = <TData, TValue>({
     columns = [],
@@ -127,7 +128,7 @@ const TableFunctions = <TData, TValue>({
                     value={sortDirection}
                 />
                 <input type="hidden" name="search" value={searchValue} />
-                
+
                 {/* Preserve pagination parameters */}
                 <input
                     type="hidden"
@@ -137,7 +138,13 @@ const TableFunctions = <TData, TValue>({
                 <input
                     type="hidden"
                     name="pageSize"
-                    value={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("pageSize") || "10" : "10"}
+                    value={
+                        typeof window !== "undefined"
+                            ? new URLSearchParams(window.location.search).get(
+                                  "pageSize"
+                              ) || `${DEFAULT_PAGE_SIZE}`
+                            : `${DEFAULT_PAGE_SIZE}`
+                    }
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
