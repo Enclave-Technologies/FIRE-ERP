@@ -48,6 +48,10 @@ const navItems = {
                     title: "Inventory",
                     url: "/matching/inventory",
                 },
+                {
+                    title: "Bulk Upload",
+                    url: "/matching/upload",
+                },
             ],
         },
         {
