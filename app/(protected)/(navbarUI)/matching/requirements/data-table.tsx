@@ -27,7 +27,7 @@ import AddRequirement from "@/components/requirements/add-requirement";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 export function DataTable<TData, TValue>({
     columns,

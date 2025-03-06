@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { Inventories, inventoryStatus } from "@/db/schema";
 import type { InsertInventory, SelectInventory } from "@/db/schema";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 

@@ -34,7 +34,7 @@ export type TableFunctionsProps<TData, TValue> = {
     showNewButton?: boolean; // Option to show/hide new button
     extraInputs?: React.ReactNode; // Additional hidden inputs
 };
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 const TableFunctions = <TData, TValue>({
     columns = [],
@@ -162,7 +162,7 @@ const TableFunctions = <TData, TValue>({
                             : `${DEFAULT_PAGE_SIZE}`
                     }
                 />
-                
+
                 {/* Extra inputs */}
                 {extraInputs}
 

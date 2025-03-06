@@ -222,50 +222,81 @@ export async function removePotentialInventoryFromDeal(
 export async function updateDealStatus(
     dealId: string,
     status: "negotiation" | "closed" | "open" | "assigned" | "rejected",
-    data?: {
+    options?: {
         paymentPlan?: string;
-        outstandingAmount?: string; // Changed from number to string
+        outstandingAmount?: string;
         milestones?: string;
         inventoryId?: string;
         remarks?: string;
     }
 ) {
     try {
-        // Prepare update data
-        const updateData = {
-            status,
-            ...data,
-        };
+        // Use options directly as data
+        const data = options;
 
-        // Update the deal
-        const [updatedDeal] = await db
-            .update(Deals)
-            .set(updateData)
-            .where(eq(Deals.dealId, dealId))
-            .returning();
+        return await db.transaction(async (tx) => {
+            // First get the current deal state
+            const [currentDeal] = await tx
+                .select()
+                .from(Deals)
+                .where(eq(Deals.dealId, dealId))
+                .for('update');
 
-        // If the deal is closed, update the inventory status to sold if an inventoryId is provided
-        if (status === "closed" && data?.inventoryId) {
-            await db
-                .update(Inventories)
-                .set({ unitStatus: "sold" })
-                .where(eq(Inventories.inventoryId, data.inventoryId));
-        } else if (status === "rejected" && data?.inventoryId) {
-            await db
-                .update(Inventories)
-                .set({ unitStatus: "available" })
-                .where(eq(Inventories.inventoryId, data.inventoryId));
-        }
+            if (!currentDeal) {
+                throw new Error("Deal not found");
+            }
 
-        // Revalidate paths
-        revalidatePath("/matching");
-        revalidatePath(`/matching/${dealId}`);
-        revalidatePath(`/matching/inventory`);
-        if (data?.inventoryId) {
-            revalidatePath(`/matching/inventory/${data.inventoryId}`);
-        }
+            // Check if the status is already being updated
+            if (currentDeal.status === status) {
+                return currentDeal;
+            }
 
-        return updatedDeal;
+            // Prepare update data
+            const updateData = {
+                status,
+                ...data,
+                updatedAt: new Date(), // Force update timestamp
+            };
+
+            // Update the deal
+            const [updatedDeal] = await tx
+                .update(Deals)
+                .set(updateData)
+                .where(
+                    and(
+                        eq(Deals.dealId, dealId),
+                        eq(Deals.updatedAt, currentDeal.updatedAt) // Ensure we're updating the same version
+                    )
+                )
+                .returning();
+
+            if (!updatedDeal) {
+                throw new Error("Concurrent update detected. Please try again.");
+            }
+
+            // If the deal is closed, update the inventory status to sold if an inventoryId is provided
+            if (status === "closed" && data?.inventoryId) {
+                await tx
+                    .update(Inventories)
+                    .set({ unitStatus: "sold" })
+                    .where(eq(Inventories.inventoryId, data.inventoryId));
+            } else if (status === "rejected" && data?.inventoryId) {
+                await tx
+                    .update(Inventories)
+                    .set({ unitStatus: "available" })
+                    .where(eq(Inventories.inventoryId, data.inventoryId));
+            }
+
+            // Revalidate paths
+            revalidatePath("/matching");
+            revalidatePath(`/matching/${dealId}`);
+            revalidatePath(`/matching/inventory`);
+            if (data?.inventoryId) {
+                revalidatePath(`/matching/inventory/${data.inventoryId}`);
+            }
+
+            return updatedDeal;
+        });
     } catch (error) {
         console.error("Error updating deal status:", error);
         throw error;
@@ -601,8 +632,8 @@ export async function searchInventories(filters: {
                     ),
                     between(
                         Inventories.priceAED,
-                        filters.maxPrice,
-                        filters.minPrice
+                        filters.minPrice,
+                        filters.maxPrice
                     )
                 )
             );

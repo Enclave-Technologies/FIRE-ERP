@@ -10,7 +10,7 @@ import { db } from "@/db/index";
 import { createClient } from "@/supabase/server";
 import { eq, ilike, asc, desc, or, count, gte, lte } from "drizzle-orm"; // Add these imports
 import { revalidatePath } from "next/cache";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 export async function createRequirement(
     data: Omit<InsertRequirement, "userId" | "status" | "dateCreated">

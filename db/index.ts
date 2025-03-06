@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { ENV } from "@/utils/contants";
+import { ENV } from "@/utils/constants";
 
 config({ path: ENV }); // or .env.local
 

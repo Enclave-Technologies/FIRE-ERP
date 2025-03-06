@@ -308,6 +308,39 @@ export default function RecommendedPropertiesList({
     };
 
     // Function to get badge color based on status
+    // Centralized recommendation criteria
+    // Centralized recommendation criteria
+    const getRecommendationCriteria = useCallback(() => {
+        if (!properties.length) return null;
+
+        const typeCounts = new Map<string, number>();
+        const locationCounts = new Map<string, number>();
+        
+        properties.forEach(p => {
+            if (p.propertyType) {
+                typeCounts.set(p.propertyType, (typeCounts.get(p.propertyType) || 0) + 1);
+            }
+            if (p.location) {
+                locationCounts.set(p.location, (locationCounts.get(p.location) || 0) + 1);
+            }
+        });
+        
+        const mostCommonType = [...typeCounts.entries()].reduce((a, b) => 
+            a[1] > b[1] ? a : b)[0];
+        const mostCommonLocation = [...locationCounts.entries()].reduce((a, b) => 
+            a[1] > b[1] ? a : b)[0];
+            
+        return { mostCommonType, mostCommonLocation };
+    }, [properties]);
+
+    const isPropertyRecommended = useCallback((property: SelectInventory) => {
+        const criteria = getRecommendationCriteria();
+        if (!criteria) return false;
+        
+        return property.propertyType === criteria.mostCommonType && 
+               property.location === criteria.mostCommonLocation;
+    }, [getRecommendationCriteria]);
+
     const getStatusBadgeVariant = (
         status: string
     ): "default" | "destructive" | "secondary" | "outline" => {
@@ -439,18 +472,7 @@ export default function RecommendedPropertiesList({
                                 </label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {properties
-                                        .filter(
-                                            (p) =>
-                                                p.propertyType ===
-                                                    properties.find(
-                                                        (prop) =>
-                                                            prop.propertyType
-                                                    )?.propertyType &&
-                                                p.location ===
-                                                    properties.find(
-                                                        (prop) => prop.location
-                                                    )?.location
-                                        )
+                                        .filter(isPropertyRecommended)
                                         .slice(0, 3)
                                         .map((property) => (
                                             <Card
@@ -729,16 +751,9 @@ export default function RecommendedPropertiesList({
                                             properties.map((property) => {
                                                 // Check if this is a recommended property
                                                 const isRecommended =
-                                                    property.propertyType ===
-                                                        properties.find(
-                                                            (prop) =>
-                                                                prop.propertyType
-                                                        )?.propertyType &&
-                                                    property.location ===
-                                                        properties.find(
-                                                            (prop) =>
-                                                                prop.location
-                                                        )?.location;
+                                                    isPropertyRecommended(
+                                                        property
+                                                    );
 
                                                 return (
                                                     <TableRow

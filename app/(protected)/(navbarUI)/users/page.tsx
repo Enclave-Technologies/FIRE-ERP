@@ -9,7 +9,7 @@ import {
 } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import RequirementsTableSkeleton from "@/components/requirements/requirements-table-skeleton";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 async function UsersDataTable({
     resolvedParams,

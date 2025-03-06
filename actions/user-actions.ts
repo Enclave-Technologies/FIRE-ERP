@@ -5,7 +5,7 @@ import { createClient } from "@/supabase/server";
 import { db } from "@/db";
 import { NotificationPreferences, Users, rolesEnum } from "@/db/schema";
 import { asc, count, desc, eq, like, or } from "drizzle-orm";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 export async function getUserRole(userId: string) {
     try {

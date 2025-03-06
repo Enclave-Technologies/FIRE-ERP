@@ -27,8 +27,7 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet";
 import AddUserSheet from "@/components/auth/add-user";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
-
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 export function DataTable<TData, TValue>({
     columns,
@@ -37,7 +36,6 @@ export function DataTable<TData, TValue>({
     currentPage = 1,
     pageSize = DEFAULT_PAGE_SIZE,
 }: DataTableProps<TData, TValue>) {
-
     const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
     const router = useRouter();

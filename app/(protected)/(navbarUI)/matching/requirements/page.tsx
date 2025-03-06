@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
 import RequirementsTableSkeleton from "@/components/requirements/requirements-table-skeleton";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 // Create a component for the data fetching part
 async function RequirementsDataTable({

@@ -77,11 +77,29 @@ export default async function Page() {
 
     // Fetch data for KPIs - these are loaded directly in the main component
     // since they're simple counts and don't need to be in Suspense
-    const { total: totalRequirements } = await getRequirements();
-    const openDeals = await getOpenDeals();
-    const closedDeals = await getClosedDeals();
-    const totalDeals = openDeals.length + closedDeals.length;
-    const { total: totalInventory } = await getInventories();
+    let totalRequirements = 0;
+    let totalDeals = 0;
+    let totalInventory = 0;
+    let openDeals = [];
+    let closedDeals = [];
+
+    try {
+        const [requirementsRes, openDealsRes, closedDealsRes, inventoryRes] =
+            await Promise.all([
+                getRequirements(),
+                getOpenDeals(),
+                getClosedDeals(),
+                getInventories(),
+            ]);
+
+        totalRequirements = requirementsRes.total;
+        openDeals = openDealsRes;
+        closedDeals = closedDealsRes;
+        totalDeals = openDeals.length + closedDeals.length;
+        totalInventory = inventoryRes.total;
+    } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+    }
 
     return (
         <div className="flex flex-1 flex-col gap-6 p-6">

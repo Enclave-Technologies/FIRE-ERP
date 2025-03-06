@@ -5,7 +5,7 @@ import { columns } from "./columns";
 import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import InventoryTableSkeleton from "@/components/inventory/inventory-table-skeleton";
-import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 // Create a component for the data fetching part
 async function InventoryDataTable({

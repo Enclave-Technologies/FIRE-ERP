@@ -28,7 +28,7 @@ interface MultiSelectorProps
 
 interface MultiSelectContextProps {
     value: string[];
-    onValueChange: (value: any) => void;
+    onValueChange: (value: string[]) => void;
     open: boolean;
     setOpen: (value: boolean) => void;
     inputValue: string;
@@ -277,7 +277,7 @@ MultiSelectorTrigger.displayName = "MultiSelectorTrigger";
 const MultiSelectorInput = forwardRef<
     React.ElementRef<typeof CommandPrimitive.Input>,
     React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
->(({ className, ...props }, ref) => {
+>(({ className, ...props }, _ref) => {
     const {
         setOpen,
         inputValue,

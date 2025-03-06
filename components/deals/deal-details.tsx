@@ -101,22 +101,53 @@ export default function DealDetails({
         newStatus: (typeof dealStages.enumValues)[number]
     ) => {
         if (newStatus === status) return;
+        if (isUpdating) return;
 
         setIsUpdating(true);
+
+        // Optimistic update
+        const previousStatus = status;
+        setStatus(newStatus);
+
         try {
             await updateDealStatus(deal.dealId, newStatus);
-            setStatus(newStatus);
+
             toast({
                 title: "Status Updated",
                 description: `Deal status changed to ${newStatus}`,
             });
         } catch (err) {
-            console.error("Error updating status:", err);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred",
-                variant: "destructive",
-            });
+            // Revert optimistic update on error
+            setStatus(previousStatus);
+
+            if (err instanceof Error) {
+                if (
+                    err.message ===
+                    "Concurrent update detected. Please try again."
+                ) {
+                    toast({
+                        title: "Conflict",
+                        description:
+                            "The deal was modified by another user. Please refresh and try again.",
+                        variant: "destructive",
+                    });
+                } else {
+                    console.error("Error updating status:", err);
+                    toast({
+                        title: "Error",
+                        description:
+                            err.message || "An unexpected error occurred",
+                        variant: "destructive",
+                    });
+                }
+            } else {
+                console.error("Unknown error updating status:", err);
+                toast({
+                    title: "Error",
+                    description: "An unexpected error occurred",
+                    variant: "destructive",
+                });
+            }
         } finally {
             setIsUpdating(false);
         }
