@@ -17,6 +17,6 @@ export const config = {
          * - reset-password
          * Feel free to modify this pattern to include more paths.
          */
-        "/((?!_next/static|_next/image|favicon.ico|login|register|reset-password|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+        "/((?!_next/static|_next/image|favicon.ico|login|register|reset-password|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
     ],
 };
