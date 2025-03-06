@@ -250,11 +250,20 @@ export async function updateDealStatus(
                 .update(Inventories)
                 .set({ unitStatus: "sold" })
                 .where(eq(Inventories.inventoryId, data.inventoryId));
+        } else if (status === "rejected" && data?.inventoryId) {
+            await db
+                .update(Inventories)
+                .set({ unitStatus: "available" })
+                .where(eq(Inventories.inventoryId, data.inventoryId));
         }
 
         // Revalidate paths
         revalidatePath("/matching");
         revalidatePath(`/matching/${dealId}`);
+        revalidatePath(`/matching/inventory`);
+        if (data?.inventoryId) {
+            revalidatePath(`/matching/inventory/${data.inventoryId}`);
+        }
 
         return updatedDeal;
     } catch (error) {
@@ -289,6 +298,11 @@ export async function assignFinalInventoryToDeal(
                 .set({ unitStatus: "reserved" })
                 .where(eq(Inventories.inventoryId, inventoryId));
 
+            // 3. Delete all InventoryAssignedDeals records for this deal
+            await tx
+                .delete(InventoryAssignedDeals)
+                .where(eq(InventoryAssignedDeals.dealId, dealId));
+
             return updatedDeal;
         });
 
@@ -296,6 +310,7 @@ export async function assignFinalInventoryToDeal(
         revalidatePath("/matching");
         revalidatePath(`/matching/${dealId}`);
         revalidatePath("/matching/inventory");
+        revalidatePath("/matching/requirements");
 
         return { success: true, deal: result };
     } catch (error) {
