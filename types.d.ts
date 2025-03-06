@@ -52,11 +52,7 @@ type AccordionContextType = {
 
 type SortDirection = "asc" | "desc";
 
-type TableFunctionsProps<TData, TValue> = {
-    columns: ColumnDef<TData, TValue>[];
-    action: string; // Form action URL
-    onNewClick?: () => void; // Callback for New button
-};
+// TableFunctionsProps is now defined in components/table-components/table-functions.tsx
 
 type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -113,4 +109,3 @@ type ProfileSettingsProps = {
     userInfo: SelectUser;
     userNotifPref: SelectNotificationPreferences;
 };
-

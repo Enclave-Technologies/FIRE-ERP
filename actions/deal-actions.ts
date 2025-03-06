@@ -276,7 +276,13 @@ export async function getDealById(dealId: string) {
 // Function to get all deals
 export async function getAllDeals() {
     try {
-        const deals = await db.select().from(Deals);
+        const deals = await db
+            .select({
+                deal: Deals,
+                requirement: Requirements, // Include the Requirements table
+            })
+            .from(Deals)
+            .innerJoin(Requirements, eq(Deals.requirementId, Requirements.requirementId)); // Join with Requirements
         return deals;
     } catch (error) {
         console.error("Error fetching deals:", error);
