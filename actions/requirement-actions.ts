@@ -1,6 +1,6 @@
 "use server";
 
-import { Deals, Requirements, dealStages } from "@/db/schema";
+import { Deals, Requirements } from "@/db/schema";
 import type {
     InsertRequirement,
     SelectRequirement,
@@ -38,7 +38,7 @@ export async function createRequirement(
                     ? data.preferredROI
                     : "0",
             userId,
-            status: "open" as (typeof dealStages.enumValues)[0],
+            // status: "open" as (typeof dealStages.enumValues)[0],
             dateCreated: new Date(),
         };
 
@@ -250,32 +250,32 @@ export async function getRequirements(params?: {
                                 );
                             }
                             break;
-                        case "Status":
-                            // Cast the value to the appropriate enum type
-                            if (
-                                [
-                                    "open",
-                                    "assigned",
-                                    "negotiation",
-                                    "closed",
-                                    "rejected",
-                                ].includes(value)
-                            ) {
-                                const typedValue = value as
-                                    | "open"
-                                    | "assigned"
-                                    | "negotiation"
-                                    | "closed"
-                                    | "rejected";
+                        // case "Status":
+                        //     // Cast the value to the appropriate enum type
+                        //     if (
+                        //         [
+                        //             "open",
+                        //             "assigned",
+                        //             "negotiation",
+                        //             "closed",
+                        //             "rejected",
+                        //         ].includes(value)
+                        //     ) {
+                        //         const typedValue = value as
+                        //             | "open"
+                        //             | "assigned"
+                        //             | "negotiation"
+                        //             | "closed"
+                        //             | "rejected";
 
-                                query = query.where(
-                                    eq(Requirements.status, typedValue)
-                                );
-                                countQuery.where(
-                                    eq(Requirements.status, typedValue)
-                                );
-                            }
-                            break;
+                        //         // query = query.where(
+                        //         //     eq(Requirements.status, typedValue)
+                        //         // );
+                        //         // countQuery.where(
+                        //         //     eq(Requirements.status, typedValue)
+                        //         // );
+                        //     }
+                        //     break;
                     }
                 }
             }
@@ -313,13 +313,13 @@ export async function getRequirements(params?: {
                                 : desc(Requirements.preferredType)
                         );
                         break;
-                    case "Status":
-                        query = query.orderBy(
-                            sortDirection === "asc"
-                                ? asc(Requirements.status)
-                                : desc(Requirements.status)
-                        );
-                        break;
+                    // case "Status":
+                    //     query = query.orderBy(
+                    //         sortDirection === "asc"
+                    //             ? asc(Requirements.status)
+                    //             : desc(Requirements.status)
+                    //     );
+                    //     break;
                     case "Date Created":
                         query = query.orderBy(
                             sortDirection === "asc"

@@ -8,6 +8,7 @@ import {
     getRecommendedProperties,
     removePotentialInventoryFromDeal,
     searchInventories,
+    updateDealStatus as updateDealStatusAction,
 } from "@/actions/deal-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,8 +23,9 @@ import {
     Percent,
     Search,
     Filter,
+    Tag,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
     Table,
     TableBody,
@@ -44,6 +46,7 @@ export default function RecommendedPropertiesList({
     requirementId,
 }: RecommendedPropertiesListProps) {
     const [dealId, setDealId] = useState<string | null>(null);
+    const [dealStatus, setDealStatus] = useState<string>("open");
     const [properties, setProperties] = useState<SelectInventory[]>([]);
     const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -64,6 +67,44 @@ export default function RecommendedPropertiesList({
         undefined
     );
 
+    // Function to update deal status to "assigned" when properties are assigned
+    const updateDealStatus = useCallback(
+        async (
+            newStatus:
+                | "open"
+                | "assigned"
+                | "negotiation"
+                | "closed"
+                | "rejected"
+        ) => {
+            if (!dealId) return;
+
+            try {
+                // Update the deal status in the database using the server action
+                const updatedDeal = await updateDealStatusAction(
+                    dealId,
+                    newStatus
+                );
+
+                // Update local state with the new status
+                setDealStatus(updatedDeal.status || "open");
+
+                toast({
+                    title: "Status Updated",
+                    description: `Deal status updated to ${newStatus}`,
+                });
+            } catch (err) {
+                console.error("Failed to update deal status:", err);
+                toast({
+                    title: "Error",
+                    description: "Failed to update deal status",
+                    variant: "destructive",
+                });
+            }
+        },
+        [dealId, toast]
+    );
+
     // Load existing deal and assigned properties on component mount
     useEffect(() => {
         const loadExistingDeal = async () => {
@@ -71,6 +112,7 @@ export default function RecommendedPropertiesList({
                 const deal = await getFirstDealByRequirementId(requirementId);
                 if (deal) {
                     setDealId(deal.dealId);
+                    setDealStatus(deal.status || "open");
 
                     // Fetch recommended properties first
                     await fetchRecommendedProperties();
@@ -85,6 +127,11 @@ export default function RecommendedPropertiesList({
                         setSelectedProperties(
                             assignedProperties.map((p) => p.inventoryId)
                         );
+
+                        // If properties are assigned but status is still open, update to assigned
+                        if (deal.status === "open") {
+                            updateDealStatus("assigned");
+                        }
 
                         // Make sure all assigned properties are in the properties list
                         // This ensures we can display them even if they don't match the current filters
@@ -117,7 +164,7 @@ export default function RecommendedPropertiesList({
         };
 
         loadExistingDeal();
-    }, [requirementId]);
+    }, [requirementId, updateDealStatus]);
 
     // Function to create a new deal
     const handleCreateDeal = async () => {
@@ -125,6 +172,7 @@ export default function RecommendedPropertiesList({
         try {
             const deal = await createDeal(requirementId);
             setDealId(deal.dealId);
+            setDealStatus(deal.status || "open");
             toast({
                 title: "Deal Created",
                 description: "Successfully created a new deal",
@@ -236,6 +284,16 @@ export default function RecommendedPropertiesList({
 
         // Update selected properties
         setSelectedProperties(values);
+
+        // If properties are being added and the status is still open, update to assigned
+        if (addedProperties.length > 0 && dealStatus === "open") {
+            updateDealStatus("assigned");
+        }
+
+        // If all properties are removed and the status is assigned, update back to open
+        if (values.length === 0 && dealStatus === "assigned") {
+            updateDealStatus("open");
+        }
     };
 
     // Toggle property selection
@@ -249,12 +307,43 @@ export default function RecommendedPropertiesList({
         }
     };
 
+    // Function to get badge color based on status
+    const getStatusBadgeVariant = (
+        status: string
+    ): "default" | "destructive" | "secondary" | "outline" => {
+        switch (status) {
+            case "open":
+                return "secondary";
+            case "assigned":
+                return "default";
+            case "negotiation":
+                return "outline";
+            case "closed":
+                return "secondary";
+            case "rejected":
+                return "destructive";
+            default:
+                return "outline";
+        }
+    };
+
     return (
         <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <Card className="mt-8">
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                        <span>Deal Flow</span>
+                        <div className="flex items-center gap-3">
+                            <span>Deal Flow</span>
+                            {dealId && (
+                                <Badge
+                                    variant={getStatusBadgeVariant(dealStatus)}
+                                    className="capitalize"
+                                >
+                                    <Tag className="h-3 w-3 mr-1" />
+                                    {dealStatus}
+                                </Badge>
+                            )}
+                        </div>
                         {!dealId && (
                             <Button
                                 onClick={handleCreateDeal}

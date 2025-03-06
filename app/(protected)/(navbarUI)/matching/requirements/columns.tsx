@@ -55,93 +55,93 @@ const DealBadge = ({ hasDeal }: { hasDeal: boolean }) => {
 };
 
 // Create a separate component for the status cell to use hooks
-const StatusCell = ({ requirement }: { requirement: RequirementWithDeal }) => {
-    // const { toast } = useToast();
-    const [status] = useState<typeof requirement.status>(requirement.status);
-    // Function to handle status change
-    // const handleStatusChange = async (
-    //     newStatus: (typeof dealStages.enumValues)[number]
-    // ) => {
-    //     if (newStatus === status) return;
+// const StatusCell = ({ requirement }: { requirement: RequirementWithDeal }) => {
+//     // const { toast } = useToast();
+//     const [status] = useState<typeof requirement.status>(requirement.status);
+//     // Function to handle status change
+//     // const handleStatusChange = async (
+//     //     newStatus: (typeof dealStages.enumValues)[number]
+//     // ) => {
+//     //     if (newStatus === status) return;
 
-    //     try {
-    //         const result = await updateRequirement(requirement.requirementId, {
-    //             status: newStatus,
-    //         });
+//     //     try {
+//     //         const result = await updateRequirement(requirement.requirementId, {
+//     //             status: newStatus,
+//     //         });
 
-    //         if (result.success) {
-    //             toast({
-    //                 title: "Status Updated",
-    //                 description: `Requirement status changed to ${newStatus}`,
-    //             });
+//     //         if (result.success) {
+//     //             toast({
+//     //                 title: "Status Updated",
+//     //                 description: `Requirement status changed to ${newStatus}`,
+//     //             });
 
-    //             // Update the local state to reflect the change
-    //             setStatus(newStatus);
-    //         } else {
-    //             toast({
-    //                 title: "Error",
-    //                 description: result.message || "Failed to update status",
-    //                 variant: "destructive",
-    //             });
-    //         }
-    //     } catch (err) {
-    //         console.error("Error updating status:", err);
-    //         toast({
-    //             title: "Error",
-    //             description: "An unexpected error occurred",
-    //             variant: "destructive",
-    //         });
-    //     }
-    // };
+//     //             // Update the local state to reflect the change
+//     //             setStatus(newStatus);
+//     //         } else {
+//     //             toast({
+//     //                 title: "Error",
+//     //                 description: result.message || "Failed to update status",
+//     //                 variant: "destructive",
+//     //             });
+//     //         }
+//     //     } catch (err) {
+//     //         console.error("Error updating status:", err);
+//     //         toast({
+//     //             title: "Error",
+//     //             description: "An unexpected error occurred",
+//     //             variant: "destructive",
+//     //         });
+//     //     }
+//     // };
 
-    const getStatusVariant = (
-        status: string | null
-    ): "default" | "destructive" | "secondary" | "outline" => {
-        switch (status) {
-            case "open":
-                return "default"; // Green in both modes
-            case "assigned":
-                return "secondary"; // Purple in both modes
-            case "negotiation":
-                return "outline"; // Blue in both modes
-            case "closed":
-                return "destructive"; // Red in both modes
-            case "rejected":
-                return "destructive"; // Red in both modes
-            default:
-                return "default";
-        }
-    };
+//     const getStatusVariant = (
+//         status: string | null
+//     ): "default" | "destructive" | "secondary" | "outline" => {
+//         switch (status) {
+//             case "open":
+//                 return "default"; // Green in both modes
+//             case "assigned":
+//                 return "secondary"; // Purple in both modes
+//             case "negotiation":
+//                 return "outline"; // Blue in both modes
+//             case "closed":
+//                 return "destructive"; // Red in both modes
+//             case "rejected":
+//                 return "destructive"; // Red in both modes
+//             default:
+//                 return "default";
+//         }
+//     };
 
-    return (
-        <div className="flex items-center">
-            <Badge variant={getStatusVariant(status)} className="mr-2">
-                {status}
-            </Badge>
-            {/* <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0 dark:bg-gray-800 dark:text-gray-200">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {dealStages.enumValues.map((statusOption) => (
-                        <DropdownMenuItem
-                            key={statusOption}
-                            onClick={() => handleStatusChange(statusOption)}
-                            disabled={statusOption === status}
-                        >
-                            {statusOption}
-                        </DropdownMenuItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu> */}
-        </div>
-    );
-};
+//     return (
+//         <div className="flex items-center">
+//             <Badge variant={getStatusVariant(status)} className="mr-2">
+//                 {status}
+//             </Badge>
+//             {/* <DropdownMenu>
+//                 <DropdownMenuTrigger asChild>
+//                     <Button variant="ghost" className="h-8 w-8 p-0 dark:bg-gray-800 dark:text-gray-200">
+//                         <span className="sr-only">Open menu</span>
+//                         <MoreHorizontal className="h-4 w-4" />
+//                     </Button>
+//                 </DropdownMenuTrigger>
+//                 <DropdownMenuContent align="end">
+//                     <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+//                     <DropdownMenuSeparator />
+//                     {dealStages.enumValues.map((statusOption) => (
+//                         <DropdownMenuItem
+//                             key={statusOption}
+//                             onClick={() => handleStatusChange(statusOption)}
+//                             disabled={statusOption === status}
+//                         >
+//                             {statusOption}
+//                         </DropdownMenuItem>
+//                     ))}
+//                 </DropdownMenuContent>
+//             </DropdownMenu> */}
+//         </div>
+//     );
+// };
 
 // Create a separate component for the actions cell to use hooks
 const ActionsCell = ({ requirement }: { requirement: RequirementWithDeal }) => {
@@ -358,11 +358,11 @@ export const columns: ColumnDef<RequirementWithDeal>[] = [
             <Badge variant="outline">{row.original.category}</Badge>
         ),
     },
-    {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => <StatusCell requirement={row.original} />,
-    },
+    // {
+    //     accessorKey: "status",
+    //     header: "Status",
+    //     cell: ({ row }) => <StatusCell requirement={row.original} />,
+    // },
     {
         id: "deal",
         header: "Deal",

@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectRequirement, dealStages } from "@/db/schema";
+import { SelectRequirement } from "@/db/schema";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Spotlight } from "@/components/ui/spotlight";
@@ -182,45 +182,45 @@ export default function RequirementDetails({
     requirement: SelectRequirement;
 }) {
     const { toast } = useToast();
-    const [status, setStatus] = useState<
-        (typeof dealStages.enumValues)[number]
-    >(requirement.status || "open");
-    const [isUpdating, setIsUpdating] = useState(false);
+    // const [status, setStatus] = useState<
+    //     (typeof dealStages.enumValues)[number]
+    // >(requirement.status || "open");
+    // const [isUpdating, setIsUpdating] = useState(false);
 
-    const handleStatusChange = async (
-        newStatus: (typeof dealStages.enumValues)[number]
-    ) => {
-        if (newStatus === status) return;
+    // const handleStatusChange = async (
+    //     newStatus: (typeof dealStages.enumValues)[number]
+    // ) => {
+    //     if (newStatus === status) return;
 
-        setIsUpdating(true);
-        try {
-            const result = await updateRequirement(requirement.requirementId, {
-                status: newStatus,
-            });
-            if (result.success) {
-                setStatus(newStatus);
-                toast({
-                    title: "Status Updated",
-                    description: `Requirement status changed to ${newStatus}`,
-                });
-            } else {
-                toast({
-                    title: "Update Failed",
-                    description: result.message || "Failed to update status",
-                    variant: "destructive",
-                });
-            }
-        } catch (err) {
-            console.error("Error updating status:", err);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred",
-                variant: "destructive",
-            });
-        } finally {
-            setIsUpdating(false);
-        }
-    };
+    //     setIsUpdating(true);
+    //     try {
+    //         const result = await updateRequirement(requirement.requirementId, {
+    //             status: newStatus,
+    //         });
+    //         if (result.success) {
+    //             setStatus(newStatus);
+    //             toast({
+    //                 title: "Status Updated",
+    //                 description: `Requirement status changed to ${newStatus}`,
+    //             });
+    //         } else {
+    //             toast({
+    //                 title: "Update Failed",
+    //                 description: result.message || "Failed to update status",
+    //                 variant: "destructive",
+    //             });
+    //         }
+    //     } catch (err) {
+    //         console.error("Error updating status:", err);
+    //         toast({
+    //             title: "Error",
+    //             description: "An unexpected error occurred",
+    //             variant: "destructive",
+    //         });
+    //     } finally {
+    //         setIsUpdating(false);
+    //     }
+    // };
 
     const formatDate = (date: Date | null | undefined) => {
         if (!date) return "N/A";
@@ -484,7 +484,7 @@ export default function RequirementDetails({
                     </Card>
 
                     {/* Status Update */}
-                    <Card className="shadow-sm">
+                    {/* <Card className="shadow-sm">
                         <CardHeader className="pb-4">
                             <CardTitle>Update Status</CardTitle>
                         </CardHeader>
@@ -510,7 +510,7 @@ export default function RequirementDetails({
                                 ))}
                             </div>
                         </CardContent>
-                    </Card>
+                    </Card> */}
                 </motion.section>
             </div>
 

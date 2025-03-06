@@ -32,16 +32,16 @@ export async function createDeal(requirementId: string) {
             .insert(Deals)
             .values({
                 requirementId,
-                status: "received",
+                status: "open",
                 // createdAt and updatedAt are automatically set by the database
             })
             .returning();
 
         // Update requirement status
-        await db
-            .update(Requirements)
-            .set({ status: "open" })
-            .where(eq(Requirements.requirementId, requirementId));
+        // await db
+        //     .update(Requirements)
+        //     .set({ status: "open" })
+        //     .where(eq(Requirements.requirementId, requirementId));
 
         return deal;
     } catch (error) {
@@ -221,13 +221,7 @@ export async function removePotentialInventoryFromDeal(
 // Function to update deal status
 export async function updateDealStatus(
     dealId: string,
-    status:
-        | "received"
-        | "negotiation"
-        | "offer"
-        | "accepted"
-        | "signed"
-        | "closed",
+    status: "negotiation" | "closed" | "open" | "assigned" | "rejected",
     data?: {
         paymentPlan?: string;
         outstandingAmount?: string; // Changed from number to string
@@ -377,7 +371,12 @@ export async function getOpenDeals(searchQuery?: string) {
                 eq(Deals.requirementId, Requirements.requirementId)
             )
             .where(
-                not(or(eq(Deals.status, "signed"), eq(Deals.status, "closed"))!)
+                not(
+                    or(
+                        eq(Deals.status, "rejected"),
+                        eq(Deals.status, "closed")
+                    )!
+                )
             )
             .$dynamic();
 
@@ -426,7 +425,7 @@ export async function getClosedDeals(searchQuery?: string, limit: number = 10) {
                 Requirements,
                 eq(Deals.requirementId, Requirements.requirementId)
             )
-            .where(or(eq(Deals.status, "signed"), eq(Deals.status, "closed")))
+            .where(or(eq(Deals.status, "rejected"), eq(Deals.status, "closed")))
             .$dynamic();
 
         // Apply search filter if provided

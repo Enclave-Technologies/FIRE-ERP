@@ -26,10 +26,9 @@ type Deal = {
         status:
             | "negotiation"
             | "closed"
-            | "received"
-            | "offer"
-            | "accepted"
-            | "signed"
+            | "open"
+            | "assigned"
+            | "rejected"
             | null;
         createdAt: Date;
         updatedAt: Date;
@@ -322,17 +321,15 @@ const StatusBadge = ({ status }: { status: string | null }) => {
         status: string
     ): "default" | "destructive" | "secondary" | "outline" => {
         switch (status) {
-            case "received":
+            case "open":
                 return "default"; // Green in both modes
-            case "negotiation":
+            case "assigned":
                 return "secondary"; // Purple in both modes
-            case "offer":
+            case "negotiation":
                 return "outline"; // Blue in both modes
-            case "accepted":
-                return "outline"; // Blue in both modes
-            case "signed":
-                return "destructive"; // Red in both modes
             case "closed":
+                return "outline"; // Blue in both modes
+            case "rejected":
                 return "destructive"; // Red in both modes
             default:
                 return "default";

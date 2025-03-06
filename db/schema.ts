@@ -74,7 +74,6 @@ export const Requirements = pgTable("requirements", {
         .references(() => Users.userId, { onDelete: "cascade" }),
     description: text("description").notNull(),
     dateCreated: timestamp("date_created").defaultNow().notNull(),
-    status: dealStages().default("open"),
 
     demand: varchar("demand", { length: 255 }).notNull(), // The person or entity making the request
     preferredType: varchar("preferred_type", { length: 100 }).notNull(), // Type of property
@@ -146,7 +145,7 @@ export const Deals = pgTable("deals", {
         () => Requirements.requirementId,
         { onDelete: "cascade" }
     ), // The requirement that initiated the deal
-    status: dealMilestones("status").default("received"), // Current status of the deal
+    status: dealStages("status").default("open"), // Current status of the deal
     createdAt: timestamp("created_at").defaultNow().notNull(), // When the deal was created
     updatedAt: timestamp("updated_at")
         .defaultNow()
