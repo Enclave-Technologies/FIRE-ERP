@@ -9,6 +9,7 @@ import {
 } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import RequirementsTableSkeleton from "@/components/requirements/requirements-table-skeleton";
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
 async function UsersDataTable({
     resolvedParams,
@@ -24,7 +25,9 @@ async function UsersDataTable({
             data={user_list}
             totalItems={total}
             currentPage={parseInt(resolvedParams.page?.toString() || "1")}
-            pageSize={parseInt(resolvedParams.pageSize?.toString() || "10")}
+            pageSize={parseInt(
+                resolvedParams.pageSize?.toString() || `${DEFAULT_PAGE_SIZE}`
+            )}
         />
     );
 }

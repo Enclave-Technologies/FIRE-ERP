@@ -1,0 +1,2 @@
+requirement_id,user_id,description,date_created,status,demand,preferred_type,preferred_location,budget,phpp,preferred_square_footage,preferred_roi,shared_with_indian_channel_partner,call,viewing,category,remarks,rtm_offplan
+,,,,,Residential,Apartment,Dubai Marina,1000000,false,1200,5,false,false,false,RISE,Sample requirement,RTM

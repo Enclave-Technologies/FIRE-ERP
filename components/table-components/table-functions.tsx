@@ -21,12 +21,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import Form from "next/form";
-import type { SortDirection, TableFunctionsProps } from "@/types";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { SortDirection } from "@/types";
+
+// Extended TableFunctionsProps with options to hide specific buttons
+export type TableFunctionsProps<TData, TValue> = {
+    columns: ColumnDef<TData, TValue>[];
+    action: string; // Form action URL
+    onNewClick?: () => void; // Callback for New button
+    showFilterButton?: boolean; // Option to show/hide filter button
+    showSortButton?: boolean; // Option to show/hide sort button
+    showNewButton?: boolean; // Option to show/hide new button
+    extraInputs?: React.ReactNode; // Additional hidden inputs
+};
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
 const TableFunctions = <TData, TValue>({
     columns = [],
     action,
     onNewClick,
+    showFilterButton = true,
+    showSortButton = true,
+    showNewButton = true,
+    extraInputs,
 }: TableFunctionsProps<TData, TValue>) => {
     const [selectedFilterColumn, setSelectedFilterColumn] = useState<
         string | null
@@ -127,7 +144,7 @@ const TableFunctions = <TData, TValue>({
                     value={sortDirection}
                 />
                 <input type="hidden" name="search" value={searchValue} />
-                
+
                 {/* Preserve pagination parameters */}
                 <input
                     type="hidden"
@@ -137,90 +154,107 @@ const TableFunctions = <TData, TValue>({
                 <input
                     type="hidden"
                     name="pageSize"
-                    value={typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get("pageSize") || "10" : "10"}
+                    value={
+                        typeof window !== "undefined"
+                            ? new URLSearchParams(window.location.search).get(
+                                  "pageSize"
+                              ) || `${DEFAULT_PAGE_SIZE}`
+                            : `${DEFAULT_PAGE_SIZE}`
+                    }
                 />
+                
+                {/* Extra inputs */}
+                {extraInputs}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Left side - Filter display area with fixed height */}
-                    <div className="min-h-[80px] flex items-center">
-                        <div className="w-full">
-                            {selectedFilterColumn ? (
-                                <div className="space-y-1">
-                                    <Label htmlFor="filter-input">
-                                        Filter by {selectedFilterColumn}
-                                    </Label>
-                                    <div className="flex items-center">
-                                        <Input
-                                            id="filter-input"
-                                            placeholder={`Enter value...`}
-                                            className="h-8"
-                                            value={filterValue}
-                                            onChange={(e) =>
-                                                setFilterValue(e.target.value)
-                                            }
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={clearFilter}
-                                            className="ml-1"
-                                        >
-                                            <X size={16} />
-                                        </Button>
+                    {showFilterButton && (
+                        <div className="min-h-[80px] flex items-center">
+                            <div className="w-full">
+                                {selectedFilterColumn ? (
+                                    <div className="space-y-1">
+                                        <Label htmlFor="filter-input">
+                                            Filter by {selectedFilterColumn}
+                                        </Label>
+                                        <div className="flex items-center">
+                                            <Input
+                                                id="filter-input"
+                                                placeholder={`Enter value...`}
+                                                className="h-8"
+                                                value={filterValue}
+                                                onChange={(e) =>
+                                                    setFilterValue(
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={clearFilter}
+                                                className="ml-1"
+                                            >
+                                                <X size={16} />
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="text-sm text-gray-500">
-                                    No filters applied
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="text-sm text-gray-500">
+                                        No filters applied
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Right side - Sort display area with fixed height */}
-                    <div className="min-h-[80px] flex items-center">
-                        <div className="w-full">
-                            {selectedSortColumn ? (
-                                <div className="space-y-1">
-                                    <Label>Sort by {selectedSortColumn}</Label>
-                                    <div className="flex items-center">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            className="h-8 flex items-center gap-1"
-                                            onClick={toggleSortDirection}
-                                        >
-                                            {sortDirection === "asc" ? (
-                                                <>
-                                                    <ArrowUp size={14} />
-                                                    <span>Ascending</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <ArrowDown size={14} />
-                                                    <span>Descending</span>
-                                                </>
-                                            )}
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={clearSort}
-                                            className="ml-1 h-8 w-8"
-                                        >
-                                            <X size={16} />
-                                        </Button>
+                    {showSortButton && (
+                        <div className="min-h-[80px] flex items-center">
+                            <div className="w-full">
+                                {selectedSortColumn ? (
+                                    <div className="space-y-1">
+                                        <Label>
+                                            Sort by {selectedSortColumn}
+                                        </Label>
+                                        <div className="flex items-center">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="h-8 flex items-center gap-1"
+                                                onClick={toggleSortDirection}
+                                            >
+                                                {sortDirection === "asc" ? (
+                                                    <>
+                                                        <ArrowUp size={14} />
+                                                        <span>Ascending</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ArrowDown size={14} />
+                                                        <span>Descending</span>
+                                                    </>
+                                                )}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={clearSort}
+                                                className="ml-1 h-8 w-8"
+                                            >
+                                                <X size={16} />
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="text-sm text-gray-500">
-                                    No sorting applied
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="text-sm text-gray-500">
+                                        No sorting applied
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Toolbar - Always visible */}
@@ -283,89 +317,101 @@ const TableFunctions = <TData, TValue>({
                             </button>
                         )}
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button type="button" className="p-2 relative">
-                                    <Filter size={18} />
-                                    {selectedFilterColumn && (
-                                        <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
-                                            1
-                                        </Badge>
+                        {showFilterButton && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className="p-2 relative"
+                                    >
+                                        <Filter size={18} />
+                                        {selectedFilterColumn && (
+                                            <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                                                1
+                                            </Badge>
+                                        )}
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    {columns.length > 0 ? (
+                                        columns.map((column) => {
+                                            // Extract column name from header or accessorKey
+                                            const columnName =
+                                                typeof column.header ===
+                                                "string"
+                                                    ? column.header
+                                                    : "accessorKey" in column
+                                                    ? String(column.accessorKey)
+                                                    : "Column";
+                                            return (
+                                                <DropdownMenuItem
+                                                    key={`filter-${columnName}`}
+                                                    onClick={() =>
+                                                        handleFilterColumnSelect(
+                                                            columnName
+                                                        )
+                                                    }
+                                                >
+                                                    {columnName}
+                                                </DropdownMenuItem>
+                                            );
+                                        })
+                                    ) : (
+                                        <DropdownMenuItem disabled>
+                                            No columns available
+                                        </DropdownMenuItem>
                                     )}
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {columns.length > 0 ? (
-                                    columns.map((column) => {
-                                        // Extract column name from header or accessorKey
-                                        const columnName =
-                                            typeof column.header === "string"
-                                                ? column.header
-                                                : "accessorKey" in column
-                                                ? String(column.accessorKey)
-                                                : "Column";
-                                        return (
-                                            <DropdownMenuItem
-                                                key={`filter-${columnName}`}
-                                                onClick={() =>
-                                                    handleFilterColumnSelect(
-                                                        columnName
-                                                    )
-                                                }
-                                            >
-                                                {columnName}
-                                            </DropdownMenuItem>
-                                        );
-                                    })
-                                ) : (
-                                    <DropdownMenuItem disabled>
-                                        No columns available
-                                    </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button type="button" className="p-2 relative">
-                                    <ArrowUpDown size={18} />
-                                    {selectedSortColumn && (
-                                        <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
-                                            1
-                                        </Badge>
+                        {showSortButton && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className="p-2 relative"
+                                    >
+                                        <ArrowUpDown size={18} />
+                                        {selectedSortColumn && (
+                                            <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]">
+                                                1
+                                            </Badge>
+                                        )}
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    {columns.length > 0 ? (
+                                        columns.map((column) => {
+                                            // Extract column name from header or accessorKey
+                                            const columnName =
+                                                typeof column.header ===
+                                                "string"
+                                                    ? column.header
+                                                    : "accessorKey" in column
+                                                    ? String(column.accessorKey)
+                                                    : "Column";
+                                            return (
+                                                <DropdownMenuItem
+                                                    key={`sort-${columnName}`}
+                                                    onClick={() =>
+                                                        handleSortColumnSelect(
+                                                            columnName
+                                                        )
+                                                    }
+                                                >
+                                                    {columnName}
+                                                </DropdownMenuItem>
+                                            );
+                                        })
+                                    ) : (
+                                        <DropdownMenuItem disabled>
+                                            No columns available
+                                        </DropdownMenuItem>
                                     )}
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {columns.length > 0 ? (
-                                    columns.map((column) => {
-                                        // Extract column name from header or accessorKey
-                                        const columnName =
-                                            typeof column.header === "string"
-                                                ? column.header
-                                                : "accessorKey" in column
-                                                ? String(column.accessorKey)
-                                                : "Column";
-                                        return (
-                                            <DropdownMenuItem
-                                                key={`sort-${columnName}`}
-                                                onClick={() =>
-                                                    handleSortColumnSelect(
-                                                        columnName
-                                                    )
-                                                }
-                                            >
-                                                {columnName}
-                                            </DropdownMenuItem>
-                                        );
-                                    })
-                                ) : (
-                                    <DropdownMenuItem disabled>
-                                        No columns available
-                                    </DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
 
                     {/* Right side - Submit and New buttons */}
@@ -389,14 +435,16 @@ const TableFunctions = <TData, TValue>({
                             Apply
                         </Button>
 
-                        <Button
-                            type="button"
-                            onClick={handleNewClick}
-                            className="ml-2 h-10"
-                        >
-                            <Plus size={18} className="mr-1" />
-                            New
-                        </Button>
+                        {showNewButton && onNewClick && (
+                            <Button
+                                type="button"
+                                onClick={handleNewClick}
+                                className="ml-2 h-10"
+                            >
+                                <Plus size={18} className="mr-1" />
+                                New
+                            </Button>
+                        )}
                     </div>
                 </div>
             </Form>

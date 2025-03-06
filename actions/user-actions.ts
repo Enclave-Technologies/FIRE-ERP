@@ -5,6 +5,7 @@ import { createClient } from "@/supabase/server";
 import { db } from "@/db";
 import { NotificationPreferences, Users, rolesEnum } from "@/db/schema";
 import { asc, count, desc, eq, like, or } from "drizzle-orm";
+import { DEFAULT_PAGE_SIZE } from "@/utils/contants";
 
 export async function getUserRole(userId: string) {
     try {
@@ -233,7 +234,7 @@ export async function getUsers(filter_params: {
         const total = countResult[0]?.count || 0;
 
         // Apply pagination if provided
-        let limit = 10; // Default page size
+        let limit = DEFAULT_PAGE_SIZE; // Default page size
         let offset = 0;
 
         if (page && pageSize) {

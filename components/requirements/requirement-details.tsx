@@ -1,6 +1,6 @@
 "use client";
 
-import { SelectRequirement, dealStages } from "@/db/schema";
+import { SelectRequirement } from "@/db/schema";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Spotlight } from "@/components/ui/spotlight";
@@ -10,7 +10,115 @@ import { updateRequirement } from "@/actions/requirement-actions";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import { Copy } from "lucide-react";
+import { Copy, Check, X, Phone, Calendar, Share } from "lucide-react";
+import { formatBudgetForDisplay } from "@/utils/budget-utils";
+import { Toggle } from "@/components/ui/toggle";
+
+// Toggleable status component for boolean fields
+const ToggleableStatus = ({
+    value,
+    requirementId,
+    field,
+}: {
+    value: boolean;
+    requirementId: string;
+    field: string;
+}) => {
+    const [isEnabled, setIsEnabled] = useState(value);
+    const { toast } = useToast();
+
+    // Get the appropriate icon based on the field
+    const getIcon = () => {
+        switch (field) {
+            case "call":
+                return <Phone className="h-4 w-4" />;
+            case "viewing":
+                return <Calendar className="h-4 w-4" />;
+            case "sharedWithIndianChannelPartner":
+                return <Share className="h-4 w-4" />;
+            case "phpp":
+                return <Check className="h-4 w-4" />;
+            default:
+                return isEnabled ? (
+                    <Check className="h-4 w-4" />
+                ) : (
+                    <X className="h-4 w-4" />
+                );
+        }
+    };
+
+    // Format the field name for display
+    const getFieldDisplayName = () => {
+        switch (field) {
+            case "sharedWithIndianChannelPartner":
+                return "Shared with ICP";
+            case "phpp":
+                return "PHPP";
+            default:
+                return (
+                    field.charAt(0).toUpperCase() +
+                    field.slice(1).replace(/([A-Z])/g, " $1")
+                );
+        }
+    };
+
+    const toggleStatus = async () => {
+        try {
+            // Toggle the state locally first for immediate feedback
+            const newValue = !isEnabled;
+            setIsEnabled(newValue);
+
+            // Create an update object with the field to update
+            const updateData: Record<string, boolean> = {};
+            updateData[field] = newValue;
+
+            // Call the server action to update the requirement
+            const result = await updateRequirement(requirementId, updateData);
+
+            if (!result.success) {
+                // If the update failed, revert the local state
+                setIsEnabled(!newValue);
+                toast({
+                    title: "Error",
+                    description:
+                        result.message ||
+                        `Failed to update ${getFieldDisplayName()}`,
+                    variant: "destructive",
+                });
+            } else {
+                toast({
+                    title: "Success",
+                    description: `${getFieldDisplayName()} updated to ${
+                        newValue ? "Yes" : "No"
+                    }`,
+                });
+            }
+        } catch (error) {
+            console.error(`Error toggling ${field}:`, error);
+            // Revert the local state if there was an error
+            setIsEnabled(!isEnabled);
+            toast({
+                title: "Error",
+                description: `Failed to update ${getFieldDisplayName()}`,
+                variant: "destructive",
+            });
+        }
+    };
+
+    return (
+        <Toggle
+            pressed={isEnabled}
+            onPressedChange={toggleStatus}
+            variant="outline"
+            size="sm"
+            aria-label={`Toggle ${getFieldDisplayName()}`}
+            className="w-full justify-start"
+        >
+            {getIcon()}
+            <span>{isEnabled ? "Yes" : "No"}</span>
+        </Toggle>
+    );
+};
 
 // Animation variants
 const VARIANTS_CONTAINER = {
@@ -74,45 +182,45 @@ export default function RequirementDetails({
     requirement: SelectRequirement;
 }) {
     const { toast } = useToast();
-    const [status, setStatus] = useState<
-        (typeof dealStages.enumValues)[number]
-    >(requirement.status || "open");
-    const [isUpdating, setIsUpdating] = useState(false);
+    // const [status, setStatus] = useState<
+    //     (typeof dealStages.enumValues)[number]
+    // >(requirement.status || "open");
+    // const [isUpdating, setIsUpdating] = useState(false);
 
-    const handleStatusChange = async (
-        newStatus: (typeof dealStages.enumValues)[number]
-    ) => {
-        if (newStatus === status) return;
+    // const handleStatusChange = async (
+    //     newStatus: (typeof dealStages.enumValues)[number]
+    // ) => {
+    //     if (newStatus === status) return;
 
-        setIsUpdating(true);
-        try {
-            const result = await updateRequirement(requirement.requirementId, {
-                status: newStatus,
-            });
-            if (result.success) {
-                setStatus(newStatus);
-                toast({
-                    title: "Status Updated",
-                    description: `Requirement status changed to ${newStatus}`,
-                });
-            } else {
-                toast({
-                    title: "Update Failed",
-                    description: result.message || "Failed to update status",
-                    variant: "destructive",
-                });
-            }
-        } catch (err) {
-            console.error("Error updating status:", err);
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred",
-                variant: "destructive",
-            });
-        } finally {
-            setIsUpdating(false);
-        }
-    };
+    //     setIsUpdating(true);
+    //     try {
+    //         const result = await updateRequirement(requirement.requirementId, {
+    //             status: newStatus,
+    //         });
+    //         if (result.success) {
+    //             setStatus(newStatus);
+    //             toast({
+    //                 title: "Status Updated",
+    //                 description: `Requirement status changed to ${newStatus}`,
+    //             });
+    //         } else {
+    //             toast({
+    //                 title: "Update Failed",
+    //                 description: result.message || "Failed to update status",
+    //                 variant: "destructive",
+    //             });
+    //         }
+    //     } catch (err) {
+    //         console.error("Error updating status:", err);
+    //         toast({
+    //             title: "Error",
+    //             description: "An unexpected error occurred",
+    //             variant: "destructive",
+    //         });
+    //     } finally {
+    //         setIsUpdating(false);
+    //     }
+    // };
 
     const formatDate = (date: Date | null | undefined) => {
         if (!date) return "N/A";
@@ -222,12 +330,9 @@ export default function RequirementDetails({
                                     </h3>
                                     <p className="text-lg font-medium">
                                         {requirement.budget
-                                            ? `AED ${Number(
+                                            ? `AED ${formatBudgetForDisplay(
                                                   requirement.budget
-                                              ).toLocaleString("en-US", {
-                                                  minimumFractionDigits: 2,
-                                                  maximumFractionDigits: 2,
-                                              })}`
+                                              )}`
                                             : "N/A"}
                                     </p>
                                 </div>
@@ -314,47 +419,72 @@ export default function RequirementDetails({
                             <CardTitle>Additional Details</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-2 gap-6 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 rounded-lg">
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-zinc-50/50 dark:bg-zinc-900/50 rounded-lg">
+                                <div className="flex flex-col h-20">
+                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                                         PHPP Applicable
                                     </h3>
-                                    <p className="font-medium">
-                                        {requirement.phpp ? "Yes" : "No"}
-                                    </p>
+                                    <div className="mt-auto">
+                                        <ToggleableStatus
+                                            value={requirement.phpp || false}
+                                            requirementId={
+                                                requirement.requirementId
+                                            }
+                                            field="phpp"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                <div className="flex flex-col h-20">
+                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                                         Call Made
                                     </h3>
-                                    <p className="font-medium">
-                                        {requirement.call ? "Yes" : "No"}
-                                    </p>
+                                    <div className="mt-auto">
+                                        <ToggleableStatus
+                                            value={requirement.call || false}
+                                            requirementId={
+                                                requirement.requirementId
+                                            }
+                                            field="call"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                <div className="flex flex-col h-20">
+                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                                         Viewing Scheduled
                                     </h3>
-                                    <p className="font-medium">
-                                        {requirement.viewing ? "Yes" : "No"}
-                                    </p>
+                                    <div className="mt-auto">
+                                        <ToggleableStatus
+                                            value={requirement.viewing || false}
+                                            requirementId={
+                                                requirement.requirementId
+                                            }
+                                            field="viewing"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                <div className="flex flex-col h-20">
+                                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                                         Shared with ICP
                                     </h3>
-                                    <p className="font-medium">
-                                        {requirement.sharedWithIndianChannelPartner
-                                            ? "Yes"
-                                            : "No"}
-                                    </p>
+                                    <div className="mt-auto">
+                                        <ToggleableStatus
+                                            value={
+                                                requirement.sharedWithIndianChannelPartner ||
+                                                false
+                                            }
+                                            requirementId={
+                                                requirement.requirementId
+                                            }
+                                            field="sharedWithIndianChannelPartner"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Status Update */}
-                    <Card className="shadow-sm">
+                    {/* <Card className="shadow-sm">
                         <CardHeader className="pb-4">
                             <CardTitle>Update Status</CardTitle>
                         </CardHeader>
@@ -380,7 +510,7 @@ export default function RequirementDetails({
                                 ))}
                             </div>
                         </CardContent>
-                    </Card>
+                    </Card> */}
                 </motion.section>
             </div>
 
