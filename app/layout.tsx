@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/Theme/themeProvider";
 // import { ModeToggle } from "@/components/Theme/modeToggle";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthStateHandler } from "@/components/auth/auth-state-handler";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
+                <Analytics />
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system" // Set a consistent default theme

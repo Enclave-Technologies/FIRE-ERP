@@ -6,6 +6,8 @@ import { db } from "@/db";
 import { NotificationPreferences, Users, rolesEnum } from "@/db/schema";
 import { asc, count, desc, eq, like, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
+import { Resend } from "resend";
+
 
 export async function getUserRole(userId: string) {
     try {
@@ -27,13 +29,28 @@ export async function updateUserRole(
     newRole: (typeof rolesEnum.enumValues)[number]
 ) {
     try {
-        await db
-            .update(Users)
-            .set({
-                role: newRole,
-                updatedAt: new Date(),
-            })
-            .where(eq(Users.userId, userId));
+        const updatedUsers: { email: string; full_name: string | null }[] =
+            await db
+                .update(Users)
+                .set({
+                    role: newRole,
+                    updatedAt: new Date(),
+                })
+                .where(eq(Users.userId, userId))
+                .returning({ email: Users.email, full_name: Users.name });
+
+        // TODO: Massive contact flaw, multiple contacts with same ID can be created
+        // TODO: Create a new table to keep a mapping of contact ID from resend and user ID from Supabase
+        if (newRole === "staff" || newRole === "admin") {
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            resend.contacts.create({
+                email: updatedUsers[0].email,
+                firstName: (updatedUsers[0].full_name ?? " ").split(" ")[0],
+                lastName: (updatedUsers[0].full_name ?? " ").split(" ")[1],
+                unsubscribed: false,
+                audienceId: process.env.RESEND_AUDIENCE_ID!,
+            });
+        }
 
         return { success: true, message: `User role updated to ${newRole}` };
     } catch (error) {

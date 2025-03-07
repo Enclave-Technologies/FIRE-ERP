@@ -5,6 +5,7 @@ import { createClient } from "@/supabase/server";
 import { db } from "@/db";
 import { Users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
+import { Resend } from "resend";
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -21,12 +22,19 @@ export async function GET(request: Request) {
             const { user } = data;
             const { user_metadata } = user;
             // Check if user exists and if they're disabled
-            const existingUser = await db.select().from(Users).where(eq(Users.userId, user.id));
+            const existingUser = await db
+                .select()
+                .from(Users)
+                .where(eq(Users.userId, user.id));
             const adminCount = await db.$count(Users, eq(Users.role, "admin"));
 
             if (existingUser.length > 0 && existingUser[0].isDisabled) {
                 await supabase.auth.signOut();
-                return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("Your account has been disabled. Please contact support.")}`);
+                return NextResponse.redirect(
+                    `${origin}/login?error=${encodeURIComponent(
+                        "Your account has been disabled. Please contact support."
+                    )}`
+                );
             }
 
             if (existingUser.length === 0) {
@@ -54,6 +62,17 @@ export async function GET(request: Request) {
                 }
             }
 
+            // Add to resend contacts if they are staff
+            if (adminCount === 0) {
+                const resend = new Resend(process.env.RESEND_API_KEY);
+                resend.contacts.create({
+                    email: user_metadata.email,
+                    firstName: user_metadata.full_name.split(" ")[0],
+                    lastName: user_metadata.full_name.split(" ")[1],
+                    unsubscribed: false,
+                    audienceId: process.env.RESEND_AUDIENCE_ID!,
+                });
+            }
 
             const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === "development";
