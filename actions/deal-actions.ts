@@ -19,6 +19,7 @@ import {
     ilike,
     lte,
     not,
+    notInArray,
     or,
 } from "drizzle-orm";
 import { parseBudgetValue } from "@/utils/budget-utils";
@@ -240,7 +241,7 @@ export async function updateDealStatus(
                 .select()
                 .from(Deals)
                 .where(eq(Deals.dealId, dealId))
-                .for('update');
+                .for("update");
 
             if (!currentDeal) {
                 throw new Error("Deal not found");
@@ -271,7 +272,9 @@ export async function updateDealStatus(
                 .returning();
 
             if (!updatedDeal) {
-                throw new Error("Concurrent update detected. Please try again.");
+                throw new Error(
+                    "Concurrent update detected. Please try again."
+                );
             }
 
             // If the deal is closed, update the inventory status to sold if an inventoryId is provided
@@ -683,6 +686,27 @@ export async function searchInventories(filters: {
         return inventories;
     } catch (error) {
         console.error("Error searching inventories:", error);
+        throw error;
+    }
+}
+
+export async function getDealsNotUpdatedInSevenDays() {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const deals = await db
+            .select({ dealId: Deals.dealId })
+            .from(Deals)
+            .where(
+                and(
+                    notInArray(Deals.status, ["closed", "rejected"]),
+                    lte(Deals.updatedAt, sevenDaysAgo)
+                )
+            );
+        return deals;
+    } catch (error) {
+        console.error("Error fetching deals not updated in seven days:", error);
         throw error;
     }
 }

@@ -21,3 +21,12 @@ export async function getInventorySubscribers() {
         .where(eq(NotificationPreferences.newInventoryNotif, true));
     return subscribers.map((sub) => sub.users.email);
 }
+
+export async function getPendingRequirementSubscribers() {
+    const subscribers = await db
+        .select()
+        .from(NotificationPreferences)
+        .innerJoin(Users, eq(NotificationPreferences.userId, Users.userId))
+        .where(eq(NotificationPreferences.pendingRequirementNotif, true));
+    return subscribers.map((sub) => sub.users.email);
+}

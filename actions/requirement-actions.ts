@@ -8,7 +8,18 @@ import type {
 } from "@/db/schema";
 import { db } from "@/db/index";
 import { createClient } from "@/supabase/server";
-import { eq, ilike, asc, desc, or, count, gte, lte } from "drizzle-orm"; // Add these imports
+import {
+    eq,
+    ilike,
+    asc,
+    desc,
+    or,
+    count,
+    gte,
+    lte,
+    isNull,
+    and,
+} from "drizzle-orm"; // Add these imports
 import { revalidatePath } from "next/cache";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
@@ -464,5 +475,37 @@ export async function deleteRequirement(
             success: false,
             message: "Failed to delete requirement",
         };
+    }
+}
+
+export async function getUnassignedRequirementNotUpdatedInSevenDays() {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const requirements = await db
+            .select({
+                requirementId: Requirements.requirementId,
+                demand: Requirements.demand,
+                dealId: Deals.dealId,
+            })
+            .from(Requirements)
+            .leftJoin(
+                Deals,
+                eq(Requirements.requirementId, Deals.requirementId)
+            )
+            .where(
+                and(
+                    isNull(Deals.dealId),
+                    lte(Requirements.dateCreated, sevenDaysAgo)
+                )
+            )
+            .limit(10)
+            .orderBy(asc(Requirements.dateCreated));
+
+        return requirements;
+    } catch (error) {
+        console.error("Error fetching requirements:", error);
+        throw new Error("Failed to fetch requirements");
     }
 }
