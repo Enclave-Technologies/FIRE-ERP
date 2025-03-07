@@ -63,7 +63,7 @@ export async function handlePasswordRecovery(
             });
 
             if (data) {
-                console.log("Password updated successfully!");
+                // console.log("Password updated successfully!");
             } else if (error) {
                 console.error(
                     "There was an error updating the password:",

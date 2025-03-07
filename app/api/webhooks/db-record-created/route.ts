@@ -53,8 +53,6 @@ export async function POST(request: Request) {
             resend.batch.send(batch_emails);
         }
 
-        console.log(JSON.stringify(payload, null, 2));
-
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Webhook error:", error);

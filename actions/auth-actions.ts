@@ -188,7 +188,7 @@ export async function GoogleLogin() {
     });
 
     if (error) {
-        console.log("Error occurred", error);
+        console.error("Error occurred", error);
         redirect("/login?error=" + encodeURIComponent(error.message));
     }
 
