@@ -1,3 +1,4 @@
+
 import { getDealsNotUpdatedInSevenDays } from "@/actions/deal-actions";
 import { getUnassignedRequirementNotUpdatedInSevenDays } from "@/actions/requirement-actions";
 import { getPendingRequirementSubscribers } from "@/actions/subscription-actions";
@@ -46,4 +47,5 @@ export async function GET(request: Request) {
     }
     resend.batch.send(batch_emails);
     return Response.json({ success: true });
+
 }

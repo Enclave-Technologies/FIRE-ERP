@@ -243,6 +243,7 @@ export async function updateDealStatus(
                 .where(eq(Deals.dealId, dealId))
                 .for("update");
 
+
             if (!currentDeal) {
                 throw new Error("Deal not found");
             }
@@ -709,4 +710,5 @@ export async function getDealsNotUpdatedInSevenDays() {
         throw error;
     }
 }
+
 
