@@ -68,16 +68,16 @@ const navItems = {
                 // },
             ],
         },
-        {
-            title: "Communication",
-            url: "/notification",
-            items: [
-                {
-                    title: "Notifications",
-                    url: "/notification",
-                },
-            ],
-        },
+        // {
+        //     title: "Communication",
+        //     url: "/notification",
+        //     items: [
+        //         {
+        //             title: "Notifications",
+        //             url: "/notification",
+        //         },
+        //     ],
+        // },
     ],
 };
 
