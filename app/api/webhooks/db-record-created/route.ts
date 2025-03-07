@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+
 import { Resend } from "resend";
 import {
     getInventorySubscribers,
     getRequirementsSubscribers,
 } from "@/actions/subscription-actions";
 import { chunkArray } from "@/utils/helper-utils";
+
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -63,3 +65,4 @@ export async function POST(request: Request) {
 export async function GET() {
     return new NextResponse("Not found", { status: 404 });
 }
+

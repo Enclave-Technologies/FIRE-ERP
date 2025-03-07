@@ -272,9 +272,7 @@ export async function updateDealStatus(
                 .returning();
 
             if (!updatedDeal) {
-                throw new Error(
-                    "Concurrent update detected. Please try again."
-                );
+                throw new Error("Concurrent update detected. Please try again.");
             }
 
             // If the deal is closed, update the inventory status to sold if an inventoryId is provided
@@ -690,6 +688,7 @@ export async function searchInventories(filters: {
     }
 }
 
+
 export async function getDealsNotUpdatedInSevenDays() {
     try {
         const sevenDaysAgo = new Date();
@@ -710,3 +709,4 @@ export async function getDealsNotUpdatedInSevenDays() {
         throw error;
     }
 }
+

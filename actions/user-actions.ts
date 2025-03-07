@@ -8,6 +8,7 @@ import { asc, count, desc, eq, like, or } from "drizzle-orm";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 import { Resend } from "resend";
 
+
 export async function getUserRole(userId: string) {
     try {
         const user = await db
