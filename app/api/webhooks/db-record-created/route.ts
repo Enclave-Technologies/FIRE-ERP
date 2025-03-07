@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/supabase/server";
 import { Resend } from "resend";
+import {
+    getInventorySubscribers,
+    getRequirementsSubscribers,
+} from "@/actions/subscription-actions";
+import { chunkArray } from "@/utils/helper-utils";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -14,34 +18,40 @@ export async function POST(request: Request) {
     const payload = await request.json();
 
     try {
-        // Get user email from subscriptions table
-        //     const supabase = createClient();
-        //     const { data: user } = await supabase
-        //         .from("user_subscriptions")
-        //         .select("email, notification_preferences")
-        //         .eq("id", payload.record.id)
-        //         .single();
-
-        //     if (
-        //         !user ||
-        //         !user.notification_preferences.includes("inventory_creation")
-        //     ) {
-        //         return NextResponse.json({ status: "Not subscribed" });
-        //     }
-
-        //     // Send email
-        //     await resend.emails.send({
-        //         from: "notifications@fire-erp.com",
-        //         to: user.email,
-        //         subject: "New Inventory/Requirement Created",
-        //         html: `<div>
-        //     <h1>New ${payload.table} Created</h1>
-        //     <p>A new ${payload.table.toLowerCase()} matching your preferences was created.</p>
-        //     <a href="${
-        //         process.env.NEXT_PUBLIC_APP_URL
-        //     }/dashboard">View in Dashboard</a>
-        //   </div>`,
-        //     });
+        if (payload.type === "INSERT" && payload.table === "requirements") {
+            const requirement_subscribers = chunkArray(
+                await getRequirementsSubscribers(),
+                50
+            );
+            const batch_emails = [];
+            for (const subscribers of requirement_subscribers) {
+                batch_emails.push({
+                    from: "Create Informer <createinformer@fire-erp.enclave.live>",
+                    to: subscribers,
+                    subject: "New Requirement Created",
+                    text: `A new requirement has been created. Please check your dashboard for more details.`,
+                });
+            }
+            resend.batch.send(batch_emails);
+        } else if (
+            payload.type === "INSERT" &&
+            payload.table === "inventories"
+        ) {
+            const inventory_subscribers = chunkArray(
+                await getInventorySubscribers(),
+                50
+            );
+            const batch_emails = [];
+            for (const subscribers of inventory_subscribers) {
+                batch_emails.push({
+                    from: "Create Informer <createinformer@fire-erp.enclave.live>",
+                    to: subscribers,
+                    subject: "New Inventory Created",
+                    text: `A new inventory has been created. Please check your dashboard for more details.`,
+                });
+            }
+            resend.batch.send(batch_emails);
+        }
 
         console.log(JSON.stringify(payload, null, 2));
 
@@ -50,4 +60,8 @@ export async function POST(request: Request) {
         console.error("Webhook error:", error);
         return new NextResponse("Webhook handler failed", { status: 500 });
     }
+}
+
+export async function GET() {
+    return new NextResponse("Not found", { status: 404 });
 }
