@@ -3,7 +3,13 @@
 import React, { useState } from "react";
 import Papa from "papaparse";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -16,6 +22,7 @@ import {
 } from "@/actions/inventory-actions";
 import Link from "next/link";
 import { Download } from "lucide-react";
+import { Separator } from "../ui/separator";
 
 type CsvRow = Record<string, string>;
 type RequirementCategory = "RISE" | "NESTSEEKERS" | "LUXURY CONCIERGE";
@@ -248,6 +255,23 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                         </Link>
                     </div>
                 </CardContent>
+                <Separator />
+                <CardFooter className="text-sm text-muted-foreground py-2">
+                    <div className="space-y-2">
+                        <p>
+                            <strong>category</strong> can only take values:
+                            [RISE, NESTSEEKERS, LUXURY CONCIERGE] (Case
+                            sensitive)
+                        </p>
+                        <p>
+                            <strong>rtm_offplan</strong> can only take values:
+                            [RTM, OFFPLAN, RTM/OFFPLAN, NONE] (Case sensitive)
+                        </p>
+                        <p>
+                            <strong>Please leave all IDs empty</strong>
+                        </p>
+                    </div>
+                </CardFooter>
             </Card>
 
             <Card>
@@ -282,6 +306,18 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                         </Link>
                     </div>
                 </CardContent>
+                <Separator />
+                <CardFooter className="text-sm text-muted-foreground py-2">
+                    <div className="space-y-2">
+                        <p>
+                            <strong>unit_status</strong> can only take values:
+                            [available, sold, reserved, rented] (Case sensitive)
+                        </p>
+                        <p>
+                            <strong>Please leave all IDs empty</strong>
+                        </p>
+                    </div>
+                </CardFooter>
             </Card>
         </div>
     );
