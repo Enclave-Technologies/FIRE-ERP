@@ -5,9 +5,9 @@
 -   [x] Supabase setup
 -   [x] Auth
 -   [x] Redirections
--   [ ] Dashboard
+-   [x] Dashboard
 -   [x] Inventory
 -   [x] Requirements
 -   [x] User management
 -   [x] Settings
--   [ ] Notifications
+-   [x] Notifications
