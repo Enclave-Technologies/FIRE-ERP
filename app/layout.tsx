@@ -6,6 +6,9 @@ import { ThemeProvider } from "@/components/Theme/themeProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthStateHandler } from "@/components/auth/auth-state-handler";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PostHogProvider } from "@/hooks/posthog-provider";
+
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -40,7 +43,9 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     {/* <ModeToggle /> */}
-                    {children}
+                    <PostHogProvider>{children}</PostHogProvider>
+
+                    <SpeedInsights />
                     <Toaster />
                     <AuthStateHandler />
                 </ThemeProvider>
