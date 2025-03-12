@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { PostHogProvider } from "@/hooks/posthog-provider";
 
+
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],
