@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { processBudgetString } from "@/utils/budget-utils";
 
 type CsvRow = Record<string, string>;
 type RequirementCategory = "RISE" | "NESTSEEKERS" | "LUXURY CONCIERGE";
@@ -103,7 +104,9 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                                     row.preferred_type,
                                                 preferredLocation:
                                                     row.preferred_location,
-                                                budget: row.budget,
+                                                budget: processBudgetString(
+                                                    row.budget
+                                                ),
                                                 phpp: stringToBoolean(row.phpp),
                                                 preferredSquareFootage:
                                                     row.preferred_square_footage,
@@ -130,7 +133,7 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                         preferredType: row.preferred_type,
                                         preferredLocation:
                                             row.preferred_location,
-                                        budget: row.budget,
+                                        budget: processBudgetString(row.budget),
                                         phpp: stringToBoolean(row.phpp),
                                         preferredSquareFootage:
                                             row.preferred_square_footage,
@@ -171,9 +174,13 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                                 buildingName: row.building_name,
                                                 unitNumber: row.unit_number,
                                                 areaSQFT: row.area_sqft,
-                                                priceAED: row.price_aed,
+                                                priceAED: processBudgetString(
+                                                    row.price_aed
+                                                ),
                                                 sellingPriceMillionAED:
-                                                    row.selling_price_million_aed,
+                                                    processBudgetString(
+                                                        row.selling_price_million_aed
+                                                    ),
                                             }
                                         );
                                     return updateResult;
@@ -187,9 +194,13 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                         buildingName: row.building_name,
                                         unitNumber: row.unit_number,
                                         areaSQFT: row.area_sqft,
-                                        priceAED: row.price_aed,
+                                        priceAED: processBudgetString(
+                                            row.price_aed
+                                        ),
                                         sellingPriceMillionAED:
-                                            row.selling_price_million_aed,
+                                            processBudgetString(
+                                                row.selling_price_million_aed
+                                            ),
                                         dateAdded: new Date(),
                                         unitStatus: unitStatus,
                                         description: row.description || null,
