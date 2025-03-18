@@ -66,6 +66,7 @@ const inventoryFormSchema = z.object({
 type InventoryFormValues = z.infer<typeof inventoryFormSchema>;
 
 import { updateInventoryDetails } from "@/actions/inventory-actions";
+import { parseBudgetValue } from "@/utils/budget-utils";
 
 interface EditInventoryProps {
     inventory: SelectInventory;
@@ -147,19 +148,21 @@ export function EditInventory({
                         : undefined,
                 sellingPriceMillionAED:
                     formData.sellingPriceMillionAED !== undefined
-                        ? String(formData.sellingPriceMillionAED)
+                        ? parseBudgetValue(
+                              String(formData.sellingPriceMillionAED)
+                          )
                         : undefined,
                 priceAED:
                     formData.priceAED !== undefined
-                        ? String(formData.priceAED)
+                        ? parseBudgetValue(String(formData.priceAED))
                         : undefined,
                 inrCr:
                     formData.inrCr !== undefined
-                        ? String(formData.inrCr)
+                        ? parseBudgetValue(String(formData.inrCr))
                         : undefined,
                 rentApprox:
                     formData.rentApprox !== undefined
-                        ? String(formData.rentApprox)
+                        ? parseBudgetValue(String(formData.rentApprox))
                         : undefined,
                 roiGross:
                     formData.roiGross !== undefined
@@ -346,7 +349,9 @@ export function EditInventory({
                                                     >
                                                         <Calendar
                                                             mode="single"
-                                                            selected={field.value}
+                                                            selected={
+                                                                field.value
+                                                            }
                                                             onSelect={
                                                                 field.onChange
                                                             }

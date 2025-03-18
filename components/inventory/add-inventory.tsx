@@ -44,6 +44,7 @@ import { getBrokers } from "@/actions/broker-actions";
 import { createInventory } from "@/actions/inventory-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { parseBudgetValue } from "@/utils/budget-utils";
 
 const formSchema = z.object({
     // Required fields
@@ -123,7 +124,7 @@ export default function AddInventory() {
             buildingName: "",
             unitNumber: "",
             buSQFT: undefined,
-            priceAED: undefined,
+            priceAED: 0,
             inrCr: undefined,
             rentApprox: undefined,
             roiGross: undefined,
@@ -170,8 +171,9 @@ export default function AddInventory() {
                 projectName: values.projectName,
                 location: values.location,
                 areaSQFT: values.areaSQFT.toString(),
-                sellingPriceMillionAED:
-                    values.sellingPriceMillionAED.toString(),
+                sellingPriceMillionAED: parseBudgetValue(
+                    values.sellingPriceMillionAED.toString()
+                ),
                 unitStatus: values.unitStatus,
 
                 // Optional fields
@@ -198,13 +200,15 @@ export default function AddInventory() {
                 completionDate: values.completionDate || null,
                 priceAED:
                     values.priceAED !== undefined
-                        ? values.priceAED.toString()
+                        ? parseBudgetValue(values.priceAED.toString())
                         : null,
                 inrCr:
-                    values.inrCr !== undefined ? values.inrCr.toString() : null,
+                    values.inrCr !== undefined
+                        ? parseBudgetValue(values.inrCr.toString())
+                        : null,
                 rentApprox:
                     values.rentApprox !== undefined
-                        ? values.rentApprox.toString()
+                        ? parseBudgetValue(values.rentApprox.toString())
                         : null,
                 roiGross:
                     values.roiGross !== undefined
@@ -216,7 +220,7 @@ export default function AddInventory() {
                         : null,
                 brokerage:
                     values.brokerage !== undefined
-                        ? values.brokerage.toString()
+                        ? parseBudgetValue(values.brokerage.toString())
                         : null,
                 remarks: values.remarks || null,
                 bayut: values.bayut || null,
