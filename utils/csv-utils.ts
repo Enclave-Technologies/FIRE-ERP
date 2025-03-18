@@ -20,12 +20,17 @@ export const stringToNumber = (value: string | undefined): string | null => {
     return isNaN(numberValue) ? null : numberValue.toString();
 };
 
-type RequirementCsvResult = Omit<InsertRequirement, "userId" | "status" | "dateCreated"> & {
+type RequirementCsvResult = Omit<
+    InsertRequirement,
+    "userId" | "status" | "dateCreated"
+> & {
     requirement_id?: string;
 };
 
 // Process requirement CSV data
-export const processRequirementCsv = (file: File): Promise<RequirementCsvResult[]> => {
+export const processRequirementCsv = (
+    file: File
+): Promise<RequirementCsvResult[]> => {
     return new Promise((resolve, reject) => {
         Papa.parse<CsvRow>(file, {
             complete: (results) => {
@@ -68,24 +73,27 @@ export const processRequirementCsv = (file: File): Promise<RequirementCsvResult[
                         }
 
                         return {
+                            requirement_id: row.requirement_id,
+                            userId: row.user_id,
                             description: row.description,
+                            dateCreated: row.date_created,
                             demand: row.demand,
                             preferredType: row.preferred_type,
                             preferredLocation: row.preferred_location,
-                            category,
-                            rtmOffplan,
                             budget: processBudgetString(row.budget),
                             phpp: stringToBoolean(row.phpp),
                             preferredSquareFootage: stringToNumber(
                                 row.preferred_square_footage
                             ),
                             preferredROI: stringToNumber(row.preferred_roi),
-                            call: stringToBoolean(row.call),
-                            viewing: stringToBoolean(row.viewing),
                             sharedWithIndianChannelPartner: stringToBoolean(
                                 row.shared_with_indian_channel_partner
                             ),
-                            requirement_id: row.requirement_id,
+                            call: stringToBoolean(row.call),
+                            viewing: stringToBoolean(row.viewing),
+                            category,
+                            remarks: row.remarks,
+                            rtmOffplan,
                         };
                     });
                     resolve(processedData);
@@ -104,7 +112,9 @@ type InventoryCsvResult = Omit<InsertInventory, "brokerId" | "dateAdded"> & {
 };
 
 // Process inventory CSV data
-export const processInventoryCsv = (file: File): Promise<InventoryCsvResult[]> => {
+export const processInventoryCsv = (
+    file: File
+): Promise<InventoryCsvResult[]> => {
     return new Promise((resolve, reject) => {
         Papa.parse<CsvRow>(file, {
             complete: (results) => {
@@ -134,17 +144,42 @@ export const processInventoryCsv = (file: File): Promise<InventoryCsvResult[]> =
                         }
 
                         return {
-                            projectName: row.project_name,
+                            inventory_id: row.inventory_id,
+                            brokerId: row.broker_id,
+                            sn: row.sn,
                             propertyType: row.property_type,
-                            location: row.location,
+                            projectName: row.project_name,
                             description: row.description || "",
-                            unitStatus,
+                            location: row.location,
+                            unitNumber: row.unit_number,
+                            bedRooms: parseInt(row.bed_rooms) || 0,
+                            maidsRoom: parseInt(row.maids_room) || 0,
+                            studyRoom: parseInt(row.study_room) || 0,
+                            carPark: parseInt(row.car_park) || 0,
                             areaSQFT: stringToNumber(row.area_sqft),
-                            priceAED: processBudgetString(row.price_aed),
+                            buSQFT: stringToNumber(row.bua_sqft),
                             sellingPriceMillionAED: processBudgetString(
                                 row.selling_price_million_aed
                             ),
-                            inventory_id: row.inventory_id,
+                            unitStatus,
+                            completionDate: new Date(row.completion_date),
+                            priceAED: processBudgetString(row.price_aed),
+                            inrCr: processBudgetString(row.inr_cr),
+                            rentApprox: processBudgetString(row.rent_approx),
+                            roiGross: stringToNumber(row.roi_gross),
+                            markup: processBudgetString(row.markup),
+                            brokerage: processBudgetString(row.brokerage),
+                            remarks: row.remarks,
+                            bayut: row.bayut,
+                            phppEligible: stringToBoolean(row.phpp_eligible),
+                            phppDetails: row.phpp_details,
+                            propertyFinder: row.property_finder,
+                            dateAdded: row.date_added
+                                ? new Date(row.date_added)
+                                : new Date(),
+                            updatedAt: row.updated_at
+                                ? new Date(row.updated_at)
+                                : new Date(),
                         };
                     });
                     resolve(processedData);

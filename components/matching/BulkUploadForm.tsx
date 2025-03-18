@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { LoaderCircle } from "lucide-react";
 import {
@@ -25,6 +25,8 @@ interface BulkUploadFormProps {
 
 export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
     const { toast } = useToast();
+    const requirementInputRef = useRef<HTMLInputElement | null>(null);
+    const inventoryInputRef = useRef<HTMLInputElement | null>(null);
     const [requirementFile, setRequirementFile] = useState<File | null>(null);
     const [inventoryFile, setInventoryFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState<boolean>(false);
@@ -54,7 +56,15 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                 if (dataWithoutIds.length > 0) {
                     await bulkCreateRequirements(dataWithoutIds);
                 }
+                if (requirementInputRef.current) {
+                    requirementInputRef.current.value = "";
+                }
+                setRequirementFile(null);
             } else {
+                if (inventoryInputRef.current) {
+                    inventoryInputRef.current.value = "";
+                }
+                setInventoryFile(null);
                 const processedData = await processInventoryCsv(file);
                 const dataWithoutIds = processedData
                     .filter((row) => !row.inventory_id)
@@ -108,6 +118,7 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                 const files = e.target.files;
                                 if (files) setRequirementFile(files[0]);
                             }}
+                            ref={requirementInputRef}
                             className="cursor-pointer"
                         />
                         <Button
@@ -165,6 +176,7 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                 const files = e.target.files;
                                 if (files) setInventoryFile(files[0]);
                             }}
+                            ref={inventoryInputRef}
                             className="cursor-pointer"
                         />
                         <Button
