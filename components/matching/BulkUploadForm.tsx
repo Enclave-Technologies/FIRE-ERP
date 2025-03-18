@@ -40,6 +40,13 @@ const stringToBoolean = (value: string | undefined): boolean | null => {
     return value.toLowerCase() === "true";
 };
 
+// Helper function to convert string to number or null
+const stringToNumber = (value: string | undefined): string | null => {
+    if (!value || value.trim() === "") return null;
+    const numberValue = parseFloat(value);
+    return isNaN(numberValue) ? null : numberValue.toString();
+};
+
 export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
     const { toast } = useToast();
     const [requirementFile, setRequirementFile] = useState<File | null>(null);
@@ -89,66 +96,82 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                     ? (row.rtm_offplan as RtmOffplan)
                                     : "NONE";
 
-                                // Check if requirement_id exists and is not empty
-                                if (
-                                    row.requirement_id &&
-                                    row.requirement_id.trim() !== ""
-                                ) {
-                                    const updateResult =
-                                        await updateRequirement(
-                                            row.requirement_id,
-                                            {
-                                                description: row.description,
-                                                demand: row.demand,
-                                                preferredType:
-                                                    row.preferred_type,
-                                                preferredLocation:
-                                                    row.preferred_location,
-                                                budget: processBudgetString(
-                                                    row.budget
-                                                ),
-                                                phpp: stringToBoolean(row.phpp),
-                                                preferredSquareFootage:
-                                                    row.preferred_square_footage,
-                                                preferredROI: row.preferred_roi,
-                                                category: category,
-                                                rtmOffplan: rtmOffplan,
-                                                remarks: row.remarks,
-                                                call: stringToBoolean(row.call),
-                                                viewing: stringToBoolean(
-                                                    row.viewing
-                                                ),
-                                                sharedWithIndianChannelPartner:
-                                                    stringToBoolean(
-                                                        row.shared_with_indian_channel_partner
-                                                    ),
-                                            }
-                                        );
-                                    return updateResult;
-                                } else {
-                                    // Create new requirement
-                                    await createRequirement({
-                                        description: row.description,
-                                        demand: row.demand,
-                                        preferredType: row.preferred_type,
-                                        preferredLocation:
-                                            row.preferred_location,
-                                        budget: processBudgetString(row.budget),
-                                        phpp: stringToBoolean(row.phpp),
-                                        preferredSquareFootage:
-                                            row.preferred_square_footage,
-                                        preferredROI: row.preferred_roi,
-                                        category: category,
-                                        rtmOffplan: rtmOffplan,
-                                        remarks: row.remarks,
-                                        call: stringToBoolean(row.call),
-                                        viewing: stringToBoolean(row.viewing),
-                                        sharedWithIndianChannelPartner:
-                                            stringToBoolean(
-                                                row.shared_with_indian_channel_partner
-                                            ),
-                                    });
-                                }
+if (!row.description || !row.demand || !row.preferred_type || !row.preferred_location) {
+    toast({
+        title: "Error",
+        description: "Missing required fields for requirement",
+        variant: "destructive",
+    });
+    return;
+}
+
+// Check if requirement_id exists and is not empty
+if (
+    row.requirement_id &&
+    row.requirement_id.trim() !== ""
+) {
+    const updateResult =
+        await updateRequirement(
+            row.requirement_id,
+            {
+                description: row.description,
+                demand: row.demand,
+                preferredType:
+                    row.preferred_type,
+                preferredLocation:
+                    row.preferred_location,
+                budget: processBudgetString(
+                    row.budget
+                ),
+                phpp: stringToBoolean(row.phpp),
+                preferredSquareFootage:
+                    stringToNumber(
+                        row.preferred_square_footage
+                    ),
+                preferredROI: stringToNumber(
+                    row.preferred_roi
+                ),
+                category: category,
+                rtmOffplan: rtmOffplan,
+                remarks: row.remarks,
+                call: stringToBoolean(row.call),
+                viewing: stringToBoolean(
+                    row.viewing
+                ),
+                sharedWithIndianChannelPartner:
+                    stringToBoolean(
+                        row.shared_with_indian_channel_partner
+                    ),
+            }
+        );
+    return updateResult;
+} else {
+    // Create new requirement
+    await createRequirement({
+        description: row.description,
+        demand: row.demand,
+        preferredType: row.preferred_type,
+        preferredLocation:
+            row.preferred_location,
+        budget: processBudgetString(row.budget),
+        phpp: stringToBoolean(row.phpp),
+        preferredSquareFootage: stringToNumber(
+            row.preferred_square_footage
+        ),
+        preferredROI: stringToNumber(
+            row.preferred_roi
+        ),
+        category: category,
+        rtmOffplan: rtmOffplan,
+        remarks: row.remarks,
+        call: stringToBoolean(row.call),
+        viewing: stringToBoolean(row.viewing),
+        sharedWithIndianChannelPartner:
+            stringToBoolean(
+                row.shared_with_indian_channel_partner
+            ),
+    });
+}
                             } else {
                                 // Inventory processing
                                 const validStatuses: InventoryStatus[] = [
@@ -163,6 +186,16 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                     ? (row.unit_status as InventoryStatus)
                                     : "available";
 
+                                // Validate required fields
+                                if (!row.project_name || !row.property_type || !row.location) {
+                                    toast({
+                                        title: "Error",
+                                        description: "Missing required fields for inventory",
+                                        variant: "destructive",
+                                    });
+                                    return;
+                                }
+
                                 if (row.inventory_id) {
                                     const updateResult =
                                         await updateInventoryDetails(
@@ -171,9 +204,11 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                                 projectName: row.project_name,
                                                 propertyType: row.property_type,
                                                 location: row.location,
-                                                buildingName: row.building_name,
+                                                // buildingName: row.building_name,
                                                 unitNumber: row.unit_number,
-                                                areaSQFT: row.area_sqft,
+                                                areaSQFT: stringToNumber(
+                                                    row.area_sqft
+                                                ),
                                                 priceAED: processBudgetString(
                                                     row.price_aed
                                                 ),
@@ -191,9 +226,9 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                         projectName: row.project_name,
                                         propertyType: row.property_type,
                                         location: row.location,
-                                        buildingName: row.building_name,
+                                        // buildingName: row.building_name,
                                         unitNumber: row.unit_number,
-                                        areaSQFT: row.area_sqft,
+                                        areaSQFT: stringToNumber(row.area_sqft),
                                         priceAED: processBudgetString(
                                             row.price_aed
                                         ),
@@ -246,6 +281,7 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                 const files = e.target.files;
                                 if (files) setRequirementFile(files[0]);
                             }}
+                            className="cursor-pointer"
                         />
                         <Button
                             onClick={() =>
@@ -298,6 +334,7 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                                 const files = e.target.files;
                                 if (files) setInventoryFile(files[0]);
                             }}
+                            className="cursor-pointer"
                         />
                         <Button
                             onClick={() =>

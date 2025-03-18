@@ -61,6 +61,8 @@ const inventoryFormSchema = z.object({
     phppEligible: z.boolean().default(false),
     phppDetails: z.string().optional(),
     completionDate: z.date().optional(),
+    markup: z.string().optional(),
+    brokerage: z.string().optional(),
     remarks: z.string().optional(),
 });
 
@@ -94,22 +96,34 @@ export function EditInventory({
             location: inventory.location || "",
             unitNumber: inventory.unitNumber || "",
             description: inventory.description || "",
-            areaSQFT: inventory.areaSQFT ? Number(inventory.areaSQFT) : undefined,
+            areaSQFT: inventory.areaSQFT
+                ? Number(inventory.areaSQFT)
+                : undefined,
             buSQFT: inventory.buSQFT ? Number(inventory.buSQFT) : undefined,
             sellingPriceMillionAED: inventory.sellingPriceMillionAED || "",
             priceAED: inventory.priceAED || "",
             inrCr: inventory.inrCr || "",
             rentApprox: inventory.rentApprox || "",
-            roiGross: inventory.roiGross ? Number(inventory.roiGross) : undefined,
-            bedRooms: inventory.bedRooms ? Number(inventory.bedRooms) : undefined,
-            maidsRoom: inventory.maidsRoom ? Number(inventory.maidsRoom) : undefined,
-            studyRoom: inventory.studyRoom ? Number(inventory.studyRoom) : undefined,
+            roiGross: inventory.roiGross
+                ? Number(inventory.roiGross)
+                : undefined,
+            bedRooms: inventory.bedRooms
+                ? Number(inventory.bedRooms)
+                : undefined,
+            maidsRoom: inventory.maidsRoom
+                ? Number(inventory.maidsRoom)
+                : undefined,
+            studyRoom: inventory.studyRoom
+                ? Number(inventory.studyRoom)
+                : undefined,
             carPark: inventory.carPark ? Number(inventory.carPark) : undefined,
             phppEligible: inventory.phppEligible || false,
             phppDetails: inventory.phppDetails || "",
             completionDate: inventory.completionDate
                 ? new Date(inventory.completionDate)
                 : undefined,
+            markup: inventory.markup || "",
+            brokerage: inventory.brokerage || "",
             remarks: inventory.remarks || "",
         },
     });
@@ -124,13 +138,6 @@ export function EditInventory({
 
         try {
             const formData = form.getValues();
-
-            alert(
-                `${processBudgetString(String(formData.sellingPriceMillionAED))}
-            
-            ${processBudgetString(String(formData.priceAED))}
-            `
-            );
 
             // Convert numeric values to strings for the database
             const data = {
@@ -165,6 +172,14 @@ export function EditInventory({
                 roiGross:
                     formData.roiGross !== undefined
                         ? String(formData.roiGross)
+                        : "0",
+                markup:
+                    formData.markup !== undefined
+                        ? processBudgetString(formData.markup.toString())
+                        : "0",
+                brokerage:
+                    formData.brokerage !== undefined
+                        ? processBudgetString(formData.brokerage.toString())
                         : "0",
             };
 
@@ -656,6 +671,60 @@ export function EditInventory({
                                 />
                             </div>
 
+                            {/* Markup and Brokerage */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="markup"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Markup</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="text"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value ===
+                                                            ""
+                                                                ? ""
+                                                                : e.target
+                                                                      .value;
+                                                        field.onChange(value);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="brokerage"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Brokerage</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="text"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value ===
+                                                            ""
+                                                                ? ""
+                                                                : e.target
+                                                                      .value;
+                                                        field.onChange(value);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                             {/* PHPP Details */}
                             <div className="space-y-4">
                                 <FormField

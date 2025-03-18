@@ -66,7 +66,7 @@ export async function getInventories(params?: {
                             ilike(Inventories.projectName, `%${searchValue}%`),
                             ilike(Inventories.propertyType, `%${searchValue}%`),
                             ilike(Inventories.location, `%${searchValue}%`),
-                            ilike(Inventories.buildingName, `%${searchValue}%`),
+                            // ilike(Inventories.buildingName, `%${searchValue}%`),
                             ilike(Inventories.unitNumber, `%${searchValue}%`)
                         )
                     );
@@ -208,7 +208,7 @@ export async function getInventories(params?: {
                             ilike(Inventories.projectName, `%${searchValue}%`),
                             ilike(Inventories.propertyType, `%${searchValue}%`),
                             ilike(Inventories.location, `%${searchValue}%`),
-                            ilike(Inventories.buildingName, `%${searchValue}%`),
+                            // ilike(Inventories.buildingName, `%${searchValue}%`),
                             ilike(Inventories.unitNumber, `%${searchValue}%`)
                         )
                     );
@@ -247,6 +247,8 @@ export async function createInventory(
     data: InsertInventory
 ): Promise<SelectInventory> {
     try {
+        console.log(data);
+
         const [inventory] = await db
             .insert(Inventories)
             .values(data)

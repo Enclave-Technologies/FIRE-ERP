@@ -164,12 +164,6 @@ export default function AddInventory() {
         setIsSubmitting(true);
 
         try {
-            alert(
-                `${processBudgetString(String(values.sellingPriceMillionAED))}
-            
-            ${processBudgetString(String(values.priceAED))}
-            `
-            );
             // Create a new object with the correct types for the API
             const formattedValues = {
                 brokerId: values.brokerId,
@@ -807,7 +801,7 @@ export default function AddInventory() {
                                             <FormLabel>Markup</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
@@ -828,7 +822,7 @@ export default function AddInventory() {
                                             <FormLabel>Brokerage</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
