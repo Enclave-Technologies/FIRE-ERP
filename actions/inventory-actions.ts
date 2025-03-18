@@ -7,6 +7,19 @@ import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+// New bulk create function
+export async function bulkCreateInventories(
+    data: Omit<InsertInventory, "inventoryId">[]
+): Promise<void> {
+    try {
+        await db.insert(Inventories).values(data);
+        revalidatePath("/matching/inventory");
+    } catch (error) {
+        console.error("Error bulk creating inventories:", error);
+        throw new Error("Failed to bulk create inventories");
+    }
+}
+
 export async function getInventories(params?: {
     [key: string]: string | string[] | undefined;
 }): Promise<{ data: SelectInventory[]; total: number }> {
@@ -66,7 +79,6 @@ export async function getInventories(params?: {
                             ilike(Inventories.projectName, `%${searchValue}%`),
                             ilike(Inventories.propertyType, `%${searchValue}%`),
                             ilike(Inventories.location, `%${searchValue}%`),
-                            ilike(Inventories.buildingName, `%${searchValue}%`),
                             ilike(Inventories.unitNumber, `%${searchValue}%`)
                         )
                     );
@@ -149,14 +161,12 @@ export async function getInventories(params?: {
         }
 
         // Create a clone of the query for counting before pagination
-        // We need to convert the query to SQL to clone it
         const countQuery = db
             .select({ count: count() })
             .from(Inventories)
             .$dynamic();
 
         // Apply the same filters to the count query
-        // We need to manually apply the same filters
         if (params) {
             // Filter by column
             if (params.filterColumn && params.filterValue) {
@@ -208,7 +218,6 @@ export async function getInventories(params?: {
                             ilike(Inventories.projectName, `%${searchValue}%`),
                             ilike(Inventories.propertyType, `%${searchValue}%`),
                             ilike(Inventories.location, `%${searchValue}%`),
-                            ilike(Inventories.buildingName, `%${searchValue}%`),
                             ilike(Inventories.unitNumber, `%${searchValue}%`)
                         )
                     );

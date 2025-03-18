@@ -49,23 +49,27 @@ const inventoryFormSchema = z.object({
     description: z.string().optional(),
     areaSQFT: z.coerce.number().optional(),
     buSQFT: z.coerce.number().optional(),
-    sellingPriceMillionAED: z.coerce.number().optional(),
-    priceAED: z.coerce.number().optional(),
-    inrCr: z.coerce.number().optional(),
-    rentApprox: z.coerce.number().optional(),
+    sellingPriceMillionAED: z.string().optional(),
+    priceAED: z.string().optional(),
+    inrCr: z.string().optional(),
+    rentApprox: z.string().optional(),
     roiGross: z.coerce.number().optional(),
+    bedRooms: z.coerce.number().optional(),
     maidsRoom: z.coerce.number().optional(),
     studyRoom: z.coerce.number().optional(),
     carPark: z.coerce.number().optional(),
     phppEligible: z.boolean().default(false),
     phppDetails: z.string().optional(),
     completionDate: z.date().optional(),
+    markup: z.string().optional(),
+    brokerage: z.string().optional(),
     remarks: z.string().optional(),
 });
 
 type InventoryFormValues = z.infer<typeof inventoryFormSchema>;
 
 import { updateInventoryDetails } from "@/actions/inventory-actions";
+import { processBudgetString } from "@/utils/budget-utils";
 
 interface EditInventoryProps {
     inventory: SelectInventory;
@@ -90,34 +94,36 @@ export function EditInventory({
             projectName: inventory.projectName || "",
             propertyType: inventory.propertyType || "",
             location: inventory.location || "",
-            buildingName: inventory.buildingName || "",
             unitNumber: inventory.unitNumber || "",
             description: inventory.description || "",
             areaSQFT: inventory.areaSQFT
                 ? Number(inventory.areaSQFT)
                 : undefined,
             buSQFT: inventory.buSQFT ? Number(inventory.buSQFT) : undefined,
-            sellingPriceMillionAED: inventory.sellingPriceMillionAED
-                ? Number(inventory.sellingPriceMillionAED)
-                : undefined,
-            priceAED: inventory.priceAED
-                ? Number(inventory.priceAED)
-                : undefined,
-            inrCr: inventory.inrCr ? Number(inventory.inrCr) : undefined,
-            rentApprox: inventory.rentApprox
-                ? Number(inventory.rentApprox)
-                : undefined,
+            sellingPriceMillionAED: inventory.sellingPriceMillionAED || "",
+            priceAED: inventory.priceAED || "",
+            inrCr: inventory.inrCr || "",
+            rentApprox: inventory.rentApprox || "",
             roiGross: inventory.roiGross
                 ? Number(inventory.roiGross)
                 : undefined,
-            maidsRoom: inventory.maidsRoom || 0,
-            studyRoom: inventory.studyRoom || 0,
-            carPark: inventory.carPark || 0,
+            bedRooms: inventory.bedRooms
+                ? Number(inventory.bedRooms)
+                : undefined,
+            maidsRoom: inventory.maidsRoom
+                ? Number(inventory.maidsRoom)
+                : undefined,
+            studyRoom: inventory.studyRoom
+                ? Number(inventory.studyRoom)
+                : undefined,
+            carPark: inventory.carPark ? Number(inventory.carPark) : undefined,
             phppEligible: inventory.phppEligible || false,
             phppDetails: inventory.phppDetails || "",
             completionDate: inventory.completionDate
                 ? new Date(inventory.completionDate)
                 : undefined,
+            markup: inventory.markup || "",
+            brokerage: inventory.brokerage || "",
             remarks: inventory.remarks || "",
         },
     });
@@ -140,31 +146,41 @@ export function EditInventory({
                 areaSQFT:
                     formData.areaSQFT !== undefined
                         ? String(formData.areaSQFT)
-                        : undefined,
+                        : "0",
                 buSQFT:
                     formData.buSQFT !== undefined
                         ? String(formData.buSQFT)
-                        : undefined,
+                        : "0",
                 sellingPriceMillionAED:
                     formData.sellingPriceMillionAED !== undefined
-                        ? String(formData.sellingPriceMillionAED)
-                        : undefined,
+                        ? processBudgetString(
+                              String(formData.sellingPriceMillionAED)
+                          )
+                        : "0",
                 priceAED:
                     formData.priceAED !== undefined
-                        ? String(formData.priceAED)
-                        : undefined,
+                        ? processBudgetString(String(formData.priceAED))
+                        : "0",
                 inrCr:
                     formData.inrCr !== undefined
-                        ? String(formData.inrCr)
-                        : undefined,
+                        ? processBudgetString(String(formData.inrCr))
+                        : "0",
                 rentApprox:
                     formData.rentApprox !== undefined
-                        ? String(formData.rentApprox)
-                        : undefined,
+                        ? processBudgetString(String(formData.rentApprox))
+                        : "0",
                 roiGross:
                     formData.roiGross !== undefined
                         ? String(formData.roiGross)
-                        : undefined,
+                        : "0",
+                markup:
+                    formData.markup !== undefined
+                        ? processBudgetString(formData.markup.toString())
+                        : "0",
+                brokerage:
+                    formData.brokerage !== undefined
+                        ? processBudgetString(formData.brokerage.toString())
+                        : "0",
             };
 
             const result = await updateInventoryDetails(
@@ -280,7 +296,7 @@ export function EditInventory({
                                     )}
                                 />
 
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="buildingName"
                                     render={({ field }) => (
@@ -292,7 +308,7 @@ export function EditInventory({
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
 
                                 <FormField
                                     control={form.control}
@@ -346,7 +362,9 @@ export function EditInventory({
                                                     >
                                                         <Calendar
                                                             mode="single"
-                                                            selected={field.value}
+                                                            selected={
+                                                                field.value
+                                                            }
                                                             onSelect={
                                                                 field.onChange
                                                             }
@@ -375,13 +393,9 @@ export function EditInventory({
                                                     {...field}
                                                     onChange={(e) => {
                                                         const value =
-                                                            e.target.value ===
-                                                            ""
-                                                                ? undefined
-                                                                : Number(
-                                                                      e.target
-                                                                          .value
-                                                                  );
+                                                            Number(
+                                                                e.target.value
+                                                            ) || 0;
                                                         field.onChange(value);
                                                     }}
                                                 />
@@ -419,6 +433,29 @@ export function EditInventory({
                                     )}
                                 />
 
+                                <FormField
+                                    control={form.control}
+                                    name="bedRooms"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Bed Rooms</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="number"
+                                                    {...field}
+                                                    onChange={(e) =>
+                                                        field.onChange(
+                                                            Number(
+                                                                e.target.value
+                                                            )
+                                                        )
+                                                    }
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="maidsRoom"
@@ -496,7 +533,7 @@ export function EditInventory({
 
                             {/* Financial Details */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="sellingPriceMillionAED"
                                     render={({ field }) => (
@@ -523,7 +560,7 @@ export function EditInventory({
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
 
                                 <FormField
                                     control={form.control}
@@ -533,17 +570,15 @@ export function EditInventory({
                                             <FormLabel>Price (AED)</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) => {
                                                         const value =
                                                             e.target.value ===
                                                             ""
                                                                 ? undefined
-                                                                : Number(
-                                                                      e.target
-                                                                          .value
-                                                                  );
+                                                                : e.target
+                                                                      .value;
                                                         field.onChange(value);
                                                     }}
                                                 />
@@ -561,18 +596,16 @@ export function EditInventory({
                                             <FormLabel>INR (Cr)</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
-                                                    step="0.01"
+                                                    type="text"
+                                                    // step="0.01"
                                                     {...field}
                                                     onChange={(e) => {
                                                         const value =
                                                             e.target.value ===
                                                             ""
                                                                 ? undefined
-                                                                : Number(
-                                                                      e.target
-                                                                          .value
-                                                                  );
+                                                                : e.target
+                                                                      .value;
                                                         field.onChange(value);
                                                     }}
                                                 />
@@ -590,17 +623,15 @@ export function EditInventory({
                                             <FormLabel>Rent (Approx)</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) => {
                                                         const value =
                                                             e.target.value ===
                                                             ""
-                                                                ? undefined
-                                                                : Number(
-                                                                      e.target
-                                                                          .value
-                                                                  );
+                                                                ? ""
+                                                                : e.target
+                                                                      .value;
                                                         field.onChange(value);
                                                     }}
                                                 />
@@ -640,6 +671,60 @@ export function EditInventory({
                                 />
                             </div>
 
+                            {/* Markup and Brokerage */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="markup"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Markup</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="text"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value ===
+                                                            ""
+                                                                ? ""
+                                                                : e.target
+                                                                      .value;
+                                                        field.onChange(value);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="brokerage"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Brokerage</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="text"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            e.target.value ===
+                                                            ""
+                                                                ? ""
+                                                                : e.target
+                                                                      .value;
+                                                        field.onChange(value);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                             {/* PHPP Details */}
                             <div className="space-y-4">
                                 <FormField

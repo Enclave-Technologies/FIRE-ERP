@@ -44,6 +44,7 @@ import { getBrokers } from "@/actions/broker-actions";
 import { createInventory } from "@/actions/inventory-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { processBudgetString } from "@/utils/budget-utils";
 
 const formSchema = z.object({
     // Required fields
@@ -54,29 +55,28 @@ const formSchema = z.object({
     areaSQFT: z
         .number()
         .positive({ message: "Area must be a positive number" }),
-    sellingPriceMillionAED: z
-        .number()
-        .positive({ message: "Selling price must be a positive number" }),
     unitStatus: z.enum(["available", "sold", "reserved", "rented"], {
         errorMap: () => ({ message: "Please select a unit status" }),
     }),
+    priceAED: z.string().optional(),
 
     // Optional fields
+    sellingPriceMillionAED: z.string().optional(),
     sn: z.string().optional(),
     description: z.string().optional(),
-    buildingName: z.string().optional(),
+    // buildingName: z.string().optional(),
     unitNumber: z.string().optional(),
+    bedRooms: z.number().int().nonnegative().optional(),
     maidsRoom: z.number().int().nonnegative().optional(),
     studyRoom: z.number().int().nonnegative().optional(),
     carPark: z.number().int().nonnegative().optional(),
     buSQFT: z.number().positive().optional(),
     completionDate: z.date().optional(),
-    priceAED: z.number().positive().optional(),
-    inrCr: z.number().positive().optional(),
-    rentApprox: z.number().positive().optional(),
-    roiGross: z.number().positive().optional(),
-    markup: z.number().positive().optional(),
-    brokerage: z.number().positive().optional(),
+    inrCr: z.string().optional(),
+    rentApprox: z.string().optional(),
+    roiGross: z.number().int().nonnegative().optional(),
+    markup: z.string().optional(),
+    brokerage: z.string().optional(),
     remarks: z.string().optional(),
     bayut: z.string().optional(),
     phppEligible: z.boolean().optional(),
@@ -110,25 +110,26 @@ export default function AddInventory() {
             projectName: "",
             location: "",
             areaSQFT: 0,
-            sellingPriceMillionAED: 0,
+            sellingPriceMillionAED: "0",
             unitStatus: "available" as const,
 
             // Optional fields with default values
+            bedRooms: 0,
             maidsRoom: 0,
             studyRoom: 0,
             carPark: 0,
             phppEligible: false,
             sn: "",
             description: "",
-            buildingName: "",
+            // buildingName: "",
             unitNumber: "",
-            buSQFT: undefined,
-            priceAED: undefined,
-            inrCr: undefined,
-            rentApprox: undefined,
-            roiGross: undefined,
-            markup: undefined,
-            brokerage: undefined,
+            buSQFT: 0,
+            priceAED: "0",
+            inrCr: "0",
+            rentApprox: "0",
+            roiGross: 0,
+            markup: "0",
+            brokerage: "0",
             remarks: "",
             bayut: "",
             phppDetails: "",
@@ -170,55 +171,59 @@ export default function AddInventory() {
                 projectName: values.projectName,
                 location: values.location,
                 areaSQFT: values.areaSQFT.toString(),
-                sellingPriceMillionAED:
-                    values.sellingPriceMillionAED.toString(),
+
+                priceAED:
+                    values.priceAED !== undefined
+                        ? processBudgetString(values.priceAED.toString())
+                        : "0",
                 unitStatus: values.unitStatus,
 
                 // Optional fields
-                sn: values.sn || null,
-                description: values.description || null,
-                buildingName: values.buildingName || null,
-                unitNumber: values.unitNumber || null,
+                sn: values.sn || "",
+                description: values.description || "",
+                // buildingName: values.buildingName || null,
+                unitNumber: values.unitNumber || "",
                 maidsRoom:
                     values.maidsRoom !== undefined
                         ? Number(values.maidsRoom)
-                        : null,
+                        : 0,
                 studyRoom:
                     values.studyRoom !== undefined
                         ? Number(values.studyRoom)
-                        : null,
+                        : 0,
                 carPark:
-                    values.carPark !== undefined
-                        ? Number(values.carPark)
-                        : null,
+                    values.carPark !== undefined ? Number(values.carPark) : 0,
                 buSQFT:
                     values.buSQFT !== undefined
                         ? values.buSQFT.toString()
-                        : null,
+                        : "0",
                 completionDate: values.completionDate || null,
-                priceAED:
-                    values.priceAED !== undefined
-                        ? values.priceAED.toString()
-                        : null,
+                sellingPriceMillionAED: processBudgetString(
+                    values.sellingPriceMillionAED
+                        ? values.sellingPriceMillionAED.toString()
+                        : "0"
+                ),
                 inrCr:
-                    values.inrCr !== undefined ? values.inrCr.toString() : null,
+                    values.inrCr !== undefined
+                        ? processBudgetString(values.inrCr.toString())
+                        : "0",
                 rentApprox:
                     values.rentApprox !== undefined
-                        ? values.rentApprox.toString()
-                        : null,
+                        ? processBudgetString(values.rentApprox.toString())
+                        : "0",
                 roiGross:
                     values.roiGross !== undefined
                         ? values.roiGross.toString()
-                        : null,
+                        : "0",
                 markup:
                     values.markup !== undefined
-                        ? values.markup.toString()
-                        : null,
+                        ? processBudgetString(values.markup.toString())
+                        : "0",
                 brokerage:
                     values.brokerage !== undefined
-                        ? values.brokerage.toString()
-                        : null,
-                remarks: values.remarks || null,
+                        ? processBudgetString(values.brokerage.toString())
+                        : "0",
+                remarks: values.remarks || "",
                 bayut: values.bayut || null,
                 phppEligible: values.phppEligible || false,
                 phppDetails: values.phppDetails || null,
@@ -256,21 +261,23 @@ export default function AddInventory() {
                         "projectName",
                         "location",
                         "areaSQFT",
-                        "sellingPriceMillionAED",
                         "unitStatus",
+                        "priceAED",
                     ],
                     "property-details": [
                         "sn",
                         "description",
                         "buildingName",
                         "unitNumber",
+                        "bedRooms",
+
                         "maidsRoom",
                         "studyRoom",
                         "carPark",
                         "buSQFT",
                     ],
                     "financial-info": [
-                        "priceAED",
+                        "sellingPriceMillionAED",
                         "inrCr",
                         "rentApprox",
                         "roiGross",
@@ -424,36 +431,37 @@ export default function AddInventory() {
                                                 <Input
                                                     type="number"
                                                     {...field}
-                                                    onChange={(e) =>
-                                                        field.onChange(
-                                                            Number.parseFloat(
+                                                    onChange={(e) => {
+                                                        const value =
+                                                            parseFloat(
                                                                 e.target.value
-                                                            )
-                                                        )
-                                                    }
+                                                            );
+                                                        field.onChange(
+                                                            isNaN(value)
+                                                                ? 0
+                                                                : value
+                                                        );
+                                                    }}
                                                 />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+
                                 <FormField
                                     control={form.control}
-                                    name="sellingPriceMillionAED"
+                                    name="priceAED"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>
-                                                Selling Price (Million AED)
-                                            </FormLabel>
+                                            <FormLabel>Price (AED)</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
-                                                            Number.parseFloat(
-                                                                e.target.value
-                                                            )
+                                                            e.target.value
                                                         )
                                                     }
                                                 />
@@ -535,7 +543,7 @@ export default function AddInventory() {
                                         </FormItem>
                                     )}
                                 />
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="buildingName"
                                     render={({ field }) => (
@@ -547,7 +555,7 @@ export default function AddInventory() {
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
                                 <FormField
                                     control={form.control}
                                     name="unitNumber"
@@ -556,6 +564,33 @@ export default function AddInventory() {
                                             <FormLabel>Unit Number</FormLabel>
                                             <FormControl>
                                                 <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="bedRooms"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Bed Rooms</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    type="number"
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        const value = parseInt(
+                                                            e.target.value
+                                                        );
+                                                        field.onChange(
+                                                            isNaN(value)
+                                                                ? 0
+                                                                : value
+                                                        );
+                                                    }}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -670,19 +705,19 @@ export default function AddInventory() {
                             <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
-                                    name="priceAED"
+                                    name="sellingPriceMillionAED"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Price (AED)</FormLabel>
+                                            <FormLabel>
+                                                Selling Price (Million AED)
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
-                                                            Number.parseFloat(
-                                                                e.target.value
-                                                            )
+                                                            e.target.value
                                                         )
                                                     }
                                                 />
@@ -699,13 +734,11 @@ export default function AddInventory() {
                                             <FormLabel>INR (Cr)</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
-                                                            Number.parseFloat(
-                                                                e.target.value
-                                                            )
+                                                            e.target.value
                                                         )
                                                     }
                                                 />
@@ -724,13 +757,11 @@ export default function AddInventory() {
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
-                                                            Number.parseFloat(
-                                                                e.target.value
-                                                            )
+                                                            e.target.value
                                                         )
                                                     }
                                                 />
@@ -770,13 +801,11 @@ export default function AddInventory() {
                                             <FormLabel>Markup</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
-                                                            Number.parseFloat(
-                                                                e.target.value
-                                                            )
+                                                            e.target.value
                                                         )
                                                     }
                                                 />
@@ -793,13 +822,11 @@ export default function AddInventory() {
                                             <FormLabel>Brokerage</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    type="number"
+                                                    type="text"
                                                     {...field}
                                                     onChange={(e) =>
                                                         field.onChange(
-                                                            Number.parseFloat(
-                                                                e.target.value
-                                                            )
+                                                            e.target.value
                                                         )
                                                     }
                                                 />

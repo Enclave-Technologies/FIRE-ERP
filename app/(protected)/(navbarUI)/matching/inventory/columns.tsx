@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Eye, Copy, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EditInventory } from "@/components/inventory/edit-inventory";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -37,7 +37,12 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
     const [status, setStatus] = useState<typeof inventory.unitStatus>(
         inventory.unitStatus
     );
-    // Function to handle status change
+    
+    // Synchronize status state with inventory.unitStatus prop
+    useEffect(() => {
+        setStatus(inventory.unitStatus);
+    }, [inventory.unitStatus]);
+
     const handleStatusChange = async (
         newStatus: (typeof inventoryStatus.enumValues)[number]
     ) => {
@@ -98,7 +103,10 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
             </Badge>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0 dark:bg-gray-800 dark:text-gray-200">
+                    <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 dark:bg-gray-800 dark:text-gray-200"
+                    >
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
@@ -298,34 +306,34 @@ export const columns: ColumnDef<SelectInventory>[] = [
                         ? `AED ${new Intl.NumberFormat("en-AE", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
-                          }).format(numericPrice * 1000000)}`
+                          }).format(numericPrice)}`
                         : "-"}
                 </div>
             );
         },
     },
-    {
-        accessorKey: "sellingPriceMillionAED",
-        header: "Selling Price (AED)",
-        cell: ({ row }) => {
-            const price = row.original.sellingPriceMillionAED;
-            if (price === null || price === undefined) return <div>-</div>;
+    // {
+    //     accessorKey: "sellingPriceMillionAED",
+    //     header: "Selling Price (AED)",
+    //     cell: ({ row }) => {
+    //         const price = row.original.sellingPriceMillionAED;
+    //         if (price === null || price === undefined) return <div>-</div>;
 
-            const numericPrice =
-                typeof price === "number" ? price : parseFloat(String(price));
+    //         const numericPrice =
+    //             typeof price === "number" ? price : parseFloat(String(price));
 
-            return (
-                <div>
-                    {!isNaN(numericPrice) && numericPrice > 0
-                        ? `AED ${new Intl.NumberFormat("en-AE", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                          }).format(numericPrice * 1000000)}`
-                        : "-"}
-                </div>
-            );
-        },
-    },
+    //         return (
+    //             <div>
+    //                 {!isNaN(numericPrice) && numericPrice > 0
+    //                     ? `AED ${new Intl.NumberFormat("en-AE", {
+    //                           minimumFractionDigits: 2,
+    //                           maximumFractionDigits: 2,
+    //                       }).format(numericPrice * 1000000)}`
+    //                     : "-"}
+    //             </div>
+    //         );
+    //     },
+    // },
     {
         accessorKey: "inrCr",
         header: "Price (INR Cr)",
@@ -342,7 +350,7 @@ export const columns: ColumnDef<SelectInventory>[] = [
                         ? `₹ ${new Intl.NumberFormat("en-IN", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
-                          }).format(numericPrice)} Cr`
+                          }).format(numericPrice)}`
                         : "-"}
                 </div>
             );
