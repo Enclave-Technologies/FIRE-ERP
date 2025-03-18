@@ -19,9 +19,40 @@ import {
     lte,
     isNull,
     and,
-} from "drizzle-orm"; // Add these imports
+} from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
+
+// New bulk create function
+export async function bulkCreateRequirements(
+    data: Omit<InsertRequirement, "userId" | "status" | "dateCreated">[]
+): Promise<void> {
+    try {
+        const supabase = await createClient();
+        const { data: session } = await supabase.auth.getUser();
+
+        if (!session || !session.user) {
+            throw new Error("You must be logged in to create requirements");
+        }
+
+        const userId = session.user.id;
+
+        // Add required fields to each requirement
+        const requirementsWithDefaults = data.map(req => ({
+            ...req,
+            preferredSquareFootage: req.preferredSquareFootage && req.preferredSquareFootage !== "" ? req.preferredSquareFootage : "0",
+            preferredROI: req.preferredROI && req.preferredROI !== "" ? req.preferredROI : "0",
+            userId,
+            dateCreated: new Date(),
+        }));
+
+        await db.insert(Requirements).values(requirementsWithDefaults);
+        revalidatePath("/matching/requirements");
+    } catch (error) {
+        console.error("Error bulk creating requirements:", error);
+        throw new Error("Failed to bulk create requirements");
+    }
+}
 
 export async function createRequirement(
     data: Omit<InsertRequirement, "userId" | "status" | "dateCreated">
@@ -49,7 +80,6 @@ export async function createRequirement(
                     ? data.preferredROI
                     : "0",
             userId,
-            // status: "open" as (typeof dealStages.enumValues)[0],
             dateCreated: new Date(),
         };
 
@@ -261,32 +291,6 @@ export async function getRequirements(params?: {
                                 );
                             }
                             break;
-                        // case "Status":
-                        //     // Cast the value to the appropriate enum type
-                        //     if (
-                        //         [
-                        //             "open",
-                        //             "assigned",
-                        //             "negotiation",
-                        //             "closed",
-                        //             "rejected",
-                        //         ].includes(value)
-                        //     ) {
-                        //         const typedValue = value as
-                        //             | "open"
-                        //             | "assigned"
-                        //             | "negotiation"
-                        //             | "closed"
-                        //             | "rejected";
-
-                        //         // query = query.where(
-                        //         //     eq(Requirements.status, typedValue)
-                        //         // );
-                        //         // countQuery.where(
-                        //         //     eq(Requirements.status, typedValue)
-                        //         // );
-                        //     }
-                        //     break;
                     }
                 }
             }
@@ -324,13 +328,6 @@ export async function getRequirements(params?: {
                                 : desc(Requirements.preferredType)
                         );
                         break;
-                    // case "Status":
-                    //     query = query.orderBy(
-                    //         sortDirection === "asc"
-                    //             ? asc(Requirements.status)
-                    //             : desc(Requirements.status)
-                    //     );
-                    //     break;
                     case "Date Created":
                         query = query.orderBy(
                             sortDirection === "asc"
