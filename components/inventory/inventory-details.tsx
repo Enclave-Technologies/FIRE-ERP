@@ -169,7 +169,7 @@ export default function InventoryDetails({
                             </div>
                         </div>
                         <p className="text-lg text-zinc-600 dark:text-zinc-400">
-                            {inventory.buildingName}
+                            {inventory.projectName}
                             {inventory.unitNumber
                                 ? ` - Unit ${inventory.unitNumber}`
                                 : ""}
@@ -287,16 +287,13 @@ export default function InventoryDetails({
                                         </span>
                                         <span className="font-medium">
                                             {inventory.priceAED
-                                                ? `AED ${Number(inventory.priceAED).toLocaleString(
-                                                      "en-US",
-                                                      {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2,
-                                                      }
-                                                  )}`
+                                                ? `AED ${Number(
+                                                      inventory.priceAED
+                                                  ).toLocaleString("en-US", {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2,
+                                                  })}`
                                                 : "N/A"}
-
-
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
@@ -306,8 +303,9 @@ export default function InventoryDetails({
                                         <span className="font-medium">
                                             {inventory.sellingPriceMillionAED
                                                 ? `AED ${(
-                                                      Number(inventory.sellingPriceMillionAED) *
-                                                      1000000
+                                                      Number(
+                                                          inventory.sellingPriceMillionAED
+                                                      ) * 1000000
                                                   ).toLocaleString("en-US", {
                                                       minimumFractionDigits: 2,
                                                       maximumFractionDigits: 2,
@@ -321,13 +319,12 @@ export default function InventoryDetails({
                                         </span>
                                         <span className="font-medium">
                                             {inventory.inrCr
-                                                ? `₹ ${Number(inventory.inrCr).toLocaleString(
-                                                      "en-US",
-                                                      {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2,
-                                                      }
-                                                  )}`
+                                                ? `₹ ${Number(
+                                                      inventory.inrCr
+                                                  ).toLocaleString("en-US", {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2,
+                                                  })}`
                                                 : "N/A"}
                                         </span>
                                     </div>
@@ -336,17 +333,14 @@ export default function InventoryDetails({
                                             Rent (Approx)
                                         </span>
                                         <span className="font-medium">
-
                                             {inventory.rentApprox
-                                                ? `AED ${Number(inventory.rentApprox).toLocaleString(
-                                                      "en-US",
-                                                      {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2,
-                                                      }
-                                                  )}`
+                                                ? `AED ${Number(
+                                                      inventory.rentApprox
+                                                  ).toLocaleString("en-US", {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2,
+                                                  })}`
                                                 : "N/A"}
-
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center py-2">

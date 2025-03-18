@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Eye, Copy, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EditInventory } from "@/components/inventory/edit-inventory";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -37,7 +37,12 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
     const [status, setStatus] = useState<typeof inventory.unitStatus>(
         inventory.unitStatus
     );
-    // Function to handle status change
+    
+    // Synchronize status state with inventory.unitStatus prop
+    useEffect(() => {
+        setStatus(inventory.unitStatus);
+    }, [inventory.unitStatus]);
+
     const handleStatusChange = async (
         newStatus: (typeof inventoryStatus.enumValues)[number]
     ) => {
@@ -301,7 +306,7 @@ export const columns: ColumnDef<SelectInventory>[] = [
                         ? `AED ${new Intl.NumberFormat("en-AE", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
-                          }).format(numericPrice * 1000000)}`
+                          }).format(numericPrice)}`
                         : "-"}
                 </div>
             );
@@ -345,7 +350,7 @@ export const columns: ColumnDef<SelectInventory>[] = [
                         ? `₹ ${new Intl.NumberFormat("en-IN", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
-                          }).format(numericPrice)} Cr`
+                          }).format(numericPrice)}`
                         : "-"}
                 </div>
             );
