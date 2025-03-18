@@ -98,7 +98,10 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
             </Badge>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0 dark:bg-gray-800 dark:text-gray-200">
+                    <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 dark:bg-gray-800 dark:text-gray-200"
+                    >
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
@@ -304,28 +307,28 @@ export const columns: ColumnDef<SelectInventory>[] = [
             );
         },
     },
-    {
-        accessorKey: "sellingPriceMillionAED",
-        header: "Selling Price (AED)",
-        cell: ({ row }) => {
-            const price = row.original.sellingPriceMillionAED;
-            if (price === null || price === undefined) return <div>-</div>;
+    // {
+    //     accessorKey: "sellingPriceMillionAED",
+    //     header: "Selling Price (AED)",
+    //     cell: ({ row }) => {
+    //         const price = row.original.sellingPriceMillionAED;
+    //         if (price === null || price === undefined) return <div>-</div>;
 
-            const numericPrice =
-                typeof price === "number" ? price : parseFloat(String(price));
+    //         const numericPrice =
+    //             typeof price === "number" ? price : parseFloat(String(price));
 
-            return (
-                <div>
-                    {!isNaN(numericPrice) && numericPrice > 0
-                        ? `AED ${new Intl.NumberFormat("en-AE", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                          }).format(numericPrice * 1000000)}`
-                        : "-"}
-                </div>
-            );
-        },
-    },
+    //         return (
+    //             <div>
+    //                 {!isNaN(numericPrice) && numericPrice > 0
+    //                     ? `AED ${new Intl.NumberFormat("en-AE", {
+    //                           minimumFractionDigits: 2,
+    //                           maximumFractionDigits: 2,
+    //                       }).format(numericPrice * 1000000)}`
+    //                     : "-"}
+    //             </div>
+    //         );
+    //     },
+    // },
     {
         accessorKey: "inrCr",
         header: "Price (INR Cr)",

@@ -55,14 +55,15 @@ const formSchema = z.object({
     areaSQFT: z
         .number()
         .positive({ message: "Area must be a positive number" }),
-    sellingPriceMillionAED: z
-        .number()
-        .positive({ message: "Selling price must be a positive number" }),
     unitStatus: z.enum(["available", "sold", "reserved", "rented"], {
         errorMap: () => ({ message: "Please select a unit status" }),
     }),
+    priceAED: z
+        .number()
+        .positive({ message: "Price must be a positive number" }),
 
     // Optional fields
+    sellingPriceMillionAED: z.number().positive().optional(),
     sn: z.string().optional(),
     description: z.string().optional(),
     buildingName: z.string().optional(),
@@ -72,7 +73,6 @@ const formSchema = z.object({
     carPark: z.number().int().nonnegative().optional(),
     buSQFT: z.number().positive().optional(),
     completionDate: z.date().optional(),
-    priceAED: z.number().positive().optional(),
     inrCr: z.number().positive().optional(),
     rentApprox: z.number().positive().optional(),
     roiGross: z.number().positive().optional(),
@@ -172,7 +172,9 @@ export default function AddInventory() {
                 location: values.location,
                 areaSQFT: values.areaSQFT.toString(),
                 sellingPriceMillionAED: parseBudgetValue(
-                    values.sellingPriceMillionAED.toString()
+                    values.sellingPriceMillionAED
+                        ? values.sellingPriceMillionAED.toString()
+                        : "0"
                 ),
                 unitStatus: values.unitStatus,
 
@@ -260,8 +262,8 @@ export default function AddInventory() {
                         "projectName",
                         "location",
                         "areaSQFT",
-                        "sellingPriceMillionAED",
                         "unitStatus",
+                        "priceAED",
                     ],
                     "property-details": [
                         "sn",
@@ -274,7 +276,7 @@ export default function AddInventory() {
                         "buSQFT",
                     ],
                     "financial-info": [
-                        "priceAED",
+                        "sellingPriceMillionAED",
                         "inrCr",
                         "rentApprox",
                         "roiGross",
@@ -441,14 +443,13 @@ export default function AddInventory() {
                                         </FormItem>
                                     )}
                                 />
+
                                 <FormField
                                     control={form.control}
-                                    name="sellingPriceMillionAED"
+                                    name="priceAED"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>
-                                                Selling Price (Million AED)
-                                            </FormLabel>
+                                            <FormLabel>Price (AED)</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -674,10 +675,12 @@ export default function AddInventory() {
                             <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
-                                    name="priceAED"
+                                    name="sellingPriceMillionAED"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Price (AED)</FormLabel>
+                                            <FormLabel>
+                                                Selling Price (Million AED)
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
