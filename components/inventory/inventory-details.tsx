@@ -298,14 +298,13 @@ export default function InventoryDetails({
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-zinc-200 dark:border-zinc-800">
                                         <span className="text-zinc-500 dark:text-zinc-400">
-                                            Price (M)
+                                            Selling Price
                                         </span>
                                         <span className="font-medium">
                                             {inventory.sellingPriceMillionAED
-                                                ? `AED ${(
-                                                      Number(
-                                                          inventory.sellingPriceMillionAED
-                                                      ) * 1000000
+                                                ? `AED ${Number(
+                                                      inventory.sellingPriceMillionAED
+
                                                   ).toLocaleString("en-US", {
                                                       minimumFractionDigits: 2,
                                                       maximumFractionDigits: 2,

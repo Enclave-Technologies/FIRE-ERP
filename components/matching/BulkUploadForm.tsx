@@ -65,6 +65,7 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                     inventoryInputRef.current.value = "";
                 }
                 setInventoryFile(null);
+
                 const processedData = await processInventoryCsv(file);
                 const dataWithoutIds = processedData
                     .filter((row) => !row.inventory_id)
@@ -73,9 +74,11 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                         brokerId: userId,
                         dateAdded: new Date(),
                     }));
+
                 if (dataWithoutIds.length > 0) {
                     await bulkCreateInventories(dataWithoutIds);
                 }
+
             }
 
             toast({

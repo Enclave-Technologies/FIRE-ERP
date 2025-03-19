@@ -60,7 +60,7 @@ export const formatBudgetForDisplay = (budget: string): string => {
  * @returns The processed budget string
  */
 export const processBudgetString = (budget: string): string => {
-    if (!budget) return "";
+    if (!budget) return "0";
 
     if (budget.includes("-")) {
         const parts = budget.split("-");

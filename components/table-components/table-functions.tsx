@@ -143,7 +143,7 @@ const TableFunctions = <TData, TValue>({
                     name="sortDirection"
                     value={sortDirection}
                 />
-                <input type="hidden" name="search" value={searchValue} />
+                {/* <input type="hidden" name="search" value={searchValue} /> */}
 
                 {/* Preserve pagination parameters */}
                 <input

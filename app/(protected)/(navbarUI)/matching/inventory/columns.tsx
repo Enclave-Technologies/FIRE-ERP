@@ -37,7 +37,7 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
     const [status, setStatus] = useState<typeof inventory.unitStatus>(
         inventory.unitStatus
     );
-    
+
     // Synchronize status state with inventory.unitStatus prop
     useEffect(() => {
         setStatus(inventory.unitStatus);
@@ -98,7 +98,10 @@ const StatusCell = ({ inventory }: { inventory: SelectInventory }) => {
 
     return (
         <div className="flex items-center">
-            <Badge variant={getStatusVariant(status)} className="mr-2">
+            <Badge
+                variant={getStatusVariant(status)}
+                className="mr-2 capitalize"
+            >
                 {status}
             </Badge>
             <DropdownMenu>
