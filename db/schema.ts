@@ -117,17 +117,17 @@ export const Inventories = pgTable("inventories", {
     areaSQFT: numeric("area_sqft", { precision: 10, scale: 2 }),
     buSQFT: numeric("bua_sqft", { precision: 10, scale: 2 }),
     sellingPriceMillionAED: numeric("selling_price_million_aed", {
-        precision: 10,
+        precision: 12,
         scale: 2,
     }),
     unitStatus: inventoryStatus("unit_status").default("available"), // Using the defined inventoryStatus enum
     completionDate: timestamp("completion_date"),
-    priceAED: numeric("price_aed", { precision: 10, scale: 2 }),
-    inrCr: numeric("inr_cr", { precision: 10, scale: 2 }),
-    rentApprox: numeric("rent_approx", { precision: 10, scale: 2 }),
+    priceAED: numeric("price_aed", { precision: 12, scale: 2 }),
+    inrCr: numeric("inr_cr", { precision: 20, scale: 2 }),
+    rentApprox: numeric("rent_approx", { precision: 12, scale: 2 }),
     roiGross: numeric("roi_gross", { precision: 5, scale: 2 }),
-    markup: numeric("markup", { precision: 10, scale: 2 }),
-    brokerage: numeric("brokerage", { precision: 10, scale: 2 }),
+    markup: numeric("markup", { precision: 12, scale: 2 }),
+    brokerage: numeric("brokerage", { precision: 12, scale: 2 }),
     remarks: text("remarks"),
     bayut: text("bayut"),
     phppEligible: boolean("phpp_eligible").default(false), // Indicates whether PHPP is available for the property

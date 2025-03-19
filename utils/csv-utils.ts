@@ -16,7 +16,11 @@ export const stringToBoolean = (value: string | undefined): boolean | null => {
 // Helper function to convert string to number or null
 export const stringToNumber = (value: string | undefined): string | null => {
     if (!value || value.trim() === "") return null;
-    const numberValue = parseFloat(value);
+
+    // Remove commas from the string before parsing
+    const cleanedValue = value.replace(/,/g, "");
+    const numberValue = parseFloat(cleanedValue);
+
     return isNaN(numberValue) ? null : numberValue.toString();
 };
 
