@@ -304,6 +304,7 @@ export default function InventoryDetails({
                                             {inventory.sellingPriceMillionAED
                                                 ? `AED ${Number(
                                                       inventory.sellingPriceMillionAED
+
                                                   ).toLocaleString("en-US", {
                                                       minimumFractionDigits: 2,
                                                       maximumFractionDigits: 2,
