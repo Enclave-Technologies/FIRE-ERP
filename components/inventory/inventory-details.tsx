@@ -174,6 +174,9 @@ export default function InventoryDetails({
                                 ? ` - Unit ${inventory.unitNumber}`
                                 : ""}
                         </p>
+                        <p className="text-lg text-zinc-600 dark:text-zinc-400">
+                            {inventory.developerName}
+                        </p>
                     </div>
                     <Badge
                         variant={getStatusVariant(status)}
@@ -290,8 +293,8 @@ export default function InventoryDetails({
                                                 ? `AED ${Number(
                                                       inventory.priceAED
                                                   ).toLocaleString("en-US", {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2,
+                                                      minimumFractionDigits: 0,
+                                                      maximumFractionDigits: 0,
                                                   })}`
                                                 : "N/A"}
                                         </span>
@@ -304,10 +307,9 @@ export default function InventoryDetails({
                                             {inventory.sellingPriceMillionAED
                                                 ? `AED ${Number(
                                                       inventory.sellingPriceMillionAED
-
                                                   ).toLocaleString("en-US", {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2,
+                                                      minimumFractionDigits: 0,
+                                                      maximumFractionDigits: 0,
                                                   })}`
                                                 : "N/A"}
                                         </span>
@@ -321,8 +323,8 @@ export default function InventoryDetails({
                                                 ? `₹ ${Number(
                                                       inventory.inrCr
                                                   ).toLocaleString("en-US", {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2,
+                                                      minimumFractionDigits: 0,
+                                                      maximumFractionDigits: 0,
                                                   })}`
                                                 : "N/A"}
                                         </span>
@@ -336,8 +338,8 @@ export default function InventoryDetails({
                                                 ? `AED ${Number(
                                                       inventory.rentApprox
                                                   ).toLocaleString("en-US", {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2,
+                                                      minimumFractionDigits: 0,
+                                                      maximumFractionDigits: 0,
                                                   })}`
                                                 : "N/A"}
                                         </span>

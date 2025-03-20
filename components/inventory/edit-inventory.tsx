@@ -96,6 +96,7 @@ export function EditInventory({
             location: inventory.location || "",
             unitNumber: inventory.unitNumber || "",
             description: inventory.description || "",
+            developerName: inventory.developerName ?? undefined,
             areaSQFT: inventory.areaSQFT
                 ? Number(inventory.areaSQFT)
                 : undefined,

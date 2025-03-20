@@ -166,7 +166,7 @@ export default function AddInventory() {
         try {
             // Create a new object with the correct types for the API
             const formattedValues = {
-                brokerId: values.brokerId,
+                brokerId: values.brokerId || null,
                 propertyType: values.propertyType,
                 projectName: values.projectName,
                 location: values.location,
@@ -885,7 +885,7 @@ export default function AddInventory() {
                                                     </FormControl>
                                                 </PopoverTrigger>
                                                 <PopoverContent
-                                                    className="w-auto p-0"
+                                                    className="w-full p-0"
                                                     align="start"
                                                 >
                                                     <Calendar
@@ -901,6 +901,7 @@ export default function AddInventory() {
                                                             )
                                                         }
                                                         initialFocus
+                                                        className="w-full"
                                                     />
                                                 </PopoverContent>
                                             </Popover>
