@@ -138,16 +138,16 @@ export async function signup(formData: FormData) {
     }
 
     // Add to resend contacts if they are staff
-    if (response) {
-        const resend = new Resend(process.env.RESEND_API_KEY);
-        resend.contacts.create({
-            email: email,
-            firstName: full_name.split(" ")[0],
-            lastName: full_name.split(" ")[1],
-            unsubscribed: false,
-            audienceId: process.env.RESEND_AUDIENCE_ID!,
-        });
-    }
+    // if (response) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    resend.contacts.create({
+        email: email,
+        firstName: full_name.split(" ")[0],
+        lastName: full_name.split(" ")[1],
+        unsubscribed: false,
+        audienceId: process.env.RESEND_AUDIENCE_ID!,
+    });
+    // }
     return { error: null };
 }
 

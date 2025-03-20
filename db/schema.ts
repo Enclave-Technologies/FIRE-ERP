@@ -47,11 +47,11 @@ export const inventoryStatus = pgEnum("inventoryStatus", [
     "rented",
 ]);
 
-export const requirementCategory = pgEnum("requirementCategory", [
-    "RISE",
-    "NESTSEEKERS",
-    "LUXURY CONCIERGE",
-]);
+// export const requirementCategory = pgEnum("requirementCategory", [
+//     "RISE",
+//     "NESTSEEKERS",
+//     "LUXURY CONCIERGE",
+// ]);
 
 export const Users = pgTable("users", {
     userId: uuid("user_id").primaryKey(),
@@ -94,7 +94,7 @@ export const Requirements = pgTable("requirements", {
     ).default(false), // Whether shared with a channel partner
     call: boolean("call").default(false), // Indicates if a call was made
     viewing: boolean("viewing").default(false), // Indicates if a viewing is scheduled
-    category: requirementCategory().notNull(), // Category of the requirement
+    category: text("requirement_category"), // Category of the requirement
     remarks: text("remarks"),
 }).enableRLS();
 
