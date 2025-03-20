@@ -72,7 +72,7 @@ export const Requirements = pgTable("requirements", {
     userId: uuid("user_id")
         .notNull()
         .references(() => Users.userId, { onDelete: "cascade" }),
-    description: text("description").notNull(),
+    description: text("description"),
     dateCreated: timestamp("date_created").defaultNow().notNull(),
 
     demand: varchar("demand", { length: 255 }).notNull(), // The person or entity making the request

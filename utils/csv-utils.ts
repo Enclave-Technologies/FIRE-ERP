@@ -65,7 +65,6 @@ export const processRequirementCsv = (
                             : "NONE";
 
                         if (
-                            !row.description ||
                             !row.demand ||
                             !row.preferred_type ||
                             !row.preferred_location
