@@ -78,6 +78,7 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                 if (dataWithoutIds.length > 0) {
                     await bulkCreateInventories(dataWithoutIds);
                 }
+
             }
 
             toast({
