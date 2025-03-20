@@ -17,6 +17,7 @@ import { eq, sql } from "drizzle-orm";
 import { HOST_URL } from "@/utils/constants";
 
 import { Resend } from "resend";
+import { supabase } from "@/app/supabaseClient";
 
 export async function login(state: { error: string }, formData: FormData) {
     const supabase = await createClient();
@@ -322,15 +323,15 @@ export async function createUser(
         // Send welcome email with temporary password
         const resend = new Resend(process.env.RESEND_API_KEY);
 
-        if (role === "staff" || role === "admin") {
-            resend.contacts.create({
-                email: email,
-                firstName: name.split(" ")[0],
-                lastName: name.split(" ")[1],
-                unsubscribed: false,
-                audienceId: process.env.RESEND_AUDIENCE_ID!,
-            });
-        }
+        // if (role === "staff" || role === "admin") {
+        resend.contacts.create({
+            email: email,
+            firstName: name.split(" ")[0],
+            lastName: name.split(" ")[1],
+            unsubscribed: false,
+            audienceId: process.env.RESEND_AUDIENCE_ID!,
+        });
+        // }
 
         const { error: emailError } = await resend.emails.send({
             from: "onboarding@fire-erp.enclave.live",
@@ -338,7 +339,7 @@ export async function createUser(
             subject: "Welcome to Fire ERP",
             html: `<p>Your account has been created successfully!</p>
                 <p>Your temporary password is: <strong style="color: #007bff;">${tempPassword}</strong></p>
-                <p>Please check your email for the verification link to activate your account.</p>
+                <p>Please check for another email for the verification link to activate your account.</p>
                 <p>After logging in, make sure to change your password for security reasons.</p>`,
         });
 
@@ -361,4 +362,20 @@ export async function createUser(
                     : "Failed to create user",
         };
     }
+}
+
+export async function deleteUser(userId: string) {
+    const user = await db.select().from(Users).where(eq(Users.userId, userId));
+    // remove from resend
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    resend.contacts.remove({
+        email: user[0].email,
+        audienceId: process.env.RESEND_AUDIENCE_ID!,
+    });
+    // remove from auth
+    await supabase.auth.admin.deleteUser(userId);
+    // remove from users table
+    await db.delete(Users).where(eq(Users.userId, userId));
+    revalidatePath("/users");
+    return { success: true };
 }

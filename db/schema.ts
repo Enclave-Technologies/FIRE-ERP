@@ -24,14 +24,14 @@ export const dealStages = pgEnum("dealStages", [
     "closed",
     "rejected",
 ]);
-export const dealMilestones = pgEnum("dealMilestones", [
-    "received",
-    "negotiation",
-    "offer",
-    "accepted",
-    "signed",
-    "closed",
-]);
+// export const dealMilestones = pgEnum("dealMilestones", [
+//     "received",
+//     "negotiation",
+//     "offer",
+//     "accepted",
+//     "signed",
+//     "closed",
+// ]);
 
 export const rtmOffplanStatus = pgEnum("rtmOffplanStatus", [
     "RTM",
@@ -118,16 +118,15 @@ export const Inventories = pgTable("inventories", {
     buSQFT: numeric("bua_sqft", { precision: 10, scale: 2 }),
     sellingPriceMillionAED: numeric("selling_price_million_aed", {
         precision: 12,
-        scale: 2,
     }),
     unitStatus: inventoryStatus("unit_status").default("available"), // Using the defined inventoryStatus enum
     completionDate: timestamp("completion_date"),
-    priceAED: numeric("price_aed", { precision: 12, scale: 2 }),
-    inrCr: numeric("inr_cr", { precision: 20, scale: 2 }),
-    rentApprox: numeric("rent_approx", { precision: 12, scale: 2 }),
+    priceAED: numeric("price_aed", { precision: 12 }),
+    inrCr: numeric("inr_cr", { precision: 20 }),
+    rentApprox: numeric("rent_approx", { precision: 12 }),
     roiGross: numeric("roi_gross", { precision: 5, scale: 2 }),
-    markup: numeric("markup", { precision: 12, scale: 2 }),
-    brokerage: numeric("brokerage", { precision: 12, scale: 2 }),
+    markup: numeric("markup", { precision: 12 }),
+    brokerage: numeric("brokerage", { precision: 12 }),
     remarks: text("remarks"),
     bayut: text("bayut"),
     phppEligible: boolean("phpp_eligible").default(false), // Indicates whether PHPP is available for the property
@@ -155,7 +154,6 @@ export const Deals = pgTable("deals", {
     paymentPlan: text("payment_plan"), // Store payment plan details related to PHPP
     outstandingAmount: numeric("outstanding_amount", {
         precision: 10,
-        scale: 2,
     }), // Amount that remains to be paid
     milestones: text("milestones"), // Store deal milestones, reference post-handover payments if applicable
     inventoryId: uuid("inventory_id").references(
@@ -187,12 +185,12 @@ export const NotificationPreferences = pgTable("notification_preferences", {
     // other notification preferences
 }).enableRLS();
 
-export const ResendMapping = pgTable("resend_mapping", {
-    userId: uuid("user_id").references(() => Users.userId, {
-        onDelete: "cascade",
-    }),
-    resendId: uuid("resend_id"),
-}).enableRLS();
+// export const ResendMapping = pgTable("resend_mapping", {
+//     userId: uuid("user_id").references(() => Users.userId, {
+//         onDelete: "cascade",
+//     }),
+//     resendId: uuid("resend_id"),
+// }).enableRLS();
 
 export type InsertUser = typeof Users.$inferInsert;
 export type SelectUser = typeof Users.$inferSelect;
