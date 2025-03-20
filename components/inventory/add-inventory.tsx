@@ -64,7 +64,7 @@ const formSchema = z.object({
     sellingPriceMillionAED: z.string().optional(),
     sn: z.string().optional(),
     description: z.string().optional(),
-    // buildingName: z.string().optional(),
+    developerName: z.string().optional(),
     unitNumber: z.string().optional(),
     bedRooms: z.number().int().nonnegative().optional(),
     maidsRoom: z.number().int().nonnegative().optional(),
@@ -121,7 +121,7 @@ export default function AddInventory() {
             phppEligible: false,
             sn: "",
             description: "",
-            // buildingName: "",
+            developerName: "",
             unitNumber: "",
             buSQFT: 0,
             priceAED: "0",
@@ -181,7 +181,7 @@ export default function AddInventory() {
                 // Optional fields
                 sn: values.sn || "",
                 description: values.description || "",
-                // buildingName: values.buildingName || null,
+                developerName: values.developerName || null,
                 unitNumber: values.unitNumber || "",
                 maidsRoom:
                     values.maidsRoom !== undefined
@@ -267,7 +267,7 @@ export default function AddInventory() {
                     "property-details": [
                         "sn",
                         "description",
-                        "buildingName",
+                        "developerName",
                         "unitNumber",
                         "bedRooms",
 
@@ -543,19 +543,21 @@ export default function AddInventory() {
                                         </FormItem>
                                     )}
                                 />
-                                {/* <FormField
+                                <FormField
                                     control={form.control}
-                                    name="buildingName"
+                                    name="developerName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Building Name</FormLabel>
+                                            <FormLabel>
+                                                Developer Name
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                /> */}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="unitNumber"

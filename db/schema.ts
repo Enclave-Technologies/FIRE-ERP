@@ -108,7 +108,7 @@ export const Inventories = pgTable("inventories", {
     projectName: varchar("project_name", { length: 255 }),
     description: text("description"),
     location: varchar("location", { length: 255 }),
-    // buildingName: varchar("building_name", { length: 255 }),
+    developerName: varchar("developer_name", { length: 255 }),
     unitNumber: varchar("unit_number", { length: 20 }),
     bedRooms: integer("bed_rooms").default(0),
     maidsRoom: integer("maids_room").default(0),
@@ -185,6 +185,13 @@ export const NotificationPreferences = pgTable("notification_preferences", {
     newRequirementNotif: boolean("new_requirement_notif").default(true),
     pendingRequirementNotif: boolean("pending_requirement_notif").default(true),
     // other notification preferences
+}).enableRLS();
+
+export const ResendMapping = pgTable("resend_mapping", {
+    userId: uuid("user_id").references(() => Users.userId, {
+        onDelete: "cascade",
+    }),
+    resendId: uuid("resend_id"),
 }).enableRLS();
 
 export type InsertUser = typeof Users.$inferInsert;
