@@ -24,14 +24,14 @@ export const dealStages = pgEnum("dealStages", [
     "closed",
     "rejected",
 ]);
-export const dealMilestones = pgEnum("dealMilestones", [
-    "received",
-    "negotiation",
-    "offer",
-    "accepted",
-    "signed",
-    "closed",
-]);
+// export const dealMilestones = pgEnum("dealMilestones", [
+//     "received",
+//     "negotiation",
+//     "offer",
+//     "accepted",
+//     "signed",
+//     "closed",
+// ]);
 
 export const rtmOffplanStatus = pgEnum("rtmOffplanStatus", [
     "RTM",
@@ -47,11 +47,11 @@ export const inventoryStatus = pgEnum("inventoryStatus", [
     "rented",
 ]);
 
-export const requirementCategory = pgEnum("requirementCategory", [
-    "RISE",
-    "NESTSEEKERS",
-    "LUXURY CONCIERGE",
-]);
+// export const requirementCategory = pgEnum("requirementCategory", [
+//     "RISE",
+//     "NESTSEEKERS",
+//     "LUXURY CONCIERGE",
+// ]);
 
 export const Users = pgTable("users", {
     userId: uuid("user_id").primaryKey(),
@@ -72,7 +72,7 @@ export const Requirements = pgTable("requirements", {
     userId: uuid("user_id")
         .notNull()
         .references(() => Users.userId, { onDelete: "cascade" }),
-    description: text("description").notNull(),
+    description: text("description"),
     dateCreated: timestamp("date_created").defaultNow().notNull(),
 
     demand: varchar("demand", { length: 255 }).notNull(), // The person or entity making the request
@@ -94,21 +94,21 @@ export const Requirements = pgTable("requirements", {
     ).default(false), // Whether shared with a channel partner
     call: boolean("call").default(false), // Indicates if a call was made
     viewing: boolean("viewing").default(false), // Indicates if a viewing is scheduled
-    category: requirementCategory().notNull(), // Category of the requirement
+    category: text("requirement_category"), // Category of the requirement
     remarks: text("remarks"),
 }).enableRLS();
 
 export const Inventories = pgTable("inventories", {
     inventoryId: uuid("inventory_id").primaryKey().defaultRandom(),
-    brokerId: uuid("broker_id")
-        .notNull()
-        .references(() => Users.userId, { onDelete: "cascade" }),
+    brokerId: uuid("broker_id").references(() => Users.userId, {
+        onDelete: "cascade",
+    }),
     sn: varchar("sn", { length: 50 }),
     propertyType: varchar("property_type", { length: 255 }),
     projectName: varchar("project_name", { length: 255 }),
     description: text("description"),
     location: varchar("location", { length: 255 }),
-    // buildingName: varchar("building_name", { length: 255 }),
+    developerName: varchar("developer_name", { length: 255 }),
     unitNumber: varchar("unit_number", { length: 20 }),
     bedRooms: integer("bed_rooms").default(0),
     maidsRoom: integer("maids_room").default(0),
@@ -118,16 +118,15 @@ export const Inventories = pgTable("inventories", {
     buSQFT: numeric("bua_sqft", { precision: 10, scale: 2 }),
     sellingPriceMillionAED: numeric("selling_price_million_aed", {
         precision: 12,
-        scale: 2,
     }),
     unitStatus: inventoryStatus("unit_status").default("available"), // Using the defined inventoryStatus enum
     completionDate: timestamp("completion_date"),
-    priceAED: numeric("price_aed", { precision: 12, scale: 2 }),
-    inrCr: numeric("inr_cr", { precision: 20, scale: 2 }),
-    rentApprox: numeric("rent_approx", { precision: 12, scale: 2 }),
+    priceAED: numeric("price_aed", { precision: 12 }),
+    inrCr: numeric("inr_cr", { precision: 20 }),
+    rentApprox: numeric("rent_approx", { precision: 12 }),
     roiGross: numeric("roi_gross", { precision: 5, scale: 2 }),
-    markup: numeric("markup", { precision: 12, scale: 2 }),
-    brokerage: numeric("brokerage", { precision: 12, scale: 2 }),
+    markup: numeric("markup", { precision: 12 }),
+    brokerage: numeric("brokerage", { precision: 12 }),
     remarks: text("remarks"),
     bayut: text("bayut"),
     phppEligible: boolean("phpp_eligible").default(false), // Indicates whether PHPP is available for the property
@@ -155,7 +154,6 @@ export const Deals = pgTable("deals", {
     paymentPlan: text("payment_plan"), // Store payment plan details related to PHPP
     outstandingAmount: numeric("outstanding_amount", {
         precision: 10,
-        scale: 2,
     }), // Amount that remains to be paid
     milestones: text("milestones"), // Store deal milestones, reference post-handover payments if applicable
     inventoryId: uuid("inventory_id").references(
@@ -186,6 +184,13 @@ export const NotificationPreferences = pgTable("notification_preferences", {
     pendingRequirementNotif: boolean("pending_requirement_notif").default(true),
     // other notification preferences
 }).enableRLS();
+
+// export const ResendMapping = pgTable("resend_mapping", {
+//     userId: uuid("user_id").references(() => Users.userId, {
+//         onDelete: "cascade",
+//     }),
+//     resendId: uuid("resend_id"),
+// }).enableRLS();
 
 export type InsertUser = typeof Users.$inferInsert;
 export type SelectUser = typeof Users.$inferSelect;

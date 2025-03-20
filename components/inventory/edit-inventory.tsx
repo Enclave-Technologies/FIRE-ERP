@@ -44,7 +44,7 @@ const inventoryFormSchema = z.object({
     projectName: z.string().min(1, "Project name is required"),
     propertyType: z.string().min(1, "Property type is required"),
     location: z.string().min(1, "Location is required"),
-    buildingName: z.string().optional(),
+    developerName: z.string().optional(),
     unitNumber: z.string().optional(),
     description: z.string().optional(),
     areaSQFT: z.coerce.number().optional(),
@@ -96,6 +96,7 @@ export function EditInventory({
             location: inventory.location || "",
             unitNumber: inventory.unitNumber || "",
             description: inventory.description || "",
+            developerName: inventory.developerName ?? undefined,
             areaSQFT: inventory.areaSQFT
                 ? Number(inventory.areaSQFT)
                 : undefined,
@@ -296,19 +297,21 @@ export function EditInventory({
                                     )}
                                 />
 
-                                {/* <FormField
+                                <FormField
                                     control={form.control}
-                                    name="buildingName"
+                                    name="developerName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Building Name</FormLabel>
+                                            <FormLabel>
+                                                Developer Name
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                /> */}
+                                />
 
                                 <FormField
                                     control={form.control}

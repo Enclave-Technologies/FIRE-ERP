@@ -50,16 +50,16 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
         try {
             if (type === "requirement") {
                 const processedData = await processRequirementCsv(file);
+                if (requirementInputRef.current) {
+                    requirementInputRef.current.value = "";
+                }
+                setRequirementFile(null);
                 const dataWithoutIds = processedData.filter(
                     (row) => !row.requirement_id
                 );
                 if (dataWithoutIds.length > 0) {
                     await bulkCreateRequirements(dataWithoutIds);
                 }
-                if (requirementInputRef.current) {
-                    requirementInputRef.current.value = "";
-                }
-                setRequirementFile(null);
             } else {
                 if (inventoryInputRef.current) {
                     inventoryInputRef.current.value = "";

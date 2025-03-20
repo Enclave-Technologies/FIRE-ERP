@@ -48,7 +48,7 @@ import { processBudgetString } from "@/utils/budget-utils";
 
 const formSchema = z.object({
     // Required fields
-    brokerId: z.string().uuid({ message: "Please select a broker" }),
+    brokerId: z.string().optional(),
     propertyType: z.string().min(1, { message: "Property type is required" }),
     projectName: z.string().min(1, { message: "Project name is required" }),
     location: z.string().min(1, { message: "Location is required" }),
@@ -64,7 +64,7 @@ const formSchema = z.object({
     sellingPriceMillionAED: z.string().optional(),
     sn: z.string().optional(),
     description: z.string().optional(),
-    // buildingName: z.string().optional(),
+    developerName: z.string().optional(),
     unitNumber: z.string().optional(),
     bedRooms: z.number().int().nonnegative().optional(),
     maidsRoom: z.number().int().nonnegative().optional(),
@@ -121,7 +121,7 @@ export default function AddInventory() {
             phppEligible: false,
             sn: "",
             description: "",
-            // buildingName: "",
+            developerName: "",
             unitNumber: "",
             buSQFT: 0,
             priceAED: "0",
@@ -166,7 +166,7 @@ export default function AddInventory() {
         try {
             // Create a new object with the correct types for the API
             const formattedValues = {
-                brokerId: values.brokerId,
+                brokerId: values.brokerId || null,
                 propertyType: values.propertyType,
                 projectName: values.projectName,
                 location: values.location,
@@ -181,7 +181,7 @@ export default function AddInventory() {
                 // Optional fields
                 sn: values.sn || "",
                 description: values.description || "",
-                // buildingName: values.buildingName || null,
+                developerName: values.developerName || null,
                 unitNumber: values.unitNumber || "",
                 maidsRoom:
                     values.maidsRoom !== undefined
@@ -267,7 +267,7 @@ export default function AddInventory() {
                     "property-details": [
                         "sn",
                         "description",
-                        "buildingName",
+                        "developerName",
                         "unitNumber",
                         "bedRooms",
 
@@ -354,40 +354,25 @@ export default function AddInventory() {
                             <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
-                                    name="brokerId"
+                                    name="propertyType"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Broker</FormLabel>
-                                            <Select
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a broker" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {brokers.map((broker) => (
-                                                        <SelectItem
-                                                            key={broker.userId}
-                                                            value={broker.userId.toString()}
-                                                        >
-                                                            {broker.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <FormLabel>Property Type</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="propertyType"
+                                    name="developerName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Property Type</FormLabel>
+                                            <FormLabel>
+                                                Developer Name
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input {...field} />
                                             </FormControl>
@@ -519,6 +504,36 @@ export default function AddInventory() {
                             <div className="space-y-4 px-3 pb-3">
                                 <FormField
                                     control={form.control}
+                                    name="brokerId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Broker</FormLabel>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select a broker" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {brokers.map((broker) => (
+                                                        <SelectItem
+                                                            key={broker.userId}
+                                                            value={broker.userId.toString()}
+                                                        >
+                                                            {broker.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
                                     name="sn"
                                     render={({ field }) => (
                                         <FormItem>
@@ -543,19 +558,7 @@ export default function AddInventory() {
                                         </FormItem>
                                     )}
                                 />
-                                {/* <FormField
-                                    control={form.control}
-                                    name="buildingName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Building Name</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                /> */}
+
                                 <FormField
                                     control={form.control}
                                     name="unitNumber"
@@ -882,7 +885,7 @@ export default function AddInventory() {
                                                     </FormControl>
                                                 </PopoverTrigger>
                                                 <PopoverContent
-                                                    className="w-auto p-0"
+                                                    className="w-full p-0"
                                                     align="start"
                                                 >
                                                     <Calendar
@@ -898,6 +901,7 @@ export default function AddInventory() {
                                                             )
                                                         }
                                                         initialFocus
+                                                        className="w-full"
                                                     />
                                                 </PopoverContent>
                                             </Popover>

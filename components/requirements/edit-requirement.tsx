@@ -41,7 +41,7 @@ const requirementFormSchema = z.object({
         .string()
         .min(1, { message: "Preferred location is required" }),
     budget: z.string().min(1, { message: "Budget is required" }),
-    description: z.string().min(1, { message: "Description is required" }),
+    description: z.string().optional(),
     preferredSquareFootage: z.string().optional(),
     preferredROI: z.string().optional(),
     rtmOffplan: z
@@ -97,7 +97,6 @@ export function EditRequirement({
             viewing: requirement.viewing || false,
             category: requirement.category || "RISE",
             remarks: requirement.remarks || "",
-            status: requirement.status || "open",
         },
     });
 

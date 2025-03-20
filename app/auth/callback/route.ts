@@ -63,16 +63,16 @@ export async function GET(request: Request) {
             }
 
             // Add to resend contacts if they are staff
-            if (adminCount === 0) {
-                const resend = new Resend(process.env.RESEND_API_KEY);
-                resend.contacts.create({
-                    email: user_metadata.email,
-                    firstName: user_metadata.full_name.split(" ")[0],
-                    lastName: user_metadata.full_name.split(" ")[1],
-                    unsubscribed: false,
-                    audienceId: process.env.RESEND_AUDIENCE_ID!,
-                });
-            }
+            // if (adminCount === 0) {
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            resend.contacts.create({
+                email: user_metadata.email,
+                firstName: user_metadata.full_name.split(" ")[0],
+                lastName: user_metadata.full_name.split(" ")[1],
+                unsubscribed: false,
+                audienceId: process.env.RESEND_AUDIENCE_ID!,
+            });
+            // }
 
             const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === "development";

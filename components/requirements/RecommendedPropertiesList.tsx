@@ -164,7 +164,7 @@ export default function RecommendedPropertiesList({
         };
 
         loadExistingDeal();
-    }, [requirementId, updateDealStatus]);
+    }, [requirementId]);
 
     // Function to create a new deal
     const handleCreateDeal = async () => {
@@ -315,31 +315,44 @@ export default function RecommendedPropertiesList({
 
         const typeCounts = new Map<string, number>();
         const locationCounts = new Map<string, number>();
-        
-        properties.forEach(p => {
+
+        properties.forEach((p) => {
             if (p.propertyType) {
-                typeCounts.set(p.propertyType, (typeCounts.get(p.propertyType) || 0) + 1);
+                typeCounts.set(
+                    p.propertyType,
+                    (typeCounts.get(p.propertyType) || 0) + 1
+                );
             }
             if (p.location) {
-                locationCounts.set(p.location, (locationCounts.get(p.location) || 0) + 1);
+                locationCounts.set(
+                    p.location,
+                    (locationCounts.get(p.location) || 0) + 1
+                );
             }
         });
-        
-        const mostCommonType = [...typeCounts.entries()].reduce((a, b) => 
-            a[1] > b[1] ? a : b)[0];
-        const mostCommonLocation = [...locationCounts.entries()].reduce((a, b) => 
-            a[1] > b[1] ? a : b)[0];
-            
+
+        const mostCommonType = [...typeCounts.entries()].reduce((a, b) =>
+            a[1] > b[1] ? a : b
+        )[0];
+        const mostCommonLocation = [...locationCounts.entries()].reduce(
+            (a, b) => (a[1] > b[1] ? a : b)
+        )[0];
+
         return { mostCommonType, mostCommonLocation };
     }, [properties]);
 
-    const isPropertyRecommended = useCallback((property: SelectInventory) => {
-        const criteria = getRecommendationCriteria();
-        if (!criteria) return false;
-        
-        return property.propertyType === criteria.mostCommonType && 
-               property.location === criteria.mostCommonLocation;
-    }, [getRecommendationCriteria]);
+    const isPropertyRecommended = useCallback(
+        (property: SelectInventory) => {
+            const criteria = getRecommendationCriteria();
+            if (!criteria) return false;
+
+            return (
+                property.propertyType === criteria.mostCommonType &&
+                property.location === criteria.mostCommonLocation
+            );
+        },
+        [getRecommendationCriteria]
+    );
 
     const getStatusBadgeVariant = (
         status: string

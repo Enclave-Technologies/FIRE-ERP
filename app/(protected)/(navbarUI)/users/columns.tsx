@@ -17,6 +17,7 @@ import {
     resetUserPassword,
     restrictUserAccess,
     enableUserAccess,
+    // deleteUser,
 } from "@/actions/auth-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -160,6 +161,31 @@ const ActionsCell = ({ user }: { user: SelectUser }) => {
         }
     };
 
+    // const handleDeleteUser = async () => {
+    //     if (!confirm(`Are you sure you want to delete this user?`)) {
+    //         return;
+    //     }
+    //     setIsLoading(true);
+    //     try {
+    //         await deleteUser(user.userId); // Assumes deleteUser is a function that deletes the user
+    //         toast({
+    //             title: "Success",
+    //             description: "User has been deleted",
+    //         });
+    //     } catch (error) {
+    //         toast({
+    //             title: "Error",
+    //             description:
+    //                 error instanceof Error
+    //                     ? error.message
+    //                     : "Failed to delete user",
+    //             variant: "destructive",
+    //         });
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -194,6 +220,14 @@ const ActionsCell = ({ user }: { user: SelectUser }) => {
                         "Disable Account"
                     )}
                 </DropdownMenuItem>
+                {/* <DropdownMenuSeparator />
+                <DropdownMenuItem
+                    onClick={handleDeleteUser}
+                    disabled={isLoading}
+                    className="text-destructive"
+                >
+                    Delete User
+                </DropdownMenuItem> */}
             </DropdownMenuContent>
         </DropdownMenu>
     );

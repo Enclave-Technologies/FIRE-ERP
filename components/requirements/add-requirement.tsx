@@ -27,7 +27,7 @@ const formSchema = z.object({
         .string()
         .min(1, { message: "Preferred location is required" }),
     budget: z.string().min(1, { message: "Budget is required" }),
-    description: z.string().min(1, { message: "Description is required" }),
+    description: z.string().optional(),
     preferredSquareFootage: z.string().optional(), // Change to string
     preferredROI: z.string().optional(), // Change to string
     rtmOffplan: z
@@ -85,7 +85,7 @@ export default function AddRequirement() {
                 ...values,
                 budget: processedBudget,
                 preferredSquareFootage: values.preferredSquareFootage || "0",
-                preferredROI: values.preferredROI || "0"
+                preferredROI: values.preferredROI || "0",
             };
 
             await createRequirement(processedValues);
