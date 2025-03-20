@@ -273,6 +273,10 @@ const ActionsCell = ({ inventory }: { inventory: SelectInventory }) => {
 // Rest of the file remains unchanged...
 export const columns: ColumnDef<SelectInventory>[] = [
     {
+        accessorKey: "developerName",
+        header: "Developer Name",
+    },
+    {
         accessorKey: "projectName",
         header: "Project Name",
     },

@@ -100,9 +100,9 @@ export const Requirements = pgTable("requirements", {
 
 export const Inventories = pgTable("inventories", {
     inventoryId: uuid("inventory_id").primaryKey().defaultRandom(),
-    brokerId: uuid("broker_id")
-        .notNull()
-        .references(() => Users.userId, { onDelete: "cascade" }),
+    brokerId: uuid("broker_id").references(() => Users.userId, {
+        onDelete: "cascade",
+    }),
     sn: varchar("sn", { length: 50 }),
     propertyType: varchar("property_type", { length: 255 }),
     projectName: varchar("project_name", { length: 255 }),

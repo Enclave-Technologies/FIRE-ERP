@@ -121,6 +121,7 @@ export const processInventoryCsv = (
         Papa.parse<CsvRow>(file, {
             complete: (results) => {
                 try {
+                    console.log(results.data);
                     const processedData = results.data.map((row) => {
                         // Inventory processing
                         const validStatuses: InventoryStatus[] = [
@@ -150,6 +151,7 @@ export const processInventoryCsv = (
                             brokerId: row.broker_id,
                             sn: row.sn,
                             propertyType: row.property_type,
+                            developerName: row.developer_name,
                             projectName: row.project_name,
                             description: row.description || "",
                             location: row.location,

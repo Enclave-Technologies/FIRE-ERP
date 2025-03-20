@@ -53,14 +53,13 @@ export const BulkUploadForm: React.FC<BulkUploadFormProps> = ({ userId }) => {
                 if (requirementInputRef.current) {
                     requirementInputRef.current.value = "";
                 }
+                setRequirementFile(null);
                 const dataWithoutIds = processedData.filter(
                     (row) => !row.requirement_id
                 );
                 if (dataWithoutIds.length > 0) {
                     await bulkCreateRequirements(dataWithoutIds);
                 }
-
-                setRequirementFile(null);
             } else {
                 if (inventoryInputRef.current) {
                     inventoryInputRef.current.value = "";
