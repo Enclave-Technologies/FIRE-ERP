@@ -140,25 +140,25 @@ const TRANSITION_SECTION = {
     duration: 0.3,
 };
 
-// Status badge variants
-const getStatusVariant = (
-    status: string | null
-): "default" | "destructive" | "secondary" | "outline" => {
-    switch (status) {
-        case "open":
-            return "default"; // Green in both modes
-        case "assigned":
-            return "outline"; // Blue in both modes
-        case "negotiation":
-            return "destructive"; // Yellow/Orange in both modes
-        case "closed":
-            return "secondary"; // Purple in both modes
-        case "rejected":
-            return "destructive"; // Red in both modes
-        default:
-            return "default";
-    }
-};
+// // Status badge variants
+// const getStatusVariant = (
+//     status: string | null
+// ): "default" | "destructive" | "secondary" | "outline" => {
+//     switch (status) {
+//         case "open":
+//             return "default"; // Green in both modes
+//         case "assigned":
+//             return "outline"; // Blue in both modes
+//         case "negotiation":
+//             return "destructive"; // Yellow/Orange in both modes
+//         case "closed":
+//             return "secondary"; // Purple in both modes
+//         case "rejected":
+//             return "destructive"; // Red in both modes
+//         default:
+//             return "default";
+//     }
+// };
 
 // Category badge variants
 const getCategoryVariant = (
@@ -274,13 +274,13 @@ export default function RequirementDetails({
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <Badge
+                            {/* <Badge
                                 variant={getStatusVariant(status)}
                                 className="text-sm px-3 py-1 pointer-events-none"
                             >
                                 {status.charAt(0).toUpperCase() +
                                     status.slice(1)}
-                            </Badge>
+                            </Badge> */}
                             <Badge
                                 variant={getCategoryVariant(
                                     requirement.category

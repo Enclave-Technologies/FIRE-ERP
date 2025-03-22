@@ -24,6 +24,7 @@ import {
     Search,
     Filter,
     Tag,
+    LoaderCircle,
 } from "lucide-react";
 import React, { useEffect, useState, useCallback } from "react";
 import {
@@ -51,6 +52,7 @@ export default function RecommendedPropertiesList({
     const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [propertiesLoading, setPropertiesLoading] = useState(false);
+    const [dealStatusLoading, setDealStatusLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const { toast } = useToast();
 
@@ -80,6 +82,7 @@ export default function RecommendedPropertiesList({
             if (!dealId) return;
 
             try {
+                setDealStatusLoading(true);
                 // Update the deal status in the database using the server action
                 const updatedDeal = await updateDealStatusAction(
                     dealId,
@@ -87,14 +90,28 @@ export default function RecommendedPropertiesList({
                 );
 
                 // Update local state with the new status
-                setDealStatus(updatedDeal.status || "open");
-
-                toast({
-                    title: "Status Updated",
-                    description: `Deal status updated to ${newStatus}`,
-                });
+                if (updatedDeal) {
+                    setDealStatus(updatedDeal.status || "open");
+                    setDealStatusLoading(false);
+                    toast({
+                        title: "Status Updated",
+                        description: `Deal status updated to ${newStatus}`,
+                    });
+                } else {
+                    // Handle the case where updatedDeal is undefined
+                    console.error(
+                        "Failed to update deal status: updatedDeal is undefined"
+                    );
+                    setDealStatusLoading(false);
+                    toast({
+                        title: "Error",
+                        description: "Failed to update deal status.",
+                        variant: "destructive",
+                    });
+                }
             } catch (err) {
                 console.error("Failed to update deal status:", err);
+                setDealStatusLoading(false);
                 toast({
                     title: "Error",
                     description: "Failed to update deal status",
@@ -244,6 +261,7 @@ export default function RecommendedPropertiesList({
     const handlePropertySelectionChange = async (values: string[]) => {
         if (!dealId) return;
 
+        setInitialLoading(true);
         // Find properties that were added
         const addedProperties = values.filter(
             (id) => !selectedProperties.includes(id)
@@ -260,6 +278,7 @@ export default function RecommendedPropertiesList({
                 await assignPotentialInventoryToDeal(dealId, propertyId);
             } catch (err) {
                 console.error(`Failed to assign property ${propertyId}:`, err);
+                setInitialLoading(false);
                 toast({
                     title: "Error",
                     description: `Failed to assign property ${propertyId}`,
@@ -274,6 +293,7 @@ export default function RecommendedPropertiesList({
                 await removePotentialInventoryFromDeal(dealId, propertyId);
             } catch (err) {
                 console.error(`Failed to remove property ${propertyId}:`, err);
+                setInitialLoading(false);
                 toast({
                     title: "Error",
                     description: `Failed to remove property ${propertyId}`,
@@ -294,6 +314,7 @@ export default function RecommendedPropertiesList({
         if (values.length === 0 && dealStatus === "assigned") {
             updateDealStatus("open");
         }
+        setInitialLoading(false);
     };
 
     // Toggle property selection
@@ -374,7 +395,7 @@ export default function RecommendedPropertiesList({
     };
 
     return (
-        <div className="space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="relative space-y-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <Card className="mt-8">
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between">
@@ -401,6 +422,16 @@ export default function RecommendedPropertiesList({
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
+                    {initialLoading ||
+                    propertiesLoading ||
+                    loading ||
+                    dealStatusLoading ? (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 z-10 flex items-center justify-center">
+                            <LoaderCircle className="w-12 h-12 text-white animate-spin" />
+                            <p className="text-white ml-4">Loading...</p>
+                        </div>
+                    ) : null}
+
                     {!dealId ? (
                         <div className="text-center py-8 text-muted-foreground">
                             Create a deal to start matching properties
