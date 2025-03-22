@@ -243,6 +243,7 @@ export async function updateDealStatus(
                 .where(eq(Deals.dealId, dealId))
                 .for("update");
 
+            console.log(currentDeal);
 
             if (!currentDeal) {
                 throw new Error("Deal not found");
@@ -266,14 +267,18 @@ export async function updateDealStatus(
                 .set(updateData)
                 .where(
                     and(
-                        eq(Deals.dealId, dealId),
-                        eq(Deals.updatedAt, currentDeal.updatedAt) // Ensure we're updating the same version
+                        eq(Deals.dealId, dealId)
+                        // eq(Deals.updatedAt, currentDeal.updatedAt) // Ensure we're updating the same version
                     )
                 )
                 .returning();
 
+            console.log("DEal", updatedDeal);
+
             if (!updatedDeal) {
-                throw new Error("Concurrent update detected. Please try again.");
+                throw new Error(
+                    "Concurrent update detected. Please try again."
+                );
             }
 
             // If the deal is closed, update the inventory status to sold if an inventoryId is provided
@@ -689,7 +694,6 @@ export async function searchInventories(filters: {
     }
 }
 
-
 export async function getDealsNotUpdatedInSevenDays() {
     try {
         const sevenDaysAgo = new Date();
@@ -710,5 +714,3 @@ export async function getDealsNotUpdatedInSevenDays() {
         throw error;
     }
 }
-
-
