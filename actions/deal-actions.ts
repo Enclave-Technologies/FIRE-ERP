@@ -271,6 +271,8 @@ export async function updateDealStatus(
                 )
                 .returning();
 
+            console.log("DEal", updatedDeal);
+
             if (!updatedDeal) {
                 throw new Error(
                     "Concurrent update detected. Please try again."
