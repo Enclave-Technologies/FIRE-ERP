@@ -859,7 +859,7 @@ export default function AddInventory() {
                                             <FormLabel>
                                                 Completion Date
                                             </FormLabel>
-                                            <Popover>
+                                            <Popover modal={true}>
                                                 <PopoverTrigger asChild>
                                                     <FormControl>
                                                         <Button
@@ -888,21 +888,28 @@ export default function AddInventory() {
                                                     className="w-full p-0"
                                                     align="start"
                                                 >
-                                                    <Calendar
-                                                        mode="single"
-                                                        selected={field.value}
-                                                        onSelect={
-                                                            field.onChange
-                                                        }
-                                                        disabled={(date) =>
-                                                            date <
-                                                            new Date(
-                                                                "1900-01-01"
-                                                            )
-                                                        }
-                                                        initialFocus
-                                                        className="w-full"
-                                                    />
+                                                    <div className="flex-1 w-full">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={
+                                                                field.value
+                                                            }
+                                                            onSelect={
+                                                                field.onChange
+                                                            }
+                                                            disabled={(date) =>
+                                                                date <
+                                                                new Date(
+                                                                    "1900-01-01"
+                                                                )
+                                                            }
+                                                            captionLayout="dropdown-buttons"
+                                                            fromYear={1900}
+                                                            toYear={new Date().getFullYear()}
+                                                            initialFocus
+                                                            className="w-full flex"
+                                                        />
+                                                    </div>
                                                 </PopoverContent>
                                             </Popover>
                                             <FormMessage />

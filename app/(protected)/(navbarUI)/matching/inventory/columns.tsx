@@ -284,6 +284,7 @@ export const columns: ColumnDef<SelectInventory>[] = [
         accessorKey: "propertyType",
         header: "Property Type",
     },
+    { accessorKey: "bedRooms", header: "# Bedrooms" },
     {
         accessorKey: "location",
         header: "Location",
