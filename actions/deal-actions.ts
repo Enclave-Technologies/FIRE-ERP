@@ -243,8 +243,6 @@ export async function updateDealStatus(
                 .where(eq(Deals.dealId, dealId))
                 .for("update");
 
-            console.log(currentDeal);
-
             if (!currentDeal) {
                 throw new Error("Deal not found");
             }
@@ -272,8 +270,6 @@ export async function updateDealStatus(
                     )
                 )
                 .returning();
-
-            console.log("DEal", updatedDeal);
 
             if (!updatedDeal) {
                 throw new Error(
