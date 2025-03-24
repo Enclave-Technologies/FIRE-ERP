@@ -536,12 +536,14 @@ export function EditInventory({
 
                             {/* Financial Details */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* <FormField
+                                <FormField
                                     control={form.control}
                                     name="sellingPriceMillionAED"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Price (M AED)</FormLabel>
+                                            <FormLabel>
+                                                Selling Price (AED)
+                                            </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     type="number"
@@ -563,7 +565,7 @@ export function EditInventory({
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                /> */}
+                                />
 
                                 <FormField
                                     control={form.control}
