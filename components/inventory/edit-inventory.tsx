@@ -374,7 +374,10 @@ export function EditInventory({
                                                             initialFocus
                                                             captionLayout="dropdown-buttons"
                                                             fromYear={1900}
-                                                            toYear={new Date().getFullYear()}
+                                                            toYear={
+                                                                new Date().getFullYear() +
+                                                                10
+                                                            }
                                                         />
                                                     </PopoverContent>
                                                 </Popover>

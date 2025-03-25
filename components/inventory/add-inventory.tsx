@@ -905,7 +905,10 @@ export default function AddInventory() {
                                                             }
                                                             captionLayout="dropdown-buttons"
                                                             fromYear={1900}
-                                                            toYear={new Date().getFullYear()}
+                                                            toYear={
+                                                                new Date().getFullYear() +
+                                                                10
+                                                            }
                                                             initialFocus
                                                             className="w-full flex"
                                                         />
