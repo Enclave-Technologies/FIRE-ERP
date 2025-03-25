@@ -336,7 +336,7 @@ export function EditInventory({
                                                 Completion Date
                                             </FormLabel>
                                             <FormControl>
-                                                <Popover>
+                                                <Popover modal={true}>
                                                     <PopoverTrigger asChild>
                                                         <Button
                                                             variant={"outline"}
@@ -372,6 +372,9 @@ export function EditInventory({
                                                                 field.onChange
                                                             }
                                                             initialFocus
+                                                            captionLayout="dropdown-buttons"
+                                                            fromYear={1900}
+                                                            toYear={new Date().getFullYear()}
                                                         />
                                                     </PopoverContent>
                                                 </Popover>
