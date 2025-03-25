@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { Inventories, inventoryStatus } from "@/db/schema";
 import type { InsertInventory, SelectInventory } from "@/db/schema";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
-import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
+import { asc, count, desc, eq, gte, ilike, or, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 // New bulk create function
@@ -36,35 +36,138 @@ export async function getInventories(params?: {
 
                 if (column && value) {
                     switch (column) {
+                        case "Developer Name":
+                            query.where(
+                                ilike(Inventories.developerName, `%${value}%`)
+                            );
+                            break;
                         case "Project Name":
-                            query = query.where(
+                            query.where(
                                 ilike(Inventories.projectName, `%${value}%`)
                             );
                             break;
                         case "Property Type":
-                            query = query.where(
+                            query.where(
                                 ilike(Inventories.propertyType, `%${value}%`)
                             );
                             break;
+                        case "# Bedrooms":
+                            const bedrooms = parseInt(value);
+                            if (!isNaN(bedrooms)) {
+                                query.where(eq(Inventories.bedRooms, bedrooms));
+                            }
+                            break;
                         case "Location":
-                            query = query.where(
+                            query.where(
                                 ilike(Inventories.location, `%${value}%`)
                             );
                             break;
+                        case "Area (SQFT)":
+                            const area = parseFloat(value);
+                            if (!isNaN(area)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.areaSQFT}::numeric`,
+                                        area
+                                    )
+                                );
+                            }
+                            break;
+                        case "Price (AED)":
+                            const price = parseFloat(value);
+                            if (!isNaN(price)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.priceAED}::numeric`,
+                                        price
+                                    )
+                                );
+                            }
+                            break;
+                        case "Selling Price (AED)":
+                            const sellingPrice = parseFloat(value);
+                            if (!isNaN(sellingPrice)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.sellingPriceMillionAED}::numeric`,
+                                        sellingPrice
+                                    )
+                                );
+                            }
+                            break;
+                        case "Price (INR Cr)":
+                            const inrPrice = parseFloat(value);
+                            if (!isNaN(inrPrice)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.inrCr}::numeric`,
+                                        inrPrice
+                                    )
+                                );
+                            }
+                            break;
+                        case "Approx. Rent":
+                            const rent = parseFloat(value);
+                            if (!isNaN(rent)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.rentApprox}::numeric`,
+                                        rent
+                                    )
+                                );
+                            }
+                            break;
+                        case "ROI (%)":
+                            const roi = parseFloat(value);
+                            if (!isNaN(roi)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.roiGross}::numeric`,
+                                        roi
+                                    )
+                                );
+                            }
+                            break;
+                        case "Markup":
+                            const markup = parseFloat(value);
+                            if (!isNaN(markup)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.markup}::numeric`,
+                                        markup
+                                    )
+                                );
+                            }
+                            break;
+                        case "Brokerage":
+                            const brokerage = parseFloat(value);
+                            if (!isNaN(brokerage)) {
+                                query.where(
+                                    gte(
+                                        sql`${Inventories.brokerage}::numeric`,
+                                        brokerage
+                                    )
+                                );
+                            }
+                            break;
                         case "Status":
-                            // Check if value is a valid inventory status
                             if (
                                 inventoryStatus.enumValues.includes(
                                     value as (typeof inventoryStatus.enumValues)[number]
                                 )
                             ) {
-                                query = query.where(
+                                query.where(
                                     eq(
                                         Inventories.unitStatus,
                                         value as (typeof inventoryStatus.enumValues)[number]
                                     )
                                 );
                             }
+                            break;
+                        case "Remarks":
+                            query.where(
+                                ilike(Inventories.remarks, `%${value}%`)
+                            );
                             break;
                     }
                 }
@@ -76,10 +179,15 @@ export async function getInventories(params?: {
                 if (searchValue) {
                     query = query.where(
                         or(
+                            ilike(
+                                Inventories.developerName,
+                                `%${searchValue}%`
+                            ),
                             ilike(Inventories.projectName, `%${searchValue}%`),
                             ilike(Inventories.propertyType, `%${searchValue}%`),
                             ilike(Inventories.location, `%${searchValue}%`),
-                            ilike(Inventories.unitNumber, `%${searchValue}%`)
+                            ilike(Inventories.unitNumber, `%${searchValue}%`),
+                            ilike(Inventories.remarks, `%${searchValue}%`)
                         )
                     );
                 }
@@ -175,6 +283,11 @@ export async function getInventories(params?: {
 
                 if (column && value) {
                     switch (column) {
+                        case "Developer Name":
+                            countQuery.where(
+                                ilike(Inventories.developerName, `%${value}%`)
+                            );
+                            break;
                         case "Project Name":
                             countQuery.where(
                                 ilike(Inventories.projectName, `%${value}%`)
@@ -185,13 +298,108 @@ export async function getInventories(params?: {
                                 ilike(Inventories.propertyType, `%${value}%`)
                             );
                             break;
+                        case "# Bedrooms":
+                            const bedrooms = parseInt(value);
+                            if (!isNaN(bedrooms)) {
+                                countQuery.where(
+                                    eq(Inventories.bedRooms, bedrooms)
+                                );
+                            }
+                            break;
                         case "Location":
                             countQuery.where(
                                 ilike(Inventories.location, `%${value}%`)
                             );
                             break;
+                        case "Area (SQFT)":
+                            const area = parseFloat(value);
+                            if (!isNaN(area)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.areaSQFT}::numeric`,
+                                        area
+                                    )
+                                );
+                            }
+                            break;
+                        case "Price (AED)":
+                            const price = parseFloat(value);
+                            if (!isNaN(price)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.priceAED}::numeric`,
+                                        price
+                                    )
+                                );
+                            }
+                            break;
+                        case "Selling Price (AED)":
+                            const sellingPrice = parseFloat(value);
+                            if (!isNaN(sellingPrice)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.sellingPriceMillionAED}::numeric`,
+                                        sellingPrice
+                                    )
+                                );
+                            }
+                            break;
+                        case "Price (INR Cr)":
+                            const inrPrice = parseFloat(value);
+                            if (!isNaN(inrPrice)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.inrCr}::numeric`,
+                                        inrPrice
+                                    )
+                                );
+                            }
+                            break;
+                        case "Approx. Rent":
+                            const rent = parseFloat(value);
+                            if (!isNaN(rent)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.rentApprox}::numeric`,
+                                        rent
+                                    )
+                                );
+                            }
+                            break;
+                        case "ROI (%)":
+                            const roi = parseFloat(value);
+                            if (!isNaN(roi)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.roiGross}::numeric`,
+                                        roi
+                                    )
+                                );
+                            }
+                            break;
+                        case "Markup":
+                            const markup = parseFloat(value);
+                            if (!isNaN(markup)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.markup}::numeric`,
+                                        markup
+                                    )
+                                );
+                            }
+                            break;
+                        case "Brokerage":
+                            const brokerage = parseFloat(value);
+                            if (!isNaN(brokerage)) {
+                                countQuery.where(
+                                    gte(
+                                        sql`${Inventories.brokerage}::numeric`,
+                                        brokerage
+                                    )
+                                );
+                            }
+                            break;
                         case "Status":
-                            // Check if value is a valid inventory status
                             if (
                                 inventoryStatus.enumValues.includes(
                                     value as (typeof inventoryStatus.enumValues)[number]
@@ -205,6 +413,11 @@ export async function getInventories(params?: {
                                 );
                             }
                             break;
+                        case "Remarks":
+                            countQuery.where(
+                                ilike(Inventories.remarks, `%${value}%`)
+                            );
+                            break;
                     }
                 }
             }
@@ -215,10 +428,15 @@ export async function getInventories(params?: {
                 if (searchValue) {
                     countQuery.where(
                         or(
+                            ilike(
+                                Inventories.developerName,
+                                `%${searchValue}%`
+                            ),
                             ilike(Inventories.projectName, `%${searchValue}%`),
                             ilike(Inventories.propertyType, `%${searchValue}%`),
                             ilike(Inventories.location, `%${searchValue}%`),
-                            ilike(Inventories.unitNumber, `%${searchValue}%`)
+                            ilike(Inventories.unitNumber, `%${searchValue}%`),
+                            ilike(Inventories.remarks, `%${searchValue}%`)
                         )
                     );
                 }
