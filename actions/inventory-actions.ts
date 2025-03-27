@@ -3,8 +3,20 @@
 import { db } from "@/db";
 import { Inventories, inventoryStatus } from "@/db/schema";
 import type { InsertInventory, SelectInventory } from "@/db/schema";
+import { processBudgetString } from "@/utils/budget-utils";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
-import { asc, count, desc, eq, gte, ilike, or, sql } from "drizzle-orm";
+import {
+    and,
+    asc,
+    count,
+    desc,
+    eq,
+    gte,
+    ilike,
+    lte,
+    or,
+    sql,
+} from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 // New bulk create function
@@ -65,54 +77,103 @@ export async function getInventories(params?: {
                         case "Area (SQFT)":
                             const area = parseFloat(value);
                             if (!isNaN(area)) {
+                                const lowerBound = area * 0.9;
+                                const upperBound = area * 1.1;
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.areaSQFT}::numeric`,
-                                        area
+                                    and(
+                                        gte(
+                                            sql`${Inventories.areaSQFT}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.areaSQFT}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Price (AED)":
-                            const price = parseFloat(value);
+                            const price = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(price)) {
+                                const lowerBound = price * 0.9;
+                                const upperBound = price * 1.1;
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.priceAED}::numeric`,
-                                        price
+                                    and(
+                                        gte(
+                                            sql`${Inventories.priceAED}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.priceAED}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Selling Price (AED)":
-                            const sellingPrice = parseFloat(value);
+                            const sellingPrice = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(sellingPrice)) {
+                                const lowerBound = sellingPrice * 0.9;
+                                const upperBound = sellingPrice * 1.1;
+
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.sellingPriceMillionAED}::numeric`,
-                                        sellingPrice
+                                    and(
+                                        gte(
+                                            sql`${Inventories.sellingPriceMillionAED}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.sellingPriceMillionAED}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Price (INR Cr)":
-                            const inrPrice = parseFloat(value);
+                            const inrPrice = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(inrPrice)) {
+                                const lowerBound = inrPrice * 0.9;
+                                const upperBound = inrPrice * 1.1;
+
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.inrCr}::numeric`,
-                                        inrPrice
+                                    and(
+                                        gte(
+                                            sql`${Inventories.inrCr}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.inrCr}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Approx. Rent":
-                            const rent = parseFloat(value);
+                            const rent = parseFloat(processBudgetString(value));
                             if (!isNaN(rent)) {
+                                const lowerBound = rent * 0.9;
+                                const upperBound = rent * 1.1;
+
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.rentApprox}::numeric`,
-                                        rent
+                                    and(
+                                        gte(
+                                            sql`${Inventories.rentApprox}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.rentApprox}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
@@ -120,32 +181,63 @@ export async function getInventories(params?: {
                         case "ROI (%)":
                             const roi = parseFloat(value);
                             if (!isNaN(roi)) {
+                                const lowerBound = roi * 0.9;
+                                const upperBound = roi * 1.1;
+
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.roiGross}::numeric`,
-                                        roi
+                                    and(
+                                        gte(
+                                            sql`${Inventories.roiGross}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.roiGross}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Markup":
-                            const markup = parseFloat(value);
+                            const markup = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(markup)) {
+                                const lowerBound = markup * 0.9;
+                                const upperBound = markup * 1.1;
+
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.markup}::numeric`,
-                                        markup
+                                    and(
+                                        gte(
+                                            sql`${Inventories.markup}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.markup}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Brokerage":
-                            const brokerage = parseFloat(value);
+                            const brokerage = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(brokerage)) {
+                                const lowerBound = brokerage * 0.9;
+                                const upperBound = brokerage * 1.1;
+
                                 query.where(
-                                    gte(
-                                        sql`${Inventories.brokerage}::numeric`,
-                                        brokerage
+                                    and(
+                                        gte(
+                                            sql`${Inventories.brokerage}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.brokerage}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
@@ -314,54 +406,103 @@ export async function getInventories(params?: {
                         case "Area (SQFT)":
                             const area = parseFloat(value);
                             if (!isNaN(area)) {
+                                const lowerBound = area * 0.9;
+                                const upperBound = area * 1.1;
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.areaSQFT}::numeric`,
-                                        area
+                                    and(
+                                        gte(
+                                            sql`${Inventories.areaSQFT}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.areaSQFT}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Price (AED)":
-                            const price = parseFloat(value);
+                            const price = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(price)) {
+                                const lowerBound = price * 0.9;
+                                const upperBound = price * 1.1;
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.priceAED}::numeric`,
-                                        price
+                                    and(
+                                        gte(
+                                            sql`${Inventories.priceAED}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.priceAED}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Selling Price (AED)":
-                            const sellingPrice = parseFloat(value);
+                            const sellingPrice = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(sellingPrice)) {
+                                const lowerBound = sellingPrice * 0.9;
+                                const upperBound = sellingPrice * 1.1;
+
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.sellingPriceMillionAED}::numeric`,
-                                        sellingPrice
+                                    and(
+                                        gte(
+                                            sql`${Inventories.sellingPriceMillionAED}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.sellingPriceMillionAED}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Price (INR Cr)":
-                            const inrPrice = parseFloat(value);
+                            const inrPrice = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(inrPrice)) {
+                                const lowerBound = inrPrice * 0.9;
+                                const upperBound = inrPrice * 1.1;
+
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.inrCr}::numeric`,
-                                        inrPrice
+                                    and(
+                                        gte(
+                                            sql`${Inventories.inrCr}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.inrCr}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Approx. Rent":
-                            const rent = parseFloat(value);
+                            const rent = parseFloat(processBudgetString(value));
                             if (!isNaN(rent)) {
+                                const lowerBound = rent * 0.9;
+                                const upperBound = rent * 1.1;
+
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.rentApprox}::numeric`,
-                                        rent
+                                    and(
+                                        gte(
+                                            sql`${Inventories.rentApprox}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.rentApprox}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
@@ -369,32 +510,63 @@ export async function getInventories(params?: {
                         case "ROI (%)":
                             const roi = parseFloat(value);
                             if (!isNaN(roi)) {
+                                const lowerBound = roi * 0.9;
+                                const upperBound = roi * 1.1;
+
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.roiGross}::numeric`,
-                                        roi
+                                    and(
+                                        gte(
+                                            sql`${Inventories.roiGross}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.roiGross}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Markup":
-                            const markup = parseFloat(value);
+                            const markup = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(markup)) {
+                                const lowerBound = markup * 0.9;
+                                const upperBound = markup * 1.1;
+
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.markup}::numeric`,
-                                        markup
+                                    and(
+                                        gte(
+                                            sql`${Inventories.markup}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.markup}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
                             break;
                         case "Brokerage":
-                            const brokerage = parseFloat(value);
+                            const brokerage = parseFloat(
+                                processBudgetString(value)
+                            );
                             if (!isNaN(brokerage)) {
+                                const lowerBound = brokerage * 0.9;
+                                const upperBound = brokerage * 1.1;
+
                                 countQuery.where(
-                                    gte(
-                                        sql`${Inventories.brokerage}::numeric`,
-                                        brokerage
+                                    and(
+                                        gte(
+                                            sql`${Inventories.brokerage}::numeric`,
+                                            lowerBound
+                                        ),
+                                        lte(
+                                            sql`${Inventories.brokerage}::numeric`,
+                                            upperBound
+                                        )
                                     )
                                 );
                             }
