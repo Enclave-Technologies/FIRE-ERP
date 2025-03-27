@@ -208,12 +208,47 @@ export async function LoggedInOrRedirectToLogin() {
     return data;
 }
 
+// New function combining auth check and role query
+export async function getUserDataAndRole() {
+    const supabase = await createClient();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !authData?.user) {
+        redirect("/login");
+    }
+
+    // Immediately query for the role after getting the user
+    try {
+        const userRecord = await db
+            .select({ role: Users.role })
+            .from(Users)
+            .where(eq(Users.userId, authData.user.id));
+
+        if (!userRecord || userRecord.length === 0) {
+            // Handle case where user exists in auth but not in Users table (should ideally not happen)
+            console.error(`User ${authData.user.id} found in auth but not in Users table.`);
+            redirect("/login?error=User data inconsistent. Please contact support.");
+        }
+
+        return {
+            user: authData.user,
+            role: userRecord[0].role as "admin" | "staff" | "broker" | "customer" | "guest", // Add type assertion if needed
+        };
+
+    } catch (dbError) {
+        console.error("Database error fetching user role:", dbError);
+        redirect("/login?error=Failed to retrieve user details.");
+    }
+}
+
+
 export async function UserInfo(userId: string) {
     return db.select().from(Users).where(eq(Users.userId, userId));
 }
 
 export async function IsGuest(userId: string) {
     const user = await db.select().from(Users).where(eq(Users.userId, userId));
+    // Keep IsGuest for potential other uses, but avoid calling it in page load sequence
     return user[0].role === "guest";
 }
 

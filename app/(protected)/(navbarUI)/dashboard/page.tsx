@@ -1,11 +1,9 @@
-import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
+// Import the new combined function and remove old ones
+import { getUserDataAndRole } from "@/actions/auth-actions";
+import { getDashboardSummary } from "@/actions/dashboard-actions"; // Corrected import
+// Re-add imports needed by wrapper components
 import { getRequirements } from "@/actions/requirement-actions";
 import { getOpenDeals, getClosedDeals } from "@/actions/deal-actions";
-import { getInventories } from "@/actions/inventory-actions";
-import {
-    // getMonthlyChanges,
-    getDashboardSummary,
-} from "@/actions/dashboard-actions";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import {
@@ -17,8 +15,9 @@ import {
 } from "@/components/ui/card";
 import SummaryComponent from "@/components/dashboard/SummaryComponent";
 import RequirementsTable from "@/components/dashboard/RequirementsTable";
-import DealsTable from "@/components/dashboard/InventoryTable";
+import DealsTable from "@/components/dashboard/InventoryTable"; // Assuming this is correct despite the name mismatch
 // import RateOfChangeVisualization from "@/components/dashboard/RateOfChangeVisualization";
+import KpiCards, { KpiCardsSkeleton } from "@/components/dashboard/KpiCards"; // Import new components
 
 // Wrapper component for SummaryComponent with data fetching
 async function SummaryComponentWrapper() {
@@ -46,8 +45,18 @@ async function RequirementsTableWrapper() {
         pageSize: "5",
     });
 
-    // Pass data to the component
-    return <RequirementsTable requirements={recentRequirements} />;
+    // Map data to match expected prop type (handle null description)
+    const mappedRequirements = recentRequirements.map(req => ({
+        ...req,
+        requirements: {
+            ...req.requirements,
+            description: req.requirements.description === null ? undefined : req.requirements.description,
+        }
+    }));
+
+
+    // Pass mapped data to the component
+    return <RequirementsTable requirements={mappedRequirements} />;
 }
 
 // Wrapper component for DealsTable with data fetching
@@ -70,95 +79,22 @@ async function DealsTableWrapper() {
 }
 
 export default async function Page() {
-    const data = await LoggedInOrRedirectToLogin();
-    if (await IsGuest(data.user.id)) {
+    // Call the combined function once
+    const { role } = await getUserDataAndRole(); // Destructure role, user is unused here
+
+    // Redirect if the user is a guest based on the returned role
+    if (role === "guest") {
         redirect("/");
     }
 
-    // Fetch data for KPIs - these are loaded directly in the main component
-    // since they're simple counts and don't need to be in Suspense
-    let totalRequirements = 0;
-    let totalDeals = 0;
-    let totalInventory = 0;
-    let openDeals = [];
-    let closedDeals = [];
-
-    try {
-        const [requirementsRes, openDealsRes, closedDealsRes, inventoryRes] =
-            await Promise.all([
-                getRequirements(),
-                getOpenDeals(),
-                getClosedDeals(),
-                getInventories(),
-            ]);
-
-        totalRequirements = requirementsRes.total;
-        openDeals = openDealsRes;
-        closedDeals = closedDealsRes;
-        totalDeals = openDeals.length + closedDeals.length;
-        totalInventory = inventoryRes.total;
-    } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-    }
+    // Removed the blocking Promise.all for KPI data
 
     return (
         <div className="flex flex-1 flex-col gap-6 p-6">
-            {/* KPI Cards */}
-            <div className="grid gap-6 md:grid-cols-3">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-2xl font-bold">
-                            Requirements
-                        </CardTitle>
-                        <CardDescription>
-                            Total active requirements
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-4xl font-bold">
-                            {totalRequirements}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-2xl font-bold">
-                            Deals
-                        </CardTitle>
-                        <CardDescription>
-                            Total deals in progress
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-4xl font-bold">{totalDeals}</div>
-                        <div className="text-sm text-muted-foreground mt-2">
-                            <span className="font-medium text-green-500">
-                                {openDeals.length}
-                            </span>{" "}
-                            open,
-                            <span className="font-medium text-blue-500 ml-1">
-                                {closedDeals.length}
-                            </span>{" "}
-                            closed
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-2xl font-bold">
-                            Inventory
-                        </CardTitle>
-                        <CardDescription>
-                            Total properties in inventory
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-4xl font-bold">
-                            {totalInventory}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* KPI Cards with Suspense */}
+            <Suspense fallback={<KpiCardsSkeleton />}>
+                <KpiCards />
+            </Suspense>
 
             {/* Summary Component */}
             <Card className="p-6">

@@ -2,7 +2,8 @@ import React, { Suspense } from "react";
 import { getInventories } from "@/actions/inventory-actions";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
-import { IsGuest, LoggedInOrRedirectToLogin } from "@/actions/auth-actions";
+// Import the new combined function and remove old ones
+import { getUserDataAndRole } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import InventoryTableSkeleton from "@/components/inventory/inventory-table-skeleton";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
@@ -34,10 +35,14 @@ const Inventory = async ({
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-    const data = await LoggedInOrRedirectToLogin();
-    if (await IsGuest(data.user.id)) {
+    // Call the combined function once, only destructure 'role' as 'user' is unused here
+    const { role } = await getUserDataAndRole();
+
+    // Redirect if the user is a guest based on the returned role
+    if (role === "guest") {
         redirect("/");
     }
+
     // Get the search params
     const resolvedParams = await searchParams;
 

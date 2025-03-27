@@ -2,11 +2,8 @@ import React, { Suspense } from "react";
 import { getUsers } from "@/actions/user-actions";
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
-import {
-    IsGuest,
-    LoggedInOrRedirectToLogin,
-    isAdmin,
-} from "@/actions/auth-actions";
+// Import the new combined function and remove old ones
+import { getUserDataAndRole } from "@/actions/auth-actions";
 import { redirect } from "next/navigation";
 import RequirementsTableSkeleton from "@/components/requirements/requirements-table-skeleton";
 import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
@@ -37,10 +34,14 @@ const AllUsers = async ({
 }: {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) => {
-    const data = await LoggedInOrRedirectToLogin();
-    if ((await IsGuest(data.user.id)) || !(await isAdmin(data.user.id))) {
+    // Call the combined function once
+    const { role } = await getUserDataAndRole();
+
+    // Redirect if the user is a guest or not an admin
+    if (role === "guest" || role !== "admin") {
         redirect("/");
     }
+
     const resolvedParams = await searchParams;
 
     return (
