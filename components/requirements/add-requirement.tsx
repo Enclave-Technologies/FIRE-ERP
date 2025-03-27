@@ -37,7 +37,7 @@ const formSchema = z.object({
     sharedWithIndianChannelPartner: z.boolean().default(false),
     call: z.boolean().default(false),
     viewing: z.boolean().default(false),
-    category: z.enum(["RISE", "NESTSEEKERS", "LUXURY CONCIERGE"]),
+    category: z.string().min(1, { message: "Category is required" }),
     remarks: z.string().optional(),
 });
 
@@ -299,7 +299,7 @@ export default function AddRequirement() {
                         </FormItem>
                     )}
                 />
-                <FormField
+                {/* <FormField
                     control={form.control}
                     name="category"
                     render={({ field }) => (
@@ -319,6 +319,19 @@ export default function AddRequirement() {
                                         LUXURY CONCIERGE
                                     </option>
                                 </select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                /> */}
+                <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

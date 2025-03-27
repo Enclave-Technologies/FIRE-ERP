@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { SelectRequirement, dealStages } from "@/db/schema";
+import { SelectRequirement } from "@/db/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
@@ -51,9 +51,9 @@ const requirementFormSchema = z.object({
     sharedWithIndianChannelPartner: z.boolean().default(false),
     call: z.boolean().default(false),
     viewing: z.boolean().default(false),
-    category: z.enum(["RISE", "NESTSEEKERS", "LUXURY CONCIERGE"]),
+    category: z.string().min(1, { message: "Category is required" }),
     remarks: z.string().optional(),
-    status: z.enum(dealStages.enumValues),
+    // status: z.enum(dealStages.enumValues),
 });
 
 type RequirementFormValues = z.infer<typeof requirementFormSchema>;
@@ -97,6 +97,7 @@ export function EditRequirement({
             viewing: requirement.viewing || false,
             category: requirement.category || "RISE",
             remarks: requirement.remarks || "",
+            // status: requirement.status || "open",
         },
     });
 
@@ -106,7 +107,7 @@ export function EditRequirement({
 
     const handleConfirmUpdate = async () => {
         setIsSubmitting(true);
-        setShowConfirmation(false);
+        // setShowConfirmation(false);
 
         try {
             const formData = form.getValues();
@@ -134,8 +135,10 @@ export function EditRequirement({
                         "The requirement has been successfully updated.",
                 });
                 onOpenChange(false);
+                setShowConfirmation(false);
                 router.refresh();
             } else {
+                setShowConfirmation(false);
                 toast({
                     title: "Update Failed",
                     description:
@@ -145,12 +148,14 @@ export function EditRequirement({
             }
         } catch (error) {
             console.error("Error updating requirement:", error);
+            setShowConfirmation(false);
             toast({
                 title: "Error",
                 description: "An unexpected error occurred",
                 variant: "destructive",
             });
         } finally {
+            setShowConfirmation(false);
             setIsSubmitting(false);
         }
     };
@@ -325,7 +330,7 @@ export function EditRequirement({
                                     )}
                                 />
 
-                                <FormField
+                                {/* <FormField
                                     control={form.control}
                                     name="category"
                                     render={({ field }) => (
@@ -351,9 +356,22 @@ export function EditRequirement({
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
 
                                 <FormField
+                                    control={form.control}
+                                    name="category"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Category</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {/* <FormField
                                     control={form.control}
                                     name="status"
                                     render={({ field }) => (
@@ -380,7 +398,7 @@ export function EditRequirement({
                                             <FormMessage />
                                         </FormItem>
                                     )}
-                                />
+                                /> */}
                             </div>
 
                             {/* Checkboxes */}

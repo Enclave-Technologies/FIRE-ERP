@@ -135,7 +135,7 @@ export function EditInventory({
 
     const handleConfirmUpdate = async () => {
         setIsSubmitting(true);
-        setShowConfirmation(false);
+        // setShowConfirmation(false);
 
         try {
             const formData = form.getValues();
@@ -211,6 +211,7 @@ export function EditInventory({
                 variant: "destructive",
             });
         } finally {
+            setShowConfirmation(false);
             setIsSubmitting(false);
         }
     };
